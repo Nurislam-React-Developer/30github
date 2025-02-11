@@ -1,7 +1,9 @@
 import React from 'react'
 import { Outlet } from 'react-router-dom'
+import Header from '../Header';
+import Footer from '../Footer';
 
-const Navbar = () => {
+const Layout = () => {
   return (
     <div className='layout'>
       <Header/>
@@ -11,4 +13,4 @@ const Navbar = () => {
   )
 }
 
-export default Navbar
+export default Layout;
