@@ -3,6 +3,8 @@ import Home from '../pages/Home';
 import Profile from '../pages/Profile';
 import Settings from '../pages/Settings';
 import Layout from '../components/layout/Layout';
+import Friends from '../pages/Friends';
+import Notifications from '../pages/Notifications';
 
 
 const router = createBrowserRouter([
@@ -21,6 +23,14 @@ const router = createBrowserRouter([
       {
     path: '/settings',
     element: <Settings/>
+      },
+      {
+    path: '/friends',
+    element: <Friends/>
+      },
+      {
+    path: '/notifications',
+    element: <Notifications/>
       }
     ]
   }

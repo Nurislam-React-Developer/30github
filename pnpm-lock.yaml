@@ -35,6 +35,12 @@ importers:
       react-router-dom:
         specifier: ^7.1.5
         version: 7.1.5(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      react-toastify:
+        specifier: ^11.0.3
+        version: 11.0.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      tostify:
+        specifier: ^0.0.1
+        version: 0.0.1
     devDependencies:
       '@eslint/js':
         specifier: ^9.19.0
@@ -1396,6 +1402,12 @@ packages:
       react-dom:
         optional: true
 
+  react-toastify@11.0.3:
+    resolution: {integrity: sha512-cbPtHJPfc0sGqVwozBwaTrTu1ogB9+BLLjd4dDXd863qYLj7DGrQ2sg5RAChjFUB4yc3w8iXOtWcJqPK/6xqRQ==}
+    peerDependencies:
+      react: ^18 || ^19
+      react-dom: ^18 || ^19
+
   react-transition-group@4.4.5:
     resolution: {integrity: sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g==}
     peerDependencies:
@@ -1545,6 +1557,9 @@ packages:
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+
+  tostify@0.0.1:
+    resolution: {integrity: sha512-x/SckO051Chyh+94OIRz67Q6QTfRAXTxC2hCPqQLqoz+41eXZIxxFrLi5B4XdnU3Rn7LlMMQH+GpRnlLN7mP+g==}
 
   turbo-stream@2.4.0:
     resolution: {integrity: sha512-FHncC10WpBd2eOmGwpmQsWLDoK4cqsA/UT/GqNoaKOQnT8uzhtCbg3EoUDMvqpOSAI0S26mr0rkjzbOO6S3v1g==}
@@ -3042,6 +3057,12 @@ snapshots:
     optionalDependencies:
       react-dom: 19.0.0(react@19.0.0)
 
+  react-toastify@11.0.3(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+    dependencies:
+      clsx: 2.1.1
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+
   react-transition-group@4.4.5(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       '@babel/runtime': 7.26.7
@@ -3260,6 +3281,8 @@ snapshots:
       has-flag: 4.0.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
+
+  tostify@0.0.1: {}
 
   turbo-stream@2.4.0: {}
 
