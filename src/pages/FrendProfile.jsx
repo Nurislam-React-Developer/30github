@@ -1,34 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import { Avatar, Box, Button, styled, Typography } from '@mui/material';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { Box, Typography, Avatar, Button, styled } from '@mui/material';
-import Chat from './Chat'; // Импортируем компонент чата
+import Chat from '../components/Chat'; // Импортируем компонент чата
+import { getFrends } from '../store/request/request';
 
 const FrendProfile = () => {
-	const { id } = useParams(); // Получаем ID друга из URL
-	const [friend, setFriend] = useState(null);
-	const [isChatOpen, setIsChatOpen] = useState(false); // Состояние для открытия чата
+	const { id } = useParams();
+	const dispatch = useDispatch();
+	const { frends, isLoading } = useSelector((state) => state.frend);
+	const [isChatOpen, setIsChatOpen] = React.useState(false);
 
-	// Загрузка данных о друге (можно использовать моковый API)
 	useEffect(() => {
-		const fetchFriend = async () => {
-			try {
-				const response = await fetch(`${process.env.API_URL}/friends/${id}`); // Замените на ваш Mocky URL
-				const data = await response.json();
-				setFriend(data);
-			} catch (error) {
-				console.error('Ошибка при загрузке данных:', error);
-			}
-		};
+		dispatch(getFrends());
+	}, [dispatch]);
 
-		fetchFriend();
-	}, [id]);
+	// Находим друга по id из URL
+	const friend = frends.find((f) => f.id === parseInt(id));
+
+	if (isLoading) {
+		return <Typography variant='h6'>Загрузка...</Typography>;
+	}
 
 	if (!friend) {
-		return <Typography variant='h6'>Загрузка...</Typography>;
+		return <Typography variant='h6'>Друг не найден</Typography>;
 	}
 
 	return (
 		<ProfileContainer>
+			{/* Информация о друге */}
 			<Box sx={{ textAlign: 'center' }}>
 				<Avatar
 					src={friend.avatar}
@@ -46,6 +46,7 @@ const FrendProfile = () => {
 				</Typography>
 			</Box>
 
+			{/* Кнопки действий */}
 			<Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 4 }}>
 				<Button
 					variant='contained'
@@ -59,10 +60,10 @@ const FrendProfile = () => {
 				</Button>
 			</Box>
 
-			{/* Показываем чат, если он открыт */}
+			{/* Чат */}
 			{isChatOpen && (
 				<Chat
-					friendName={friend.name}
+					friendName={friend.name} // Передаем имя друга
 					onClose={() => setIsChatOpen(false)} // Закрываем чат
 				/>
 			)}

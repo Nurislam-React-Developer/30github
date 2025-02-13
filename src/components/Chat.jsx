@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Box, Typography, TextField, Button, styled } from '@mui/material';
 
 const Chat = ({ friendName, onClose }) => {
 	const [messages, setMessages] = useState([]);
 	const [newMessage, setNewMessage] = useState('');
+	const messagesEndRef = useRef(null);
 
 	const handleSendMessage = () => {
 		if (newMessage.trim()) {
@@ -11,6 +12,12 @@ const Chat = ({ friendName, onClose }) => {
 			setNewMessage('');
 		}
 	};
+
+	useEffect(() => {
+		if (messagesEndRef.current) {
+			messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+		}
+	}, [messages]);
 
 	return (
 		<ChatContainer>
@@ -53,6 +60,7 @@ const Chat = ({ friendName, onClose }) => {
 						{msg.text}
 					</Typography>
 				))}
+				<div ref={messagesEndRef} />
 			</Box>
 
 			{/* Поле для ввода сообщения */}

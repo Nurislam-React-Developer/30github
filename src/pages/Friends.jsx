@@ -11,29 +11,29 @@ import {
 } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Notifications from './Notifications'; // Импортируем компонент уведомлений
 import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
 import { getFrends } from '../store/request/request';
+import Notifications from './Notifications'; // Импортируем компонент уведомлений
+
 const Friends = () => {
 	const navigate = useNavigate();
-  const dispatch = useDispatch();
+	const dispatch = useDispatch();
+	const { frends, isLoading, error } = useSelector((state) => state.frend);
 
-  const { frends, isLoading, error } = useSelector((state) => state.frend);
 	// Состояния для друзей и уведомлений
 	const [friends, setFriends] = useState([]);
 	const [notifications, setNotifications] = useState([]);
 	const [searchQuery, setSearchQuery] = useState('');
-	const [loading, setLoading] = useState(true);
 	const [activeTab, setActiveTab] = useState('friends'); // Переключение между друзьями и уведомлениями
 
 	// Загрузка данных с мокового API
 	useEffect(() => {
 		dispatch(getFrends());
-
 	}, [dispatch]);
 
-  console.log(frends, 'frends')
+	console.log('Состояние frends:', frends); // Добавляем для отладки
+
 	// Функция для добавления друга (создание уведомления)
 	const handleAddFriend = (id) => {
 		const friend = friends.find((f) => f.id === id);
@@ -80,8 +80,13 @@ const Friends = () => {
 		return <Typography variant='h6'>Загрузка...</Typography>;
 	}
 
+	if (error) {
+		return <Typography variant='h6'>Ошибка: {error}</Typography>;
+	}
+
+	// Обработчик клика на карточку друга
 	const handleViewProfile = (id) => {
-		navigate(`/profile/${id}`);
+		navigate(`/profile/${id}`); // Переход на страницу профиля с ID друга
 	};
 
 	return (
@@ -134,66 +139,77 @@ const Friends = () => {
 					{/* Список друзей */}
 					<Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
 						<AnimatePresence>
-							{filteredFriends.map((friend) => (
-								<motion.div
-									key={friend.id}
-									initial={{ opacity: 0, y: -20 }}
-									animate={{ opacity: 1, y: 0 }}
-									exit={{ opacity: 0, y: -20 }}
-									transition={{ duration: 0.5 }}
-								>
-									<FriendCard>
-										<CardContent sx={{ textAlign: 'center' }}>
-											<Avatar
-												src={friend.avatar}
-												alt={friend.name}
-												sx={{ width: 80, height: 80, margin: 'auto' }}
-											/>
-											<Typography variant='h6' sx={{ mt: 1 }}>
-												{friend.name}
-											</Typography>
-											<Typography
-												variant='body2'
-												sx={{
-													color:
-														friend.status === 'online' ? '#4caf50' : '#f44336',
-												}}
-											>
-												{friend.status === 'online'
-													? 'В сети'
-													: friend.status === 'pending'
-													? 'Запрос отправлен'
-													: 'Не в сети'}
-											</Typography>
-										</CardContent>
-										<CardActions sx={{ justifyContent: 'center' }}>
-											{friend.status === 'offline' && (
-												<Button
-													variant='contained'
-													color='primary'
-													onClick={() => handleAddFriend(friend.id)}
-												>
-													Добавить в друзья
-												</Button>
-											)}
-											{friend.status === 'online' && (
-												<Button
-													variant='outlined'
-													color='error'
-													onClick={() => handleRemoveFriend(friend.id)}
-												>
-													Удалить из друзей
-												</Button>
-											)}
-											{friend.status === 'pending' && (
-												<Button variant='text' color='secondary' disabled>
-													Запрос отправлен
-												</Button>
-											)}
-										</CardActions>
-									</FriendCard>
-								</motion.div>
-							))}
+							{frends &&
+								frends.map((friend) => (
+									<motion.div
+										key={friend.id}
+										initial={{ opacity: 0, y: -20 }}
+										animate={{ opacity: 1, y: 0 }}
+										exit={{ opacity: 0, y: -20 }}
+										transition={{ duration: 0.5 }}
+									>
+										<FriendCard>
+											<Link to={`/profile/${friend.id}`}>
+												<CardContent sx={{ textAlign: 'center' }}>
+													<Avatar
+														src={friend.avatar}
+														alt={friend.name}
+														sx={{ width: 80, height: 80, margin: 'auto' }}
+													/>
+													<Typography variant='h6' sx={{ mt: 1 }}>
+														{friend.name}
+													</Typography>
+													<Typography
+														variant='body2'
+														sx={{
+															color:
+																friend.status === 'online'
+																	? '#4caf50'
+																	: '#f44336',
+														}}
+													>
+														{friend.status === 'online'
+															? 'В сети'
+															: friend.status === 'pending'
+															? 'Запрос отправлен'
+															: 'Не в сети'}
+													</Typography>
+												</CardContent>
+											</Link>
+											<CardActions sx={{ justifyContent: 'center' }}>
+												{friend.status === 'offline' && (
+													<Button
+														variant='contained'
+														color='primary'
+														onClick={(e) => {
+															e.stopPropagation(); // Предотвращаем всплытие события
+															handleAddFriend(friend.id);
+														}}
+													>
+														Добавить в друзья
+													</Button>
+												)}
+												{friend.status === 'online' && (
+													<Button
+														variant='outlined'
+														color='error'
+														onClick={(e) => {
+															e.stopPropagation(); // Предотвращаем всплытие события
+															handleRemoveFriend(friend.id);
+														}}
+													>
+														Удалить из друзей
+													</Button>
+												)}
+												{friend.status === 'pending' && (
+													<Button variant='text' color='secondary' disabled>
+														Запрос отправлен
+													</Button>
+												)}
+											</CardActions>
+										</FriendCard>
+									</motion.div>
+								))}
 						</AnimatePresence>
 					</Box>
 				</>
