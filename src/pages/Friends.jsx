@@ -13,10 +13,13 @@ import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Notifications from './Notifications'; // Импортируем компонент уведомлений
-
+import { useDispatch, useSelector } from 'react-redux';
+import { getFrends } from '../store/request/request';
 const Friends = () => {
 	const navigate = useNavigate();
+  const dispatch = useDispatch();
 
+  const { frends, isLoading, error } = useSelector((state) => state.frend);
 	// Состояния для друзей и уведомлений
 	const [friends, setFriends] = useState([]);
 	const [notifications, setNotifications] = useState([]);
@@ -26,34 +29,11 @@ const Friends = () => {
 
 	// Загрузка данных с мокового API
 	useEffect(() => {
-		const fetchFriends = async () => {
-			try {
-				const response = await fetch(`${import.meta.env.VITE_API_URL}/friends`);
+		dispatch(getFrends());
 
-				// Проверяем, успешен ли ответ
-				if (!response.ok) {
-					throw new Error(`HTTP error! status: ${response.status}`);
-				}
+	}, [dispatch]);
 
-				// Проверяем тип контента
-				const contentType = response.headers.get('content-type');
-				if (!contentType || !contentType.includes('application/json')) {
-					throw new TypeError('Ответ сервера не в формате JSON!');
-				}
-
-				const data = await response.json();
-				setFriends(data);
-				setLoading(false);
-			} catch (error) {
-				console.error('Ошибка при загрузке данных:', error);
-				setFriends([]); // Устанавливаем пустой массив в случае ошибки
-				setLoading(false);
-			}
-		};
-
-		fetchFriends();
-	}, []);
-
+  console.log(frends, 'frends')
 	// Функция для добавления друга (создание уведомления)
 	const handleAddFriend = (id) => {
 		const friend = friends.find((f) => f.id === id);
@@ -96,7 +76,7 @@ const Friends = () => {
 		friend.name.toLowerCase().includes(searchQuery.toLowerCase())
 	);
 
-	if (loading) {
+	if (isLoading) {
 		return <Typography variant='h6'>Загрузка...</Typography>;
 	}
 

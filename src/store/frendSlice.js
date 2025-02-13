@@ -1,8 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
-
+import { getFrends } from './request/request';
 
 const initialState = {
-  friends: [],
+  frends: [],
   isLoading: false,
   error: null,
 };
@@ -17,7 +17,7 @@ export const frendSlice = createSlice({
     })
     builder.addCase(getFrends.fulfilled, (state, action) => {
       state.isLoading = false;
-      state.friends = action.payload;
+      state.frends = action.payload; 
     })
     builder.addCase(getFrends.rejected, (state, action) => {
       state.isLoading = false;

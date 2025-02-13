@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Typography, Avatar, Button, styled } from '@mui/material';
+import Chat from './Chat'; // Импортируем компонент чата
 
 const FrendProfile = () => {
 	const { id } = useParams(); // Получаем ID друга из URL
 	const [friend, setFriend] = useState(null);
+	const [isChatOpen, setIsChatOpen] = useState(false); // Состояние для открытия чата
 
 	// Загрузка данных о друге (можно использовать моковый API)
 	useEffect(() => {
 		const fetchFriend = async () => {
 			try {
-				const response = await fetch(
-					`${process.env.API_URL}/friends/${id}`
-				); // Замените на ваш Mocky URL
+				const response = await fetch(`${process.env.API_URL}/friends/${id}`); // Замените на ваш Mocky URL
 				const data = await response.json();
 				setFriend(data);
 			} catch (error) {
@@ -47,13 +47,25 @@ const FrendProfile = () => {
 			</Box>
 
 			<Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 4 }}>
-				<Button variant='contained' color='primary'>
+				<Button
+					variant='contained'
+					color='primary'
+					onClick={() => setIsChatOpen(true)} // Открываем чат
+				>
 					Написать сообщение
 				</Button>
 				<Button variant='outlined' color='error'>
 					Удалить из друзей
 				</Button>
 			</Box>
+
+			{/* Показываем чат, если он открыт */}
+			{isChatOpen && (
+				<Chat
+					friendName={friend.name}
+					onClose={() => setIsChatOpen(false)} // Закрываем чат
+				/>
+			)}
 		</ProfileContainer>
 	);
 };
