@@ -1,19 +1,22 @@
-import React, { useState, useEffect } from 'react';
 import {
+	Avatar,
 	Box,
-	Typography,
-	TextField,
 	Button,
 	Card,
-	CardContent,
 	CardActions,
-	Avatar,
+	CardContent,
 	styled,
+	TextField,
+	Typography,
 } from '@mui/material';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Notifications from './Notifications'; // Импортируем компонент уведомлений
 
 const Friends = () => {
+	const navigate = useNavigate();
+
 	// Состояния для друзей и уведомлений
 	const [friends, setFriends] = useState([]);
 	const [notifications, setNotifications] = useState([]);
@@ -25,12 +28,25 @@ const Friends = () => {
 	useEffect(() => {
 		const fetchFriends = async () => {
 			try {
-				const response = await fetch('https://ce5a84bb27e301c4.mokky.dev/friends'); // Замените на ваш Mocky URL
+				const response = await fetch(`${import.meta.env.VITE_API_URL}/friends`);
+
+				// Проверяем, успешен ли ответ
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+
+				// Проверяем тип контента
+				const contentType = response.headers.get('content-type');
+				if (!contentType || !contentType.includes('application/json')) {
+					throw new TypeError('Ответ сервера не в формате JSON!');
+				}
+
 				const data = await response.json();
 				setFriends(data);
 				setLoading(false);
 			} catch (error) {
 				console.error('Ошибка при загрузке данных:', error);
+				setFriends([]); // Устанавливаем пустой массив в случае ошибки
 				setLoading(false);
 			}
 		};
@@ -83,6 +99,10 @@ const Friends = () => {
 	if (loading) {
 		return <Typography variant='h6'>Загрузка...</Typography>;
 	}
+
+	const handleViewProfile = (id) => {
+		navigate(`/profile/${id}`);
+	};
 
 	return (
 		<FriendsContainer>
