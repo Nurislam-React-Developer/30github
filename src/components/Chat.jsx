@@ -1,4 +1,15 @@
-import { Box, Button, styled, TextField, Typography } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import {
+	Box,
+	Button,
+	IconButton,
+	Menu,
+	MenuItem,
+	styled,
+	TextField,
+	Typography,
+} from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 
 const Chat = ({ friendName, onClose }) => {
@@ -13,6 +24,10 @@ const Chat = ({ friendName, onClose }) => {
 
 	const [newMessage, setNewMessage] = useState('');
 	const messagesEndRef = useRef(null);
+
+	// Состояние для меню сообщения
+	const [anchorEl, setAnchorEl] = useState(null);
+	const [selectedMessageIndex, setSelectedMessageIndex] = useState(null);
 
 	// Сохраняем сообщения в localStorage при каждом изменении
 	useEffect(() => {
@@ -32,6 +47,7 @@ const Chat = ({ friendName, onClose }) => {
 				text: newMessage,
 				sender: 'me',
 				timestamp: new Date().toISOString(), // Добавляем временную метку
+				id: Date.now(), // Добавляем уникальный id
 			};
 			setMessages([...messages, newMsg]);
 			setNewMessage('');
@@ -44,6 +60,41 @@ const Chat = ({ friendName, onClose }) => {
 			e.preventDefault();
 			handleSendMessage();
 		}
+	};
+
+	// Обработчики для меню сообщения
+	const handleMessageMenuOpen = (event, index) => {
+		setAnchorEl(event.currentTarget);
+		setSelectedMessageIndex(index);
+	};
+
+	const handleMessageMenuClose = () => {
+		setAnchorEl(null);
+		setSelectedMessageIndex(null);
+	};
+
+	const handleDeleteMessage = () => {
+		if (selectedMessageIndex !== null) {
+			const newMessages = messages.filter(
+				(_, index) => index !== selectedMessageIndex
+			);
+			setMessages(newMessages);
+			localStorage.setItem(chatKey, JSON.stringify(newMessages));
+		}
+		handleMessageMenuClose();
+	};
+
+	const handleEditMessage = () => {
+		if (selectedMessageIndex !== null) {
+			const messageToEdit = messages[selectedMessageIndex];
+			setNewMessage(messageToEdit.text);
+			const newMessages = messages.filter(
+				(_, index) => index !== selectedMessageIndex
+			);
+			setMessages(newMessages);
+			localStorage.setItem(chatKey, JSON.stringify(newMessages));
+		}
+		handleMessageMenuClose();
 	};
 
 	return (
@@ -75,7 +126,7 @@ const Chat = ({ friendName, onClose }) => {
 			>
 				{messages.map((msg, index) => (
 					<MessageBox
-						key={index}
+						key={msg.id || index}
 						sx={{
 							textAlign: msg.sender === 'me' ? 'right' : 'left',
 							marginBottom: '8px',
@@ -85,17 +136,50 @@ const Chat = ({ friendName, onClose }) => {
 							sender={msg.sender}
 							sx={{
 								backgroundColor: msg.sender === 'me' ? '#e3f2fd' : '#ffebee',
+								position: 'relative',
 							}}
 						>
 							<Typography variant='body1'>{msg.text}</Typography>
 							<Typography variant='caption' sx={{ opacity: 0.7 }}>
 								{new Date(msg.timestamp).toLocaleTimeString()}
 							</Typography>
+
+							{msg.sender === 'me' && (
+								<IconButton
+									size='small'
+									sx={{
+										position: 'absolute',
+										top: '-8px',
+										right: '-8px',
+										opacity: 0,
+										transition: 'opacity 0.2s',
+										'&:hover': { opacity: 1 },
+									}}
+									onClick={(e) => handleMessageMenuOpen(e, index)}
+								>
+									<MoreVertIcon fontSize='small' />
+								</IconButton>
+							)}
 						</MessageBubble>
 					</MessageBox>
 				))}
 				<div ref={messagesEndRef} />
 			</Box>
+
+			{/* Меню для сообщения */}
+			<Menu
+				anchorEl={anchorEl}
+				open={Boolean(anchorEl)}
+				onClose={handleMessageMenuClose}
+			>
+				<MenuItem onClick={handleEditMessage}>
+					<Typography>Редактировать</Typography>
+				</MenuItem>
+				<MenuItem onClick={handleDeleteMessage} sx={{ color: 'error.main' }}>
+					<DeleteIcon fontSize='small' sx={{ mr: 1 }} />
+					<Typography>Удалить</Typography>
+				</MenuItem>
+			</Menu>
 
 			{/* Поле для ввода сообщения */}
 			<Box sx={{ display: 'flex', gap: 1 }}>
@@ -140,6 +224,12 @@ const MessageBubble = styled(Box)(({ sender }) => ({
 	borderRadius: '12px',
 	maxWidth: '70%',
 	wordWrap: 'break-word',
+	position: 'relative',
+	'&:hover': {
+		'& .MuiIconButton-root': {
+			opacity: 1,
+		},
+	},
 	'& p': {
 		margin: 0,
 	},
