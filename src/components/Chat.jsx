@@ -101,11 +101,10 @@ const Chat = ({ friendName, onClose }) => {
 					Чат с {friendName}
 				</Typography>
 				<CloseButton
-					variant='text'
-					color='primary'
-					onClick={onClose}
+					as={motion.button}
 					whileHover={{ scale: 1.05 }}
 					whileTap={{ scale: 0.95 }}
+					onClick={onClose}
 				>
 					Закрыть
 				</CloseButton>
@@ -127,23 +126,11 @@ const Chat = ({ friendName, onClose }) => {
 									textAlign: msg.sender === 'me' ? 'right' : 'left',
 								}}
 							>
-								<MessageBubble sender={msg.sender}>
-									<Typography variant='body1'>{msg.text}</Typography>
-									<TimeStamp variant='caption'>
-										{new Date(msg.timestamp).toLocaleTimeString()}
-									</TimeStamp>
-
-									{msg.sender === 'me' && (
-										<MessageMenu
-											size='small'
-											onClick={(e) => handleMessageMenuOpen(e, index)}
-											whileHover={{ scale: 1.1 }}
-											whileTap={{ scale: 0.9 }}
-										>
-											<MoreVertIcon fontSize='small' />
-										</MessageMenu>
-									)}
-								</MessageBubble>
+								<MessageBubble
+									message={msg}
+									index={index}
+									handleMessageMenuOpen={handleMessageMenuOpen}
+								/>
 							</MessageBox>
 						</motion.div>
 					))}
@@ -256,7 +243,29 @@ const MessageBox = styled(Box)`
 	margin-bottom: 12px;
 `;
 
-const MessageBubble = styled(Box)`
+const MessageBubble = ({ message, index, handleMessageMenuOpen }) => {
+	return (
+		<StyledMessageBubble sender={message.sender}>
+			<Typography variant='body1'>{message.text}</Typography>
+			<TimeStamp variant='caption'>
+				{new Date(message.timestamp).toLocaleTimeString()}
+			</TimeStamp>
+
+			{message.sender === 'me' && (
+				<MessageMenu
+					size='small'
+					onClick={(e) => handleMessageMenuOpen(e, index)}
+					whileHover={{ scale: 1.1 }}
+					whileTap={{ scale: 0.9 }}
+				>
+					<MoreVertIcon fontSize='small' />
+				</MessageMenu>
+			)}
+		</StyledMessageBubble>
+	);
+};
+
+const StyledMessageBubble = styled(Box)`
 	display: inline-block;
 	padding: 12px 16px;
 	border-radius: 16px;
@@ -270,17 +279,9 @@ const MessageBubble = styled(Box)`
 	color: ${(props) => (props.sender === 'me' ? '#fff' : '#000')};
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
-	&:hover {
-		.message-menu {
-			opacity: 1;
-		}
+	&:hover .message-menu {
+		opacity: 1;
 	}
-`;
-
-const TimeStamp = styled(Typography)`
-	font-size: 0.75rem;
-	opacity: 0.7;
-	margin-top: 4px;
 `;
 
 const MessageMenu = styled(motion(IconButton))`
@@ -296,6 +297,12 @@ const MessageMenu = styled(motion(IconButton))`
 	&:hover {
 		background: #f5f5f5;
 	}
+`;
+
+const TimeStamp = styled(Typography)`
+	font-size: 0.75rem;
+	opacity: 0.7;
+	margin-top: 4px;
 `;
 
 const InputContainer = styled(Box)`
