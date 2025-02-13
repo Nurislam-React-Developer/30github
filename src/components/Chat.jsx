@@ -1,23 +1,50 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Box, Typography, TextField, Button, styled } from '@mui/material';
+import { Box, Button, styled, TextField, Typography } from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
 
 const Chat = ({ friendName, onClose }) => {
-	const [messages, setMessages] = useState([]);
+	// Создаем уникальный ключ для чата с конкретным другом
+	const chatKey = `chat_${friendName}`;
+
+	// Получаем сообщения из localStorage при инициализации
+	const [messages, setMessages] = useState(() => {
+		const savedMessages = localStorage.getItem(chatKey);
+		return savedMessages ? JSON.parse(savedMessages) : [];
+	});
+
 	const [newMessage, setNewMessage] = useState('');
 	const messagesEndRef = useRef(null);
 
-	const handleSendMessage = () => {
-		if (newMessage.trim()) {
-			setMessages([...messages, { text: newMessage, sender: 'me' }]);
-			setNewMessage('');
-		}
-	};
+	// Сохраняем сообщения в localStorage при каждом изменении
+	useEffect(() => {
+		localStorage.setItem(chatKey, JSON.stringify(messages));
+	}, [messages, chatKey]);
 
+	// Автопрокрутка к последнему сообщению
 	useEffect(() => {
 		if (messagesEndRef.current) {
 			messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
 		}
 	}, [messages]);
+
+	const handleSendMessage = () => {
+		if (newMessage.trim()) {
+			const newMsg = {
+				text: newMessage,
+				sender: 'me',
+				timestamp: new Date().toISOString(), // Добавляем временную метку
+			};
+			setMessages([...messages, newMsg]);
+			setNewMessage('');
+		}
+	};
+
+	// Обработка отправки по Enter
+	const handleKeyPress = (e) => {
+		if (e.key === 'Enter' && !e.shiftKey) {
+			e.preventDefault();
+			handleSendMessage();
+		}
+	};
 
 	return (
 		<ChatContainer>
@@ -43,22 +70,29 @@ const Chat = ({ friendName, onClose }) => {
 					overflowY: 'auto',
 					marginBottom: 2,
 					maxHeight: '400px',
+					padding: '10px',
 				}}
 			>
 				{messages.map((msg, index) => (
-					<Typography
+					<MessageBox
 						key={index}
 						sx={{
 							textAlign: msg.sender === 'me' ? 'right' : 'left',
-							backgroundColor: msg.sender === 'me' ? '#e3f2fd' : '#ffebee',
-							padding: '8px',
-							borderRadius: '8px',
-							maxWidth: '70%',
-							margin: '4px 0',
+							marginBottom: '8px',
 						}}
 					>
-						{msg.text}
-					</Typography>
+						<MessageBubble
+							sender={msg.sender}
+							sx={{
+								backgroundColor: msg.sender === 'me' ? '#e3f2fd' : '#ffebee',
+							}}
+						>
+							<Typography variant='body1'>{msg.text}</Typography>
+							<Typography variant='caption' sx={{ opacity: 0.7 }}>
+								{new Date(msg.timestamp).toLocaleTimeString()}
+							</Typography>
+						</MessageBubble>
+					</MessageBox>
 				))}
 				<div ref={messagesEndRef} />
 			</Box>
@@ -69,7 +103,10 @@ const Chat = ({ friendName, onClose }) => {
 					fullWidth
 					value={newMessage}
 					onChange={(e) => setNewMessage(e.target.value)}
+					onKeyPress={handleKeyPress}
 					placeholder='Введите сообщение...'
+					multiline
+					maxRows={4}
 				/>
 				<Button variant='contained' color='primary' onClick={handleSendMessage}>
 					Отправить
@@ -81,11 +118,29 @@ const Chat = ({ friendName, onClose }) => {
 
 export default Chat;
 
-// Стилизация контейнера
+// Стилизованные компоненты
 const ChatContainer = styled(Box)(({ theme }) => ({
 	padding: theme.spacing(4),
 	backgroundColor: '#ffffff',
 	border: '1px solid #ddd',
 	borderRadius: '8px',
 	marginTop: theme.spacing(2),
+	display: 'flex',
+	flexDirection: 'column',
+	height: '600px',
+}));
+
+const MessageBox = styled(Box)({
+	marginBottom: '8px',
+});
+
+const MessageBubble = styled(Box)(({ sender }) => ({
+	display: 'inline-block',
+	padding: '8px 12px',
+	borderRadius: '12px',
+	maxWidth: '70%',
+	wordWrap: 'break-word',
+	'& p': {
+		margin: 0,
+	},
 }));
