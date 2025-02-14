@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 
 .env
+.pnp.cjs
+.pnp.loader.mjs

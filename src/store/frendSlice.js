@@ -1,10 +1,22 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { getFrends } from './request/request';
 
+// Получаем начальное состояние из localStorage
+const loadFriendsFromStorage = () => {
+	try {
+		const savedFriends = localStorage.getItem('friends');
+		return savedFriends ? JSON.parse(savedFriends) : [];
+	} catch (error) {
+		console.error('Error loading friends from localStorage:', error);
+		return [];
+	}
+};
+
 const initialState = {
 	frends: [],
 	isLoading: false,
 	error: null,
+	friendsList: loadFriendsFromStorage(), // Инициализируем пустым массивом
 };
 
 const frendSlice = createSlice({
@@ -12,31 +24,34 @@ const frendSlice = createSlice({
 	initialState,
 	reducers: {
 		addFriend: (state, action) => {
+			if (!state.friendsList) {
+				state.friendsList = []; // Убедимся, что friendsList существует
+			}
 			const friendId = action.payload;
-			const friend = state.frends.find((f) => f.id === friendId);
-			if (friend) {
-				friend.isFriend = true;
+			if (!state.friendsList.includes(friendId)) {
+				state.friendsList.push(friendId);
+				localStorage.setItem('friends', JSON.stringify(state.friendsList));
 			}
 		},
 		removeFriend: (state, action) => {
-			const friendId = action.payload;
-			const friend = state.frends.find((f) => f.id === friendId);
-			if (friend) {
-				friend.isFriend = false;
+			if (!state.friendsList) {
+				state.friendsList = []; // Убедимся, что friendsList существует
 			}
+			const friendId = action.payload;
+			state.friendsList = state.friendsList.filter((id) => id !== friendId);
+			localStorage.setItem('friends', JSON.stringify(state.friendsList));
 		},
 	},
 	extraReducers: (builder) => {
 		builder
 			.addCase(getFrends.pending, (state) => {
 				state.isLoading = true;
+				state.error = null;
 			})
 			.addCase(getFrends.fulfilled, (state, action) => {
 				state.isLoading = false;
-				state.frends = action.payload.map((friend) => ({
-					...friend,
-					isFriend: false, // добавляем поле isFriend
-				}));
+				state.frends = action.payload;
+				state.error = null;
 			})
 			.addCase(getFrends.rejected, (state, action) => {
 				state.isLoading = false;
