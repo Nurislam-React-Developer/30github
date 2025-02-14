@@ -3,7 +3,6 @@ import {
 	Box,
 	Button,
 	Card,
-	CardActions,
 	CardContent,
 	styled,
 	TextField,
@@ -15,6 +14,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { getFrends } from '../store/request/request';
 import Notifications from './Notifications'; // Импортируем компонент уведомлений
+import { addFriend, removeFriend } from '../store/frendSlice';
 
 const Friends = () => {
 	const navigate = useNavigate();
@@ -36,25 +36,12 @@ const Friends = () => {
 
 	// Функция для добавления друга (создание уведомления)
 	const handleAddFriend = (id) => {
-		const friend = friends.find((f) => f.id === id);
-		if (friend) {
-			setNotifications((prevNotifications) => [
-				...prevNotifications,
-				{ id: Date.now(), sender: friend.name },
-			]);
-			setFriends((prevFriends) =>
-				prevFriends.map((f) => (f.id === id ? { ...f, status: 'pending' } : f))
-			);
-		}
+		dispatch(addFriend(id));
 	};
 
 	// Функция для удаления друга
 	const handleRemoveFriend = (id) => {
-		setFriends((prevFriends) =>
-			prevFriends.map((friend) =>
-				friend.id === id ? { ...friend, status: 'offline' } : friend
-			)
-		);
+		dispatch(removeFriend(id));
 	};
 
 	// Функция для принятия запроса в друзья
@@ -143,13 +130,16 @@ const Friends = () => {
 								frends.map((friend) => (
 									<motion.div
 										key={friend.id}
-										initial={{ opacity: 0, y: -20 }}
+										initial={{ opacity: 0, y: 20 }}
 										animate={{ opacity: 1, y: 0 }}
 										exit={{ opacity: 0, y: -20 }}
-										transition={{ duration: 0.5 }}
+										transition={{ duration: 0.3 }}
 									>
 										<FriendCard>
-											<Link to={`/profile/${friend.id}`}>
+											<Link
+												to={`/profile/${friend.id}`}
+												style={{ textDecoration: 'none' }}
+											>
 												<CardContent sx={{ textAlign: 'center' }}>
 													<Avatar
 														src={friend.avatar}
@@ -170,43 +160,29 @@ const Friends = () => {
 													>
 														{friend.status === 'online'
 															? 'В сети'
-															: friend.status === 'pending'
-															? 'Запрос отправлен'
 															: 'Не в сети'}
 													</Typography>
 												</CardContent>
 											</Link>
-											<CardActions sx={{ justifyContent: 'center' }}>
-												{friend.status === 'offline' && (
+											<Box sx={{ p: 2, textAlign: 'center' }}>
+												{!friend.isFriend ? (
 													<Button
 														variant='contained'
 														color='primary'
-														onClick={(e) => {
-															e.stopPropagation(); // Предотвращаем всплытие события
-															handleAddFriend(friend.id);
-														}}
+														onClick={() => handleAddFriend(friend.id)}
 													>
 														Добавить в друзья
 													</Button>
-												)}
-												{friend.status === 'online' && (
+												) : (
 													<Button
 														variant='outlined'
 														color='error'
-														onClick={(e) => {
-															e.stopPropagation(); // Предотвращаем всплытие события
-															handleRemoveFriend(friend.id);
-														}}
+														onClick={() => handleRemoveFriend(friend.id)}
 													>
 														Удалить из друзей
 													</Button>
 												)}
-												{friend.status === 'pending' && (
-													<Button variant='text' color='secondary' disabled>
-														Запрос отправлен
-													</Button>
-												)}
-											</CardActions>
+											</Box>
 										</FriendCard>
 									</motion.div>
 								))}
@@ -236,7 +212,6 @@ const FriendsContainer = styled(Box)(({ theme }) => ({
 // Стилизация карточки друга
 const FriendCard = styled(Card)(({ theme }) => ({
 	width: 200,
-	cursor: 'pointer',
 	transition: 'transform 0.3s ease-in-out',
 	'&:hover': {
 		transform: 'scale(1.05)',

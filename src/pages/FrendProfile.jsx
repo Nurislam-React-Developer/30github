@@ -1,19 +1,22 @@
 import { Avatar, Box, Button, styled, Typography } from '@mui/material';
-import React, { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Chat from '../components/Chat'; // Импортируем компонент чата
 import { getFrends } from '../store/request/request';
 
 const FrendProfile = () => {
 	const { id } = useParams();
 	const dispatch = useDispatch();
+	const navigate = useNavigate();
 	const { frends, isLoading } = useSelector((state) => state.frend);
-	const [isChatOpen, setIsChatOpen] = React.useState(false);
+	const [isChatOpen, setIsChatOpen] = useState(false);
 
 	useEffect(() => {
-		dispatch(getFrends());
-	}, [dispatch]);
+		if (!frends || frends.length === 0) {
+			dispatch(getFrends());
+		}
+	}, [dispatch, frends]);
 
 	// Находим друга по id из URL
 	const friend = frends.find((f) => f.id === parseInt(id));
@@ -23,7 +26,8 @@ const FrendProfile = () => {
 	}
 
 	if (!friend) {
-		return <Typography variant='h6'>Друг не найден</Typography>;
+		navigate('/friends'); // Перенаправляем на страницу друзей
+		return null;
 	}
 
 	return (
