@@ -10,8 +10,17 @@ const FrendProfile = () => {
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
 	const { frends, isLoading } = useSelector((state) => state.frend);
-	const [isChatOpen, setIsChatOpen] = useState(false);
+	const [isChatOpen, setIsChatOpen] = useState(() => {
+		// Загружаем состояние чата из localStorage
+		const savedChatState = localStorage.getItem(`chatOpen_${id}`);
+		return savedChatState ? JSON.parse(savedChatState) : false;
+	});
 	const [selectedFriend, setSelectedFriend] = useState(null);
+
+	useEffect(() => {
+		// Сохраняем состояние чата в localStorage
+		localStorage.setItem(`chatOpen_${id}`, JSON.stringify(isChatOpen));
+	}, [isChatOpen, id]);
 
 	useEffect(() => {
 		if (!frends || frends.length === 0) {
@@ -21,15 +30,18 @@ const FrendProfile = () => {
 
 	useEffect(() => {
 		const friend = frends.find((f) => f.id === parseInt(id));
-		setSelectedFriend(friend);
-	}, [id, frends]);
+		if (!friend && !isLoading) {
+			navigate('/friends');
+		} else {
+			setSelectedFriend(friend);
+		}
+	}, [id, frends, isLoading, navigate]);
 
 	if (isLoading) {
 		return <Typography variant='h6'>Загрузка...</Typography>;
 	}
 
 	if (!selectedFriend) {
-		navigate('/friends');
 		return null;
 	}
 
