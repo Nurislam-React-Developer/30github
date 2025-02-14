@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
@@ -97,9 +98,19 @@ const Chat = ({ friendName, onClose }) => {
 			exit={{ opacity: 0, y: 20 }}
 		>
 			<ChatHeader>
-				<Typography variant='h5' sx={{ fontWeight: 600, color: '#1a237e' }}>
-					Чат с {friendName}
-				</Typography>
+				<HeaderLeft>
+					<BackButton
+						as={motion.button}
+						whileHover={{ scale: 1.05 }}
+						whileTap={{ scale: 0.95 }}
+						onClick={onClose}
+					>
+						<ArrowBackIcon />
+					</BackButton>
+					<Typography variant='h5' sx={{ fontWeight: 600, color: '#1a237e' }}>
+						Чат с {friendName}
+					</Typography>
+				</HeaderLeft>
 				<CloseButton
 					as={motion.button}
 					whileHover={{ scale: 1.05 }}
@@ -344,5 +355,32 @@ const SendButton = styled(motion.button)`
 	&:disabled {
 		background: #e0e0e0;
 		cursor: not-allowed;
+	}
+`;
+
+const HeaderLeft = styled(Box)`
+	display: flex;
+	align-items: center;
+	gap: 12px;
+`;
+
+const BackButton = styled(motion.button)`
+	background: none;
+	border: none;
+	color: #1a237e;
+	cursor: pointer;
+	padding: 8px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background-color 0.3s;
+
+	&:hover {
+		background-color: #e3f2fd;
+	}
+
+	svg {
+		font-size: 24px;
 	}
 `;
