@@ -14,37 +14,48 @@ import {
 } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useRef, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+	deleteMessage,
+	editMessage,
+	sendMessage,
+} from '../store/messageSlice';
 
-const Chat = ({ friendName, onClose }) => {
-	const chatKey = `chat_${friendName}`;
-	const [messages, setMessages] = useState(() => {
-		const savedMessages = localStorage.getItem(chatKey);
-		return savedMessages ? JSON.parse(savedMessages) : [];
-	});
+const Chat = ({ friendName, friendId, onClose }) => {
+	const dispatch = useDispatch();
+	const messages = useSelector(
+		(state) => state.messages.messages[friendId] || []
+	);
 	const [newMessage, setNewMessage] = useState('');
+	const [editingMessage, setEditingMessage] = useState(null);
 	const messagesEndRef = useRef(null);
 	const [anchorEl, setAnchorEl] = useState(null);
 	const [selectedMessageIndex, setSelectedMessageIndex] = useState(null);
 
 	useEffect(() => {
-		localStorage.setItem(chatKey, JSON.stringify(messages));
-	}, [messages, chatKey]);
-
-	useEffect(() => {
-		if (messagesEndRef.current) {
-			messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-		}
+		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
 	}, [messages]);
 
 	const handleSendMessage = () => {
 		if (newMessage.trim()) {
-			const newMsg = {
-				text: newMessage,
-				sender: 'me',
-				timestamp: new Date().toISOString(),
-				id: Date.now(),
-			};
-			setMessages([...messages, newMsg]);
+			if (editingMessage) {
+				dispatch(
+					editMessage({
+						friendId,
+						messageId: editingMessage.id,
+						newText: newMessage,
+					})
+				);
+				setEditingMessage(null);
+			} else {
+				const message = {
+					id: Date.now(),
+					text: newMessage,
+					timestamp: new Date().toISOString(),
+					sender: 'me',
+				};
+				dispatch(sendMessage({ friendId, message }));
+			}
 			setNewMessage('');
 		}
 	};
@@ -66,28 +77,18 @@ const Chat = ({ friendName, onClose }) => {
 		setSelectedMessageIndex(null);
 	};
 
-	const handleDeleteMessage = () => {
-		if (selectedMessageIndex !== null) {
-			const newMessages = messages.filter(
-				(_, index) => index !== selectedMessageIndex
-			);
-			setMessages(newMessages);
-			localStorage.setItem(chatKey, JSON.stringify(newMessages));
-		}
-		handleMessageMenuClose();
+	const handleDeleteMessage = (messageId) => {
+		dispatch(deleteMessage({ friendId, messageId }));
 	};
 
-	const handleEditMessage = () => {
-		if (selectedMessageIndex !== null) {
-			const messageToEdit = messages[selectedMessageIndex];
-			setNewMessage(messageToEdit.text);
-			const newMessages = messages.filter(
-				(_, index) => index !== selectedMessageIndex
-			);
-			setMessages(newMessages);
-			localStorage.setItem(chatKey, JSON.stringify(newMessages));
-		}
-		handleMessageMenuClose();
+	const handleEditMessage = (message) => {
+		setEditingMessage(message);
+		setNewMessage(message.text);
+	};
+
+	const cancelEdit = () => {
+		setEditingMessage(null);
+		setNewMessage('');
 	};
 
 	return (
@@ -154,11 +155,16 @@ const Chat = ({ friendName, onClose }) => {
 				open={Boolean(anchorEl)}
 				onClose={handleMessageMenuClose}
 			>
-				<MenuItem onClick={handleEditMessage}>
+				<MenuItem
+					onClick={() => handleEditMessage(messages[selectedMessageIndex])}
+				>
 					<EditIcon fontSize='small' sx={{ mr: 1 }} />
 					<Typography>Редактировать</Typography>
 				</MenuItem>
-				<MenuItem onClick={handleDeleteMessage} sx={{ color: 'error.main' }}>
+				<MenuItem
+					onClick={() => handleDeleteMessage(messages[selectedMessageIndex].id)}
+					sx={{ color: 'error.main' }}
+				>
 					<DeleteIcon fontSize='small' sx={{ mr: 1 }} />
 					<Typography>Удалить</Typography>
 				</MenuItem>
@@ -170,11 +176,20 @@ const Chat = ({ friendName, onClose }) => {
 					value={newMessage}
 					onChange={(e) => setNewMessage(e.target.value)}
 					onKeyPress={handleKeyPress}
-					placeholder='Введите сообщение...'
+					placeholder={
+						editingMessage
+							? 'Редактирование сообщения...'
+							: 'Написать сообщение...'
+					}
 					multiline
 					maxRows={4}
 					variant='outlined'
 				/>
+				{editingMessage && (
+					<IconButton onClick={cancelEdit} color='error'>
+						<DeleteIcon />
+					</IconButton>
+				)}
 				<SendButton
 					as={motion.button}
 					whileHover={{ scale: 1.05 }}
@@ -260,6 +275,7 @@ const MessageBubble = ({ message, index, handleMessageMenuOpen }) => {
 			<Typography variant='body1'>{message.text}</Typography>
 			<TimeStamp variant='caption'>
 				{new Date(message.timestamp).toLocaleTimeString()}
+				{message.edited && ' (ред.)'}
 			</TimeStamp>
 
 			{message.sender === 'me' && (
@@ -382,5 +398,26 @@ const BackButton = styled(motion.button)`
 
 	svg {
 		font-size: 24px;
+	}
+`;
+
+const MessageActions = styled(Box)`
+	position: absolute;
+	right: -70px;
+	top: 50%;
+	transform: translateY(-50%);
+	display: flex;
+	gap: 4px;
+	opacity: 0;
+	transition: opacity 0.2s;
+`;
+
+const ActionButton = styled(motion(IconButton))`
+	background: white;
+	padding: 4px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+	&:hover {
+		background: #f5f5f5;
 	}
 `;

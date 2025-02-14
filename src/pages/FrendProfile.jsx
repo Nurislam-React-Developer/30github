@@ -1,7 +1,7 @@
 import { Avatar, Box, Button, styled, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import Chat from '../components/Chat';
 import { getFrends } from '../store/request/request';
 
@@ -74,6 +74,14 @@ const FrendProfile = () => {
 				</Button>
 			</Box>
 
+			<Box>
+				<Link to='/friends'>
+					<Button variant='outlined' color='error'>
+						Назад
+					</Button>
+				</Link>
+			</Box>
+
 			{/* Список других друзей */}
 			{isChatOpen && (
 				<Box sx={{ mt: 4 }}>
@@ -103,6 +111,7 @@ const FrendProfile = () => {
 			{isChatOpen && (
 				<Chat
 					friendName={selectedFriend.name}
+					friendId={selectedFriend.id}
 					onClose={() => setIsChatOpen(false)}
 				/>
 			)}
