@@ -9,19 +9,18 @@ const Footer = () => {
 	return (
 		<footer
 			style={{
-				background: '#121212', // Темный фон
+				background: '#1e1e1e', // Темно-серый фон
 				color: '#fff',
-				padding: '40px 20px',
+				padding: '20px', // Уменьшаем отступы
 				marginTop: 'auto', // Прижимает футер к низу страницы
 			}}
 		>
 			{/* Основной контейнер */}
-			<Grid container spacing={4} justifyContent='center'>
+			<Grid container spacing={2} justifyContent='center'>
 				{/* Блок о вас */}
 				<Grid item xs={12} sm={6} md={3}>
 					<Typography
-						variant='h5'
-						component='div'
+						variant='subtitle1'
 						gutterBottom
 						sx={{ fontWeight: 'bold' }}
 					>
@@ -29,17 +28,20 @@ const Footer = () => {
 					</Typography>
 					<Typography
 						variant='body2'
-						sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+						sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.875rem' }}
 					>
 						Привет! Я разработчик, создающий современные веб-приложения. Этот
-						проект — мой пет-проект, где я экспериментирую с новыми
-						технологиями.
+						проект — мой пет-проект.
 					</Typography>
 				</Grid>
 
 				{/* Блок ссылок */}
 				<Grid item xs={12} sm={6} md={3}>
-					<Typography variant='h6' gutterBottom sx={{ fontWeight: 'bold' }}>
+					<Typography
+						variant='subtitle1'
+						gutterBottom
+						sx={{ fontWeight: 'bold' }}
+					>
 						Полезные ссылки
 					</Typography>
 					<Box
@@ -53,7 +55,7 @@ const Footer = () => {
 							href='#about'
 							color='inherit'
 							underline='hover'
-							sx={{ transition: 'color 0.3s' }}
+							sx={{ fontSize: '0.875rem', transition: 'color 0.3s' }}
 						>
 							Обо мне
 						</Link>
@@ -61,7 +63,7 @@ const Footer = () => {
 							href='#projects'
 							color='inherit'
 							underline='hover'
-							sx={{ transition: 'color 0.3s' }}
+							sx={{ fontSize: '0.875rem', transition: 'color 0.3s' }}
 						>
 							Проекты
 						</Link>
@@ -69,7 +71,7 @@ const Footer = () => {
 							href='#skills'
 							color='inherit'
 							underline='hover'
-							sx={{ transition: 'color 0.3s' }}
+							sx={{ fontSize: '0.875rem', transition: 'color 0.3s' }}
 						>
 							Навыки
 						</Link>
@@ -77,7 +79,7 @@ const Footer = () => {
 							href='#contact'
 							color='inherit'
 							underline='hover'
-							sx={{ transition: 'color 0.3s' }}
+							sx={{ fontSize: '0.875rem', transition: 'color 0.3s' }}
 						>
 							Контакты
 						</Link>
@@ -86,37 +88,40 @@ const Footer = () => {
 
 				{/* Блок контактов */}
 				<Grid item xs={12} sm={6} md={3}>
-					<Typography variant='h6' gutterBottom sx={{ fontWeight: 'bold' }}>
-						Контакты
-					</Typography>
 					<Typography
-						variant='body2'
-						sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+						variant='subtitle1'
+						gutterBottom
+						sx={{ fontWeight: 'bold' }}
 					>
-						Свяжитесь со мной, чтобы обсудить проект или просто поздороваться!
+						Контакты
 					</Typography>
 					<Box
 						sx={{
 							display: 'flex',
 							alignItems: 'center',
 							gap: '10px',
-							mt: 2,
+							mt: 1,
 						}}
 					>
 						<IconButton
 							aria-label='Email'
+							href='mailto:your-email@example.com'
+							target='_blank'
+							rel='noopener noreferrer'
 							sx={{
 								backgroundColor: 'rgba(255, 255, 255, 0.1)',
 								'&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.2)' },
 								transition: 'background-color 0.3s',
+								padding: '6px', // Уменьшаем размер кнопки
 							}}
 						>
-							<EmailIcon sx={{ color: '#fff' }} />
+							<EmailIcon sx={{ color: '#fff', fontSize: '1.25rem' }} />
 						</IconButton>
 						<Link
 							href='mailto:your-email@example.com'
 							color='inherit'
 							underline='hover'
+							sx={{ fontSize: '0.875rem' }}
 						>
 							your-email@example.com
 						</Link>
@@ -125,7 +130,11 @@ const Footer = () => {
 
 				{/* Социальные сети */}
 				<Grid item xs={12} sm={6} md={3}>
-					<Typography variant='h6' gutterBottom sx={{ fontWeight: 'bold' }}>
+					<Typography
+						variant='subtitle1'
+						gutterBottom
+						sx={{ fontWeight: 'bold' }}
+					>
 						Соцсети
 					</Typography>
 					<Box
@@ -143,9 +152,10 @@ const Footer = () => {
 								backgroundColor: 'rgba(255, 255, 255, 0.1)',
 								'&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.2)' },
 								transition: 'background-color 0.3s',
+								padding: '6px', // Уменьшаем размер кнопки
 							}}
 						>
-							<GitHubIcon sx={{ color: '#fff' }} />
+							<GitHubIcon sx={{ color: '#fff', fontSize: '1.25rem' }} />
 						</IconButton>
 						<IconButton
 							aria-label='LinkedIn'
@@ -156,9 +166,10 @@ const Footer = () => {
 								backgroundColor: 'rgba(255, 255, 255, 0.1)',
 								'&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.2)' },
 								transition: 'background-color 0.3s',
+								padding: '6px', // Уменьшаем размер кнопки
 							}}
 						>
-							<LinkedInIcon sx={{ color: '#fff' }} />
+							<LinkedInIcon sx={{ color: '#fff', fontSize: '1.25rem' }} />
 						</IconButton>
 						<IconButton
 							aria-label='Twitter'
@@ -169,9 +180,10 @@ const Footer = () => {
 								backgroundColor: 'rgba(255, 255, 255, 0.1)',
 								'&:hover': { backgroundColor: 'rgba(255, 255, 255, 0.2)' },
 								transition: 'background-color 0.3s',
+								padding: '6px', // Уменьшаем размер кнопки
 							}}
 						>
-							<TwitterIcon sx={{ color: '#fff' }} />
+							<TwitterIcon sx={{ color: '#fff', fontSize: '1.25rem' }} />
 						</IconButton>
 					</Box>
 				</Grid>
@@ -179,12 +191,13 @@ const Footer = () => {
 
 			{/* Нижняя часть футера */}
 			<Typography
-				variant='body2'
+				variant='caption'
 				align='center'
-				mt={4}
+				mt={2}
 				sx={{
 					color: 'rgba(255, 255, 255, 0.7)',
-					fontSize: '0.875rem',
+					fontSize: '0.75rem',
+					display: 'block',
 				}}
 			>
 				© {new Date().getFullYear()} Your Name. Все права защищены.
