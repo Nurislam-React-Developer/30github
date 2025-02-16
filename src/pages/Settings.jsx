@@ -16,7 +16,6 @@ import { PhotoCamera } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Particles from 'react-particles';
 import { loadFull } from 'tsparticles';
 
 const Settings = () => {
