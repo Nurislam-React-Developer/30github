@@ -9,11 +9,15 @@ import {
 	Divider,
 	Avatar,
 	IconButton,
+	Select,
+	MenuItem,
 } from '@mui/material';
 import { PhotoCamera } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { loadFull } from 'tsparticles';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Particles from 'react-tsparticles';
 
 const Settings = () => {
 	// Состояния для полей формы
@@ -23,6 +27,7 @@ const Settings = () => {
 	const [isDarkMode, setIsDarkMode] = useState(false);
 	const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 	const [privacySetting, setPrivacySetting] = useState('public');
+	const [accentColor, setAccentColor] = useState('#2196f3'); // Цвет акцента
 
 	// Загрузка данных из localStorage при монтировании
 	useEffect(() => {
@@ -34,6 +39,7 @@ const Settings = () => {
 			setIsDarkMode(savedData.isDarkMode || false);
 			setNotificationsEnabled(savedData.notificationsEnabled || true);
 			setPrivacySetting(savedData.privacySetting || 'public');
+			setAccentColor(savedData.accentColor || '#2196f3');
 		}
 	}, []);
 
@@ -46,6 +52,7 @@ const Settings = () => {
 			isDarkMode,
 			notificationsEnabled,
 			privacySetting,
+			accentColor,
 		};
 		localStorage.setItem('userSettings', JSON.stringify(settings));
 		toast.success('Настройки успешно сохранены!', {
@@ -68,6 +75,15 @@ const Settings = () => {
 	const handlePrivacyChange = (e) =>
 		setPrivacySetting(e.target.checked ? 'private' : 'public');
 
+	// Настройка частиц
+	const particlesInit = async (main) => {
+		await loadFull(main);
+	};
+
+	const particlesLoaded = () => {
+		console.log('Particles loaded!');
+	};
+
 	return (
 		<Box
 			component={motion.div}
@@ -89,44 +105,85 @@ const Settings = () => {
 			{/* Уведомления */}
 			<ToastContainer />
 
-			{/* Эффект звезд для тёмной темы */}
-			<AnimatePresence>
-				{isDarkMode && (
-					<motion.div
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-						transition={{ duration: 1 }}
-						style={{
-							position: 'absolute',
-							top: 0,
-							left: 0,
-							width: '100%',
-							height: '100%',
-							pointerEvents: 'none',
-							zIndex: -1,
-						}}
-					>
-						{[...Array(100)].map((_, index) => (
-							<motion.span
-								key={index}
-								style={{
-									position: 'absolute',
-									top: `${Math.random() * 100}%`,
-									left: `${Math.random() * 100}%`,
-									width: `${Math.random() * 2}px`,
-									height: `${Math.random() * 2}px`,
-									background: 'white',
-									borderRadius: '50%',
-									animation: `twinkle ${
-										Math.random() * 3 + 2
-									}s infinite alternate`,
-								}}
-							/>
-						))}
-					</motion.div>
-				)}
-			</AnimatePresence>
+			{/* Частицы для тёмной темы */}
+			{isDarkMode && (
+				<Particles
+					id='tsparticles'
+					init={particlesInit}
+					loaded={particlesLoaded}
+					options={{
+						background: {
+							color: {
+								value: '#121212',
+							},
+						},
+						fpsLimit: 60,
+						interactivity: {
+							events: {
+								onClick: {
+									enable: true,
+									mode: 'push',
+								},
+								onHover: {
+									enable: true,
+									mode: 'repulse',
+								},
+							},
+							modes: {
+								push: {
+									quantity: 4,
+								},
+								repulse: {
+									distance: 100,
+									duration: 0.4,
+								},
+							},
+						},
+						particles: {
+							color: {
+								value: '#ffffff',
+							},
+							links: {
+								color: '#ffffff',
+								distance: 150,
+								enable: true,
+								opacity: 0.5,
+								width: 1,
+							},
+							collisions: {
+								enable: true,
+							},
+							move: {
+								direction: 'none',
+								enable: true,
+								outModes: {
+									default: 'bounce',
+								},
+								random: false,
+								speed: 2,
+								straight: false,
+							},
+							number: {
+								density: {
+									enable: true,
+									area: 800,
+								},
+								value: 80,
+							},
+							opacity: {
+								value: 0.5,
+							},
+							shape: {
+								type: 'circle',
+							},
+							size: {
+								value: { min: 1, max: 5 },
+							},
+						},
+						detectRetina: true,
+					}}
+				/>
+			)}
 
 			{/* Заголовок */}
 			<Typography variant='h5' gutterBottom align='center'>
@@ -217,6 +274,22 @@ const Settings = () => {
 
 					<Divider sx={{ my: 3 }} />
 
+					{/* Выбор цвета акцента */}
+					<Typography variant='h6' gutterBottom>
+						Цвет акцента
+					</Typography>
+					<Select
+						value={accentColor}
+						onChange={(e) => setAccentColor(e.target.value)}
+						fullWidth
+						sx={{ mb: 2 }}
+					>
+						<MenuItem value='#2196f3'>Синий</MenuItem>
+						<MenuItem value='#4caf50'>Зелёный</MenuItem>
+						<MenuItem value='#ff9800'>Оранжевый</MenuItem>
+						<MenuItem value='#e91e63'>Розовый</MenuItem>
+					</Select>
+
 					{/* Управление уведомлениями */}
 					<Typography variant='h6' gutterBottom>
 						Уведомления
@@ -260,9 +333,9 @@ const Settings = () => {
 					color='primary'
 					onClick={saveSettings}
 					sx={{
-						background: isDarkMode ? '#2196f3' : '#1976d2',
+						background: accentColor,
 						'&:hover': {
-							background: isDarkMode ? '#1e88e5' : '#115293',
+							background: `${accentColor}cc`, // Полупрозрачный при наведении
 						},
 					}}
 				>

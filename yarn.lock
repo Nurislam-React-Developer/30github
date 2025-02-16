@@ -27,9 +27,11 @@ __metadata:
     globals: "npm:^15.14.0"
     react: "npm:^19.0.0"
     react-dom: "npm:^19.0.0"
+    react-particles: "npm:^2.12.2"
     react-redux: "npm:^9.2.0"
     react-router-dom: "npm:^7.1.5"
     react-toastify: "npm:^11.0.3"
+    rollup: "npm:^4.34.7"
     vite: "npm:^6.1.0"
   languageName: unknown
   linkType: soft
@@ -3543,6 +3545,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-particles@npm:^2.12.2":
+  version: 2.12.2
+  resolution: "react-particles@npm:2.12.2"
+  dependencies:
+    tsparticles-engine: "npm:^2.12.0"
+  peerDependencies:
+    react: ">=16"
+  checksum: 10c0/ab810ac78d9097815cc1cf3358c5afbaa89615b9a4ab3f58786911cb681fb36cd1bc54453dc2d7524ec2c7e6116eaa86aa2f1c8583aabee56954826a8edf8681
+  languageName: node
+  linkType: hard
+
 "react-redux@npm:^9.2.0":
   version: 9.2.0
   resolution: "react-redux@npm:9.2.0"
@@ -3763,7 +3776,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rollup@npm:^4.30.1":
+"rollup@npm:^4.30.1, rollup@npm:^4.34.7":
   version: 4.34.7
   resolution: "rollup@npm:4.34.7"
   dependencies:
@@ -4231,6 +4244,13 @@ __metadata:
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10c0/9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62
+  languageName: node
+  linkType: hard
+
+"tsparticles-engine@npm:^2.12.0":
+  version: 2.12.0
+  resolution: "tsparticles-engine@npm:2.12.0"
+  checksum: 10c0/b0277551ec7c39571aae11cbe645379a63f507d08c72b1759254ffcbcc64f20cceee79becf1cd22f9e02ee384f2b4e5b52b0f153c3ca6622f3fcde0c04ecd057
   languageName: node
   linkType: hard
 
