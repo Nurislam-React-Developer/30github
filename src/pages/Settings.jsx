@@ -12,6 +12,8 @@ import {
 } from '@mui/material';
 import { PhotoCamera } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Settings = () => {
 	// Состояния для полей формы
@@ -46,7 +48,14 @@ const Settings = () => {
 			privacySetting,
 		};
 		localStorage.setItem('userSettings', JSON.stringify(settings));
-		alert('Настройки успешно сохранены!');
+		toast.success('Настройки успешно сохранены!', {
+			position: 'top-right',
+			autoClose: 3000,
+			hideProgressBar: false,
+			closeOnClick: true,
+			pauseOnHover: true,
+			draggable: true,
+		});
 	};
 
 	// Обработчики изменений
@@ -72,8 +81,53 @@ const Settings = () => {
 				margin: 'auto',
 				background: isDarkMode ? '#121212' : '#fff',
 				color: isDarkMode ? '#fff' : '#000',
+				minHeight: '100vh',
+				position: 'relative',
+				overflow: 'hidden',
 			}}
 		>
+			{/* Уведомления */}
+			<ToastContainer />
+
+			{/* Эффект звезд для тёмной темы */}
+			<AnimatePresence>
+				{isDarkMode && (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						transition={{ duration: 1 }}
+						style={{
+							position: 'absolute',
+							top: 0,
+							left: 0,
+							width: '100%',
+							height: '100%',
+							pointerEvents: 'none',
+							zIndex: -1,
+						}}
+					>
+						{[...Array(100)].map((_, index) => (
+							<motion.span
+								key={index}
+								style={{
+									position: 'absolute',
+									top: `${Math.random() * 100}%`,
+									left: `${Math.random() * 100}%`,
+									width: `${Math.random() * 2}px`,
+									height: `${Math.random() * 2}px`,
+									background: 'white',
+									borderRadius: '50%',
+									animation: `twinkle ${
+										Math.random() * 3 + 2
+									}s infinite alternate`,
+								}}
+							/>
+						))}
+					</motion.div>
+				)}
+			</AnimatePresence>
+
 			{/* Заголовок */}
 			<Typography variant='h5' gutterBottom align='center'>
 				Настройки
