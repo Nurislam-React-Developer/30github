@@ -11,6 +11,7 @@ import {
 	IconButton,
 } from '@mui/material';
 import { PhotoCamera } from '@mui/icons-material';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Settings = () => {
 	// Состояния для полей формы
@@ -59,7 +60,20 @@ const Settings = () => {
 		setPrivacySetting(e.target.checked ? 'private' : 'public');
 
 	return (
-		<Box sx={{ p: 4, maxWidth: '100%', margin: 'auto' }}>
+		<Box
+			component={motion.div}
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			exit={{ opacity: 0 }}
+			transition={{ duration: 0.5 }}
+			sx={{
+				p: 4,
+				maxWidth: '100%',
+				margin: 'auto',
+				background: isDarkMode ? '#121212' : '#fff',
+				color: isDarkMode ? '#fff' : '#000',
+			}}
+		>
 			{/* Заголовок */}
 			<Typography variant='h5' gutterBottom align='center'>
 				Настройки
@@ -126,7 +140,24 @@ const Settings = () => {
 						Тема
 					</Typography>
 					<FormControlLabel
-						control={<Switch checked={isDarkMode} onChange={toggleDarkMode} />}
+						control={
+							<Switch
+								checked={isDarkMode}
+								onChange={toggleDarkMode}
+								sx={{
+									'& .MuiSwitch-thumb': {
+										backgroundColor: isDarkMode ? '#fff' : '#000',
+										transition: 'transform 0.3s ease-in-out',
+										transform: isDarkMode
+											? 'translateX(20px)'
+											: 'translateX(0)',
+									},
+									'& .MuiSwitch-track': {
+										backgroundColor: isDarkMode ? '#2196f3' : '#ccc',
+									},
+								}}
+							/>
+						}
 						label={isDarkMode ? 'Тёмная тема' : 'Светлая тема'}
 					/>
 
@@ -170,7 +201,17 @@ const Settings = () => {
 
 			{/* Кнопка сохранения */}
 			<Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-				<Button variant='contained' color='primary' onClick={saveSettings}>
+				<Button
+					variant='contained'
+					color='primary'
+					onClick={saveSettings}
+					sx={{
+						background: isDarkMode ? '#2196f3' : '#1976d2',
+						'&:hover': {
+							background: isDarkMode ? '#1e88e5' : '#115293',
+						},
+					}}
+				>
 					Сохранить настройки
 				</Button>
 			</Box>
