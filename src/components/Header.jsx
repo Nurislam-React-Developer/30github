@@ -28,6 +28,7 @@ const MenuList = styled('ul')(({ theme }) => ({
 	margin: 0,
 	padding: 0,
 	gap: '20px', // расстояние между элементами меню
+	alignItems: 'center', // Выравнивание по центру
 }));
 
 // Стиль для элемента меню
