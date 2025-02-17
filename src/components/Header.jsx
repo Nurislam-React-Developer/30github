@@ -1,3 +1,5 @@
+import Brightness4Icon from '@mui/icons-material/Brightness4'; // Иконка для темной темы
+import Brightness7Icon from '@mui/icons-material/Brightness7'; // Иконка для светлой темы
 import HomeIcon from '@mui/icons-material/Home';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import PeopleIcon from '@mui/icons-material/People';
@@ -127,6 +129,8 @@ const Header = () => {
 							onChange={toggleTheme}
 							color='default'
 							inputProps={{ 'aria-label': 'toggle theme' }}
+							icon={<Brightness7Icon />} // Иконка для светлой темы
+							checkedIcon={<Brightness4Icon />} // Иконка для темной темы
 						/>
 					</MenuItem>
 				</MenuList>
