@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { useTheme } from '../../theme/ThemeContext';
@@ -8,17 +9,22 @@ const Layout = () => {
 	const { darkMode } = useTheme();
 
 	return (
-		<div
-			style={{
+		<motion.div
+			initial={{
 				backgroundColor: darkMode ? '#000' : '#fff',
 				color: darkMode ? '#fff' : '#000',
-				minHeight: '100vh',
 			}}
+			animate={{
+				backgroundColor: darkMode ? '#000' : '#fff',
+				color: darkMode ? '#fff' : '#000',
+			}}
+			transition={{ duration: 0.5 }}
+			style={{ minHeight: '100vh' }}
 		>
 			<Header />
 			<Outlet />
 			<Footer />
-		</div>
+		</motion.div>
 	);
 };
 
