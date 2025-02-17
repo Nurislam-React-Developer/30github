@@ -3,6 +3,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import PeopleIcon from '@mui/icons-material/People';
 import PersonIcon from '@mui/icons-material/Person'; // Иконка для профиля
 import SettingsIcon from '@mui/icons-material/Settings'; // Иконка для настроек
+import { Switch } from '@mui/material'; // Импортируем Switch
 import AppBar from '@mui/material/AppBar';
 import Badge from '@mui/material/Badge';
 import { styled } from '@mui/material/styles';
@@ -11,6 +12,7 @@ import Typography from '@mui/material/Typography';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../theme/ThemeContext';
+
 // Стиль для контейнера заголовка
 const HeaderContainer = styled(AppBar)(({ theme }) => ({
 	backgroundColor: '#3f51b5', // Цвет фона заголовка
@@ -120,17 +122,12 @@ const Header = () => {
 						</Link>
 					</MenuItem>
 					<MenuItem>
-						<button
-							onClick={toggleTheme}
-							style={{
-								color: 'white',
-								background: 'none',
-								border: 'none',
-								cursor: 'pointer',
-							}}
-						>
-							{darkMode ? 'Светлая тема' : 'Темная тема'}
-						</button>
+						<Switch
+							checked={darkMode}
+							onChange={toggleTheme}
+							color='default'
+							inputProps={{ 'aria-label': 'toggle theme' }}
+						/>
 					</MenuItem>
 				</MenuList>
 			</Toolbar>
