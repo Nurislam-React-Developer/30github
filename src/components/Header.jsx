@@ -1,15 +1,16 @@
-import { styled } from '@mui/material/styles';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Badge from '@mui/material/Badge';
-import { Link } from 'react-router-dom';
+import HomeIcon from '@mui/icons-material/Home';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import PeopleIcon from '@mui/icons-material/People';
-import HomeIcon from '@mui/icons-material/Home';
 import PersonIcon from '@mui/icons-material/Person'; // Иконка для профиля
 import SettingsIcon from '@mui/icons-material/Settings'; // Иконка для настроек
-
+import AppBar from '@mui/material/AppBar';
+import Badge from '@mui/material/Badge';
+import { styled } from '@mui/material/styles';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { useTheme } from '../theme/ThemeContext';
 // Стиль для контейнера заголовка
 const HeaderContainer = styled(AppBar)(({ theme }) => ({
 	backgroundColor: '#3f51b5', // Цвет фона заголовка
@@ -35,8 +36,13 @@ const MenuItem = styled('li')(({ theme }) => ({
 }));
 
 const Header = () => {
+	const { darkMode, toggleTheme } = useTheme(); // Используем контекст темы
+
 	return (
-		<HeaderContainer position='static'>
+		<HeaderContainer
+			position='static'
+			style={{ backgroundColor: darkMode ? '#000' : '#3f51b5' }}
+		>
 			<Toolbar>
 				<Link to='/' style={{ textDecoration: 'none', flexGrow: 1 }}>
 					<Typography variant='h6' component='div' color='white'>
@@ -112,6 +118,19 @@ const Header = () => {
 						>
 							<SettingsIcon sx={{ marginRight: '5px' }} /> Настройки
 						</Link>
+					</MenuItem>
+					<MenuItem>
+						<button
+							onClick={toggleTheme}
+							style={{
+								color: 'white',
+								background: 'none',
+								border: 'none',
+								cursor: 'pointer',
+							}}
+						>
+							{darkMode ? 'Светлая тема' : 'Темная тема'}
+						</button>
 					</MenuItem>
 				</MenuList>
 			</Toolbar>
