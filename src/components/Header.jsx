@@ -15,30 +15,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../theme/ThemeContext';
 
-// Стиль для контейнера заголовка
-const HeaderContainer = styled(AppBar)(({ theme }) => ({
-	backgroundColor: '#3f51b5', // Цвет фона заголовка
-	boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.3)',
-}));
 
-// Стиль для меню
-const MenuList = styled('ul')(({ theme }) => ({
-	listStyle: 'none',
-	display: 'flex',
-	margin: 0,
-	padding: 0,
-	gap: '20px', // расстояние между элементами меню
-	alignItems: 'center', // Выравнивание по центру
-}));
-
-// Стиль для элемента меню
-const MenuItem = styled('li')(({ theme }) => ({
-	color: 'white',
-	transition: 'color 0.3s',
-	'&:hover': {
-		color: theme.palette.secondary.main, // цвет при наведении
-	},
-}));
 
 const Header = () => {
 	const { darkMode, toggleTheme } = useTheme(); // Используем контекст темы
@@ -141,3 +118,28 @@ const Header = () => {
 };
 
 export default Header;
+
+// Стиль для контейнера заголовка
+const HeaderContainer = styled(AppBar)(({ theme }) => ({
+	backgroundColor: '#3f51b5', // Цвет фона заголовка
+	boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.3)',
+}));
+
+// Стиль для меню
+const MenuList = styled('ul')(({ theme }) => ({
+	listStyle: 'none',
+	display: 'flex',
+	margin: 0,
+	padding: 0,
+	gap: '20px', // расстояние между элементами меню
+	alignItems: 'center', // Выравнивание по центру
+}));
+
+// Стиль для элемента меню
+const MenuItem = styled('li')(({ theme }) => ({
+	color: 'white',
+	transition: 'color 0.3s',
+	'&:hover': {
+		color: theme.palette.secondary.main, // цвет при наведении
+	},
+}));
