@@ -20,7 +20,7 @@ const Settings = () => {
 	// Состояния для полей формы
 	const [name, setName] = useState('');
 	const [email, setEmail] = useState('');
-	const [avatar, setAvatar] = useState(null);
+	const [avatar, setAvatar] = useState(null); // Base64 строка
 	const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 	const [privacySetting, setPrivacySetting] = useState('public');
 	const [accentColor, setAccentColor] = useState('#2196f3'); // Цвет акцента
@@ -31,7 +31,7 @@ const Settings = () => {
 		if (savedData) {
 			setName(savedData.name || '');
 			setEmail(savedData.email || '');
-			setAvatar(savedData.avatar || null);
+			setAvatar(savedData.avatar || null); // Восстанавливаем аватар
 			setNotificationsEnabled(savedData.notificationsEnabled || true);
 			setPrivacySetting(savedData.privacySetting || 'public');
 			setAccentColor(savedData.accentColor || '#2196f3');
@@ -59,11 +59,21 @@ const Settings = () => {
 		});
 	};
 
+	// Преобразование файла в base64
+	const handleAvatarChange = (e) => {
+		const file = e.target.files[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onloadend = () => {
+				setAvatar(reader.result); // Сохраняем base64 строку
+			};
+			reader.readAsDataURL(file); // Преобразуем файл в base64
+		}
+	};
+
 	// Обработчики изменений
 	const handleNameChange = (e) => setName(e.target.value);
 	const handleEmailChange = (e) => setEmail(e.target.value);
-	const handleAvatarChange = (e) =>
-		setAvatar(URL.createObjectURL(e.target.files[0]));
 	const toggleNotifications = () => setNotificationsEnabled((prev) => !prev);
 	const handlePrivacyChange = (e) =>
 		setPrivacySetting(e.target.checked ? 'private' : 'public');
