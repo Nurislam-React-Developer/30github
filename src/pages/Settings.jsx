@@ -17,7 +17,7 @@ import {
 import { PhotoCamera } from '@mui/icons-material';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Particles } from '@tsparticles/react'; // Обновленный импорт
+import { Particles } from 'react-particles'; // Обновленный импорт
 import { loadFull } from 'tsparticles'; // Обновленный импорт
 
 const Settings = () => {
