@@ -33,6 +33,8 @@ const RAW_RUNTIME_STATE =
           ["@mui/icons-material", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:6.4.4"],\
           ["@mui/material", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:6.4.4"],\
           ["@reduxjs/toolkit", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:2.5.1"],\
+          ["@tsparticles/engine", "npm:3.8.1"],\
+          ["@tsparticles/react", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:3.0.0"],\
           ["@types/react", "npm:19.0.9"],\
           ["@types/react-dom", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:19.0.3"],\
           ["@vitejs/plugin-react-swc", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:3.8.0"],\
@@ -67,6 +69,8 @@ const RAW_RUNTIME_STATE =
           ["@mui/icons-material", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:6.4.4"],\
           ["@mui/material", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:6.4.4"],\
           ["@reduxjs/toolkit", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:2.5.1"],\
+          ["@tsparticles/engine", "npm:3.8.1"],\
+          ["@tsparticles/react", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:3.0.0"],\
           ["@types/react", "npm:19.0.9"],\
           ["@types/react-dom", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:19.0.3"],\
           ["@vitejs/plugin-react-swc", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:3.8.0"],\
@@ -1748,6 +1752,36 @@ const RAW_RUNTIME_STATE =
         "packageDependencies": [\
           ["@tsparticles/plugin-rgb-color", "npm:3.8.1"],\
           ["@tsparticles/engine", "npm:3.8.1"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@tsparticles/react", [\
+      ["npm:3.0.0", {\
+        "packageLocation": "../.yarn/berry/cache/@tsparticles-react-npm-3.0.0-6c68d4d856-10c0.zip/node_modules/@tsparticles/react/",\
+        "packageDependencies": [\
+          ["@tsparticles/react", "npm:3.0.0"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:3.0.0", {\
+        "packageLocation": "./.yarn/__virtual__/@tsparticles-react-virtual-1ad68cb0dd/2/.yarn/berry/cache/@tsparticles-react-npm-3.0.0-6c68d4d856-10c0.zip/node_modules/@tsparticles/react/",\
+        "packageDependencies": [\
+          ["@tsparticles/react", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:3.0.0"],\
+          ["@tsparticles/engine", "npm:3.8.1"],\
+          ["@types/react", "npm:19.0.9"],\
+          ["@types/react-dom", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:19.0.3"],\
+          ["@types/tsparticles__engine", null],\
+          ["react", "npm:19.0.0"],\
+          ["react-dom", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:19.0.0"]\
+        ],\
+        "packagePeers": [\
+          "@tsparticles/engine",\
+          "@types/react-dom",\
+          "@types/react",\
+          "@types/tsparticles__engine",\
+          "react-dom",\
+          "react"\
         ],\
         "linkType": "HARD"\
       }]\
