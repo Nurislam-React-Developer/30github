@@ -15,6 +15,7 @@
     "@mui/icons-material": "^6.4.4",
     "@mui/material": "^6.4.3",
     "@reduxjs/toolkit": "^2.5.1",
+    "@tsparticles/react": "^3.0.0",
     "axios": "^1.7.9",
     "framer-motion": "^12.4.2",
     "react": "^19.0.0",
@@ -23,6 +24,7 @@
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.1.5",
     "react-toastify": "^11.0.3",
+    "react-tsparticles": "^2.12.2",
     "rollup": "^4.34.7",
     "tsparticles": "^3.8.1"
   },

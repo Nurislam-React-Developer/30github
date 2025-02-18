@@ -17,8 +17,8 @@ import {
 import { PhotoCamera } from '@mui/icons-material';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Particles from 'react-tsparticles';
-import { loadFull } from 'tsparticles';
+import { Particles } from '@tsparticles/react'; // Обновленный импорт
+import { loadFull } from 'tsparticles'; // Обновленный импорт
 
 const Settings = () => {
 	// Состояния для полей формы
@@ -80,13 +80,6 @@ const Settings = () => {
 			reader.readAsDataURL(file); // Преобразуем файл в base64
 		}
 	};
-
-	// Обработчики изменений
-	const handleNameChange = (e) => setName(e.target.value);
-	const handleEmailChange = (e) => setEmail(e.target.value);
-	const toggleNotifications = () => setNotificationsEnabled((prev) => !prev);
-	const handlePrivacyChange = (e) =>
-		setPrivacySetting(e.target.checked ? 'private' : 'public');
 
 	// Настройка частиц
 	const particlesInit = async (main) => {
@@ -188,7 +181,7 @@ const Settings = () => {
 			{/* Уведомления */}
 			<ToastContainer />
 
-			{/* Заголовок */}
+			{/* Основной контент */}
 			<Typography variant='h5' gutterBottom align='center'>
 				Настройки
 			</Typography>
@@ -197,7 +190,7 @@ const Settings = () => {
 			<Box
 				sx={{
 					display: 'grid',
-					gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, // Адаптивная сетка
+					gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
 					gap: 4,
 				}}
 			>
@@ -236,14 +229,14 @@ const Settings = () => {
 						label='Имя'
 						fullWidth
 						value={name}
-						onChange={handleNameChange}
+						onChange={(e) => setName(e.target.value)}
 						sx={{ mb: 2 }}
 					/>
 					<TextField
 						label='Email'
 						fullWidth
 						value={email}
-						onChange={handleEmailChange}
+						onChange={(e) => setEmail(e.target.value)}
 					/>
 				</Box>
 

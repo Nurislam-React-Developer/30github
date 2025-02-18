@@ -15,6 +15,7 @@ __metadata:
     "@mui/icons-material": "npm:^6.4.4"
     "@mui/material": "npm:^6.4.3"
     "@reduxjs/toolkit": "npm:^2.5.1"
+    "@tsparticles/react": "npm:^3.0.0"
     "@types/react": "npm:^19.0.8"
     "@types/react-dom": "npm:^19.0.3"
     "@vitejs/plugin-react-swc": "npm:^3.5.0"
@@ -31,6 +32,7 @@ __metadata:
     react-redux: "npm:^9.2.0"
     react-router-dom: "npm:^7.1.5"
     react-toastify: "npm:^11.0.3"
+    react-tsparticles: "npm:^2.12.2"
     rollup: "npm:^4.34.7"
     tsparticles: "npm:^3.8.1"
     vite: "npm:^6.1.0"
@@ -1373,6 +1375,17 @@ __metadata:
   dependencies:
     "@tsparticles/engine": "npm:3.8.1"
   checksum: 10c0/a6c0f752d660e6e9496bda38e4a56a96dfa810b6526178399583ec6d705960f76362f072d4d41153098a3e978f855096270723702e62ea6c66bd0c03cdf10cfd
+  languageName: node
+  linkType: hard
+
+"@tsparticles/react@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "@tsparticles/react@npm:3.0.0"
+  peerDependencies:
+    "@tsparticles/engine": ^3.0.2
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 10c0/3fd268b8e6f1dcbbb7acc36ef9d4f45e666b8f1169612594e7113cb56429abb5d2f564491efb5b26b22a7123188275c62fbd63fc3474a4246e1e12f77d5dbac5
   languageName: node
   linkType: hard
 
@@ -4088,6 +4101,17 @@ __metadata:
     react: ">=16.6.0"
     react-dom: ">=16.6.0"
   checksum: 10c0/2ba754ba748faefa15f87c96dfa700d5525054a0141de8c75763aae6734af0740e77e11261a1e8f4ffc08fd9ab78510122e05c21c2d79066c38bb6861a886c82
+  languageName: node
+  linkType: hard
+
+"react-tsparticles@npm:^2.12.2":
+  version: 2.12.2
+  resolution: "react-tsparticles@npm:2.12.2"
+  dependencies:
+    tsparticles-engine: "npm:^2.12.0"
+  peerDependencies:
+    react: ">=16"
+  checksum: 10c0/9f9ded46ab87a7673dee9e84c6149e3f84f5927c8fded33d5829a075766681b6067916536450e0249db32853e36aec48994d90495ce5dc2743d34b3c236c291d
   languageName: node
   linkType: hard
 
