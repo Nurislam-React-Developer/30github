@@ -11,11 +11,14 @@ import {
 	IconButton,
 	Select,
 	MenuItem,
-	Slider,
+	InputLabel,
+	FormControl,
 } from '@mui/material';
 import { PhotoCamera } from '@mui/icons-material';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Particles from 'react-tsparticles';
+import { loadFull } from 'tsparticles';
 
 const Settings = () => {
 	// Состояния для полей формы
@@ -25,9 +28,8 @@ const Settings = () => {
 	const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 	const [privacySetting, setPrivacySetting] = useState('public');
 	const [accentColor, setAccentColor] = useState('#2196f3'); // Цвет акцента
-	const [pageTransitionAnimation, setPageTransitionAnimation] = useState(true); // Анимация перехода
-	const [language, setLanguage] = useState('ru'); // Язык интерфейса
-	const [animationSpeed, setAnimationSpeed] = useState(500); // Скорость анимации
+	const [particlesEnabled, setParticlesEnabled] = useState(false); // Анимация частиц
+	const [gradientColors, setGradientColors] = useState(['#ff9a9e', '#fad0c4']); // Цвета градиента
 
 	// Загрузка данных из localStorage при монтировании
 	useEffect(() => {
@@ -39,9 +41,8 @@ const Settings = () => {
 			setNotificationsEnabled(savedData.notificationsEnabled || true);
 			setPrivacySetting(savedData.privacySetting || 'public');
 			setAccentColor(savedData.accentColor || '#2196f3');
-			setPageTransitionAnimation(savedData.pageTransitionAnimation || true);
-			setLanguage(savedData.language || 'ru');
-			setAnimationSpeed(savedData.animationSpeed || 500);
+			setParticlesEnabled(savedData.particlesEnabled || false);
+			setGradientColors(savedData.gradientColors || ['#ff9a9e', '#fad0c4']);
 		}
 	}, []);
 
@@ -54,9 +55,8 @@ const Settings = () => {
 			notificationsEnabled,
 			privacySetting,
 			accentColor,
-			pageTransitionAnimation,
-			language,
-			animationSpeed,
+			particlesEnabled,
+			gradientColors,
 		};
 		localStorage.setItem('userSettings', JSON.stringify(settings));
 		toast.success('Настройки успешно сохранены!', {
@@ -88,19 +88,103 @@ const Settings = () => {
 	const handlePrivacyChange = (e) =>
 		setPrivacySetting(e.target.checked ? 'private' : 'public');
 
+	// Настройка частиц
+	const particlesInit = async (main) => {
+		await loadFull(main);
+	};
+
 	return (
 		<Box
 			sx={{
 				p: 4,
 				maxWidth: '100%',
 				margin: 'auto',
-				background: '#fff',
+				background: `linear-gradient(135deg, ${gradientColors[0]}, ${gradientColors[1]})`,
 				color: '#000',
 				minHeight: '100vh',
 				position: 'relative',
 				overflow: 'hidden',
 			}}
 		>
+			{/* Частицы */}
+			{particlesEnabled && (
+				<Particles
+					id='tsparticles'
+					init={particlesInit}
+					options={{
+						background: {
+							color: {
+								value: 'transparent',
+							},
+						},
+						fpsLimit: 60,
+						interactivity: {
+							events: {
+								onClick: {
+									enable: true,
+									mode: 'push',
+								},
+								onHover: {
+									enable: true,
+									mode: 'repulse',
+								},
+							},
+							modes: {
+								push: {
+									quantity: 4,
+								},
+								repulse: {
+									distance: 100,
+									duration: 0.4,
+								},
+							},
+						},
+						particles: {
+							color: {
+								value: accentColor,
+							},
+							links: {
+								color: accentColor,
+								distance: 150,
+								enable: true,
+								opacity: 0.5,
+								width: 1,
+							},
+							collisions: {
+								enable: true,
+							},
+							move: {
+								direction: 'none',
+								enable: true,
+								outModes: {
+									default: 'bounce',
+								},
+								random: false,
+								speed: 2,
+								straight: false,
+							},
+							number: {
+								density: {
+									enable: true,
+									area: 800,
+								},
+								value: 80,
+							},
+							opacity: {
+								value: 0.5,
+							},
+							shape: {
+								type: 'circle',
+							},
+							size: {
+								value: { min: 1, max: 5 },
+							},
+						},
+						detectRetina: true,
+					}}
+				/>
+			)}
+
 			{/* Уведомления */}
 			<ToastContainer />
 
@@ -169,96 +253,59 @@ const Settings = () => {
 					<Typography variant='h6' gutterBottom>
 						Цвет акцента
 					</Typography>
-					<Select
-						value={accentColor}
-						onChange={(e) => setAccentColor(e.target.value)}
-						fullWidth
-						sx={{ mb: 2 }}
-					>
-						<MenuItem value='#2196f3'>Синий</MenuItem>
-						<MenuItem value='#4caf50'>Зелёный</MenuItem>
-						<MenuItem value='#ff9800'>Оранжевый</MenuItem>
-						<MenuItem value='#e91e63'>Розовый</MenuItem>
-					</Select>
+					<FormControl fullWidth sx={{ mb: 2 }}>
+						<InputLabel>Цвет</InputLabel>
+						<Select
+							value={accentColor}
+							onChange={(e) => setAccentColor(e.target.value)}
+							fullWidth
+						>
+							<MenuItem value='#2196f3'>Синий</MenuItem>
+							<MenuItem value='#4caf50'>Зелёный</MenuItem>
+							<MenuItem value='#ff9800'>Оранжевый</MenuItem>
+							<MenuItem value='#e91e63'>Розовый</MenuItem>
+						</Select>
+					</FormControl>
 
-					{/* Управление уведомлениями */}
+					{/* Анимация частиц */}
 					<Typography variant='h6' gutterBottom>
-						Уведомления
+						Анимация частиц
 					</Typography>
 					<FormControlLabel
 						control={
 							<Switch
-								checked={notificationsEnabled}
-								onChange={toggleNotifications}
+								checked={particlesEnabled}
+								onChange={() => setParticlesEnabled((prev) => !prev)}
 							/>
 						}
-						label={notificationsEnabled ? 'Включены' : 'Выключены'}
+						label={particlesEnabled ? 'Включена' : 'Выключена'}
 					/>
 					<Divider sx={{ my: 3 }} />
 
-					{/* Настройки приватности */}
+					{/* Градиентный фон */}
 					<Typography variant='h6' gutterBottom>
-						Приватность
+						Градиентный фон
 					</Typography>
-					<FormControlLabel
-						control={
-							<Switch
-								checked={privacySetting === 'private'}
-								onChange={handlePrivacyChange}
-							/>
-						}
-						label={
-							privacySetting === 'private'
-								? 'Приватный профиль'
-								: 'Публичный профиль'
-						}
-					/>
-					<Divider sx={{ my: 3 }} />
-
-					{/* Анимация перехода между страницами */}
-					<Typography variant='h6' gutterBottom>
-						Анимация перехода
-					</Typography>
-					<FormControlLabel
-						control={
-							<Switch
-								checked={pageTransitionAnimation}
-								onChange={() => setPageTransitionAnimation((prev) => !prev)}
-							/>
-						}
-						label={pageTransitionAnimation ? 'Включена' : 'Выключена'}
-					/>
-					<Divider sx={{ my: 3 }} />
-
-					{/* Выбор языка интерфейса */}
-					<Typography variant='h6' gutterBottom>
-						Язык интерфейса
-					</Typography>
-					<Select
-						value={language}
-						onChange={(e) => setLanguage(e.target.value)}
-						fullWidth
-						sx={{ mb: 2 }}
-					>
-						<MenuItem value='ru'>Русский</MenuItem>
-						<MenuItem value='en'>English</MenuItem>
-					</Select>
-
-					{/* Скорость анимации */}
-					<Typography variant='h6' gutterBottom>
-						Скорость анимации ({animationSpeed} мс)
-					</Typography>
-					<Slider
-						value={animationSpeed}
-						onChange={(e, newValue) => setAnimationSpeed(newValue)}
-						min={100}
-						max={1000}
-						step={50}
-						marks={[
-							{ value: 100, label: 'Быстро' },
-							{ value: 1000, label: 'Медленно' },
-						]}
-					/>
+					<Box sx={{ display: 'flex', gap: 2 }}>
+						<TextField
+							label='Цвет 1'
+							fullWidth
+							value={gradientColors[0]}
+							onChange={(e) =>
+								setGradientColors([e.target.value, gradientColors[1]])
+							}
+							sx={{ mb: 2 }}
+						/>
+						<TextField
+							label='Цвет 2'
+							fullWidth
+							value={gradientColors[1]}
+							onChange={(e) =>
+								setGradientColors([gradientColors[0], e.target.value])
+							}
+							sx={{ mb: 2 }}
+						/>
+					</Box>
 				</Box>
 			</Box>
 
