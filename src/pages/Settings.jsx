@@ -11,6 +11,7 @@ import {
 	IconButton,
 	Select,
 	MenuItem,
+	Slider,
 } from '@mui/material';
 import { PhotoCamera } from '@mui/icons-material';
 import { ToastContainer, toast } from 'react-toastify';
@@ -24,6 +25,9 @@ const Settings = () => {
 	const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 	const [privacySetting, setPrivacySetting] = useState('public');
 	const [accentColor, setAccentColor] = useState('#2196f3'); // Цвет акцента
+	const [pageTransitionAnimation, setPageTransitionAnimation] = useState(true); // Анимация перехода
+	const [language, setLanguage] = useState('ru'); // Язык интерфейса
+	const [animationSpeed, setAnimationSpeed] = useState(500); // Скорость анимации
 
 	// Загрузка данных из localStorage при монтировании
 	useEffect(() => {
@@ -35,6 +39,9 @@ const Settings = () => {
 			setNotificationsEnabled(savedData.notificationsEnabled || true);
 			setPrivacySetting(savedData.privacySetting || 'public');
 			setAccentColor(savedData.accentColor || '#2196f3');
+			setPageTransitionAnimation(savedData.pageTransitionAnimation || true);
+			setLanguage(savedData.language || 'ru');
+			setAnimationSpeed(savedData.animationSpeed || 500);
 		}
 	}, []);
 
@@ -47,6 +54,9 @@ const Settings = () => {
 			notificationsEnabled,
 			privacySetting,
 			accentColor,
+			pageTransitionAnimation,
+			language,
+			animationSpeed,
 		};
 		localStorage.setItem('userSettings', JSON.stringify(settings));
 		toast.success('Настройки успешно сохранены!', {
@@ -202,6 +212,52 @@ const Settings = () => {
 								? 'Приватный профиль'
 								: 'Публичный профиль'
 						}
+					/>
+					<Divider sx={{ my: 3 }} />
+
+					{/* Анимация перехода между страницами */}
+					<Typography variant='h6' gutterBottom>
+						Анимация перехода
+					</Typography>
+					<FormControlLabel
+						control={
+							<Switch
+								checked={pageTransitionAnimation}
+								onChange={() => setPageTransitionAnimation((prev) => !prev)}
+							/>
+						}
+						label={pageTransitionAnimation ? 'Включена' : 'Выключена'}
+					/>
+					<Divider sx={{ my: 3 }} />
+
+					{/* Выбор языка интерфейса */}
+					<Typography variant='h6' gutterBottom>
+						Язык интерфейса
+					</Typography>
+					<Select
+						value={language}
+						onChange={(e) => setLanguage(e.target.value)}
+						fullWidth
+						sx={{ mb: 2 }}
+					>
+						<MenuItem value='ru'>Русский</MenuItem>
+						<MenuItem value='en'>English</MenuItem>
+					</Select>
+
+					{/* Скорость анимации */}
+					<Typography variant='h6' gutterBottom>
+						Скорость анимации ({animationSpeed} мс)
+					</Typography>
+					<Slider
+						value={animationSpeed}
+						onChange={(e, newValue) => setAnimationSpeed(newValue)}
+						min={100}
+						max={1000}
+						step={50}
+						marks={[
+							{ value: 100, label: 'Быстро' },
+							{ value: 1000, label: 'Медленно' },
+						]}
 					/>
 				</Box>
 			</Box>
