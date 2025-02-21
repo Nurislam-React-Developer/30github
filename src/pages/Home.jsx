@@ -47,7 +47,7 @@ const Home = () => {
 		},
 	]);
 
-		const handleLike = (postId) => {
+	const handleLike = (postId) => {
 		const updatedPosts = posts.map(post => {
 			if (post.id === postId) {
 				return { ...post, likes: post.likes + 1 };
@@ -101,6 +101,32 @@ const Home = () => {
 							backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
 						}}
 					>
+						{/* Add comment form */}
+						<Box sx={{ p: 2 }}>
+							<TextField
+								fullWidth
+								placeholder="Add a comment..."
+								variant="outlined"
+								size="small"
+								sx={{
+									backgroundColor: darkMode ? '#2d2d2d' : '#ffffff',
+									'& .MuiOutlinedInput-root': {
+										'& fieldset': {
+											borderColor: darkMode ? '#bb86fc' : '#3f51b5'
+										},
+										'&:hover fieldset': {
+											borderColor: darkMode ? '#bb86fc' : '#3f51b5'
+										},
+										'&.Mui-focused fieldset': {
+											borderColor: darkMode ? '#bb86fc' : '#3f51b5'
+										}
+									},
+									'& .MuiInputBase-input': {
+										color: darkMode ? '#ffffff' : '#000000'
+									}
+								}}
+							/>
+						</Box>
 						<Box sx={{ p: 2, display: 'flex', alignItems: 'center' }}>
 							<Avatar src={post.user.avatar} />
 							<Box sx={{ ml: 2 }}>
