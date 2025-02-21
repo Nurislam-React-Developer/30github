@@ -14,6 +14,7 @@ import Typography from '@mui/material/Typography';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../theme/ThemeContext';
+import AddBoxIcon from '@mui/icons-material/AddBox';
 
 
 
@@ -73,6 +74,19 @@ const Header = () => {
 								<NotificationsIcon sx={{ color: 'white' }} />
 							</Badge>{' '}
 							Уведомления
+						</Link>
+					</MenuItem>
+					<MenuItem>
+						<Link
+							to='/create-post'
+							style={{
+								color: 'white',
+								textDecoration: 'none',
+								display: 'flex',
+								alignItems: 'center',
+							}}
+						>
+							<AddBoxIcon sx={{ marginRight: '5px' }} /> Создать пост
 						</Link>
 					</MenuItem>
 					<MenuItem>
