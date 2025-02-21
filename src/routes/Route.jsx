@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
+import CreatePost from '../pages/CreatePost';
 import FrendProfile from '../pages/FrendProfile';
 import Friends from '../pages/Friends';
 import Home from '../pages/Home';
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
 			{
 				path: '/friends',
 				element: <Friends />,
+			},
+			{
+				path: '/create-post',
+				element: <CreatePost />,
 			},
 			{
 				path: '/notifications',

@@ -47,28 +47,26 @@ const Home = () => {
 		},
 	]);
 
-	const [newPost, setNewPost] = useState({
-		image: '',
-		description: '',
-	});
+		const handleLike = (postId) => {
+		const updatedPosts = posts.map(post => {
+			if (post.id === postId) {
+				return { ...post, likes: post.likes + 1 };
+			}
+			return post;
+		});
+		setPosts(updatedPosts);
+		localStorage.setItem('posts', JSON.stringify(updatedPosts));
+	};
 
-	const handleCreatePost = () => {
-		if (newPost.description.trim()) {
-			const post = {
-				id: posts.length + 1,
-				user: {
-					name: localStorage.getItem('profileName') || 'Пользователь',
-					avatar: localStorage.getItem('profileAvatar') || 'https://i.pravatar.cc/150?img=3',
-				},
-				image: newPost.image || 'https://source.unsplash.com/random/800x600?random',
-				description: newPost.description,
-				likes: 0,
-				comments: 0,
-				timestamp: 'Только что',
-			};
-			setPosts([post, ...posts]);
-			setNewPost({ image: '', description: '' });
-		}
+	const handleComment = (postId) => {
+		const updatedPosts = posts.map(post => {
+			if (post.id === postId) {
+				return { ...post, comments: post.comments + 1 };
+			}
+			return post;
+		});
+		setPosts(updatedPosts);
+		localStorage.setItem('posts', JSON.stringify(updatedPosts));
 	};
 
 	return (
@@ -90,68 +88,7 @@ const Home = () => {
 					width: '100%',
 				}}
 			>
-				{/* Форма создания поста */}
-				<Paper
-					elevation={3}
-					component={motion.div}
-					whileHover={{ y: -2 }}
-					sx={{
-						p: 2,
-						mb: 3,
-						backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
-					}}
-				>
-					<Typography
-						variant="h6"
-						gutterBottom
-						sx={{ color: darkMode ? '#ffffff' : '#000000' }}
-					>
-						Создать пост
-					</Typography>
-					<TextField
-						fullWidth
-						multiline
-						rows={3}
-						placeholder="Что у вас нового?"
-						value={newPost.description}
-						onChange={(e) =>
-							setNewPost({ ...newPost, description: e.target.value })
-						}
-						margin="normal"
-						variant="outlined"
-						sx={{
-							'& .MuiOutlinedInput-root': {
-								'& fieldset': {
-									borderColor: darkMode ? '#bb86fc' : '#3f51b5',
-								},
-								'&:hover fieldset': {
-									borderColor: darkMode ? '#bb86fc' : '#3f51b5',
-								},
-								'&.Mui-focused fieldset': {
-									borderColor: darkMode ? '#bb86fc' : '#3f51b5',
-								},
-							},
-							'& .MuiInputBase-input': {
-								color: darkMode ? '#ffffff' : '#000000',
-							},
-						}}
-					/>
-					<Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-						<Button
-							variant="contained"
-							onClick={handleCreatePost}
-							size="large"
-							sx={{
-								backgroundColor: darkMode ? '#bb86fc' : '#3f51b5',
-								'&:hover': {
-									backgroundColor: darkMode ? '#9c27b0' : '#303f9f',
-								},
-							}}
-						>
-							Опубликовать
-						</Button>
-					</Box>
-				</Paper>
+	
 
 				{/* Лента постов */}
 				{posts.map((post) => (
@@ -205,6 +142,7 @@ const Home = () => {
 								<IconButton
 									size="small"
 									color={darkMode ? 'secondary' : 'primary'}
+									onClick={() => handleLike(post.id)}
 								>
 									<FavoriteIcon />
 									<Typography
@@ -218,6 +156,7 @@ const Home = () => {
 								<IconButton
 									size="small"
 									color={darkMode ? 'secondary' : 'primary'}
+									onClick={() => handleComment(post.id)}
 								>
 									<CommentIcon />
 									<Typography
