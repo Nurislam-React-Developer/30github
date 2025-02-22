@@ -56,10 +56,21 @@ const Profile = () => {
 	const [editingPost, setEditingPost] = useState(null);
 	const [editDialogOpen, setEditDialogOpen] = useState(false);
 	const [editedDescription, setEditedDescription] = useState('');
+	const [comments, setComments] = useState({});
+	const [newComment, setNewComment] = useState('');
+	const [commentDialogOpen, setCommentDialogOpen] = useState(false);
+	const [selectedPostId, setSelectedPostId] = useState(null);
 
 	useEffect(() => {
 		localStorage.setItem('isDarkMode', isDarkMode);
 	}, [isDarkMode]);
+
+	useEffect(() => {
+		const savedComments = localStorage.getItem('comments');
+		if (savedComments) {
+			setComments(JSON.parse(savedComments));
+		}
+	}, []);
 
 	useEffect(() => {
 		const savedPosts = localStorage.getItem('posts');
@@ -131,46 +142,47 @@ const Profile = () => {
 
 	const handleGoHome = () => navigate('/');
 
+	const handleAddComment = (postId) => {
+		if (newComment.trim()) {
+			const updatedComments = {
+				...comments,
+				[postId]: [...(comments[postId] || []), {
+					id: Date.now(),
+					text: newComment,
+					user: name,
+					timestamp: new Date().toISOString()
+				}]
+			};
+			setComments(updatedComments);
+			localStorage.setItem('comments', JSON.stringify(updatedComments));
+			setNewComment('');
+			toast.success('Комментарий добавлен!');
+		}
+	};
+
+	const handleOpenComments = (postId) => {
+		setSelectedPostId(postId);
+		setCommentDialogOpen(true);
+	};
+
 	return (
 		<ProfileContainer isDarkMode={isDarkMode}>
-			<Paper
-				elevation={3}
-				sx={{
-					padding: 4,
-					borderRadius: 3,
-					maxWidth: 500,
-					width: '100%',
-					backgroundColor: isDarkMode ? '#1e1e1e' : '#ffffff',
-					transition: 'background-color 0.5s ease-in-out',
-				}}
-			>
-				<Box
-					sx={{
-						display: 'flex',
-						flexDirection: 'column',
-						alignItems: 'center',
-					}}
-				>
-					<motion.div
-						initial={{ opacity: 0, scale: 0.8 }}
-						animate={{ opacity: 1, scale: 1 }}
-						transition={{ duration: 0.5 }}
-					>
-						<ProfileAvatar src={avatar} alt='User Avatar' />
-						{isAvatarLoading && (
-							<CircularProgress
-								size={40}
-								sx={{
-									position: 'absolute',
-									top: '50%',
-									left: '50%',
-									marginTop: '-20px',
-									marginLeft: '-20px',
-									color: isDarkMode ? '#bb86fc' : '#3f51b5',
-								}}
-							/>
-						)}
-					</motion.div>
+			{/* Profile Header */}
+			<Box sx={{ width: '100%', maxWidth: 935, margin: '0 auto', padding: '30px 20px' }}>
+				<Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 4 }}>
+				<Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
+					<ProfileAvatar src={avatar} alt='User Avatar' />
+					<Box sx={{ ml: 4 }}>
+						<Typography variant='h4' sx={{ mb: 2, color: isDarkMode ? '#ffffff' : '#000000' }}>
+							{name}
+						</Typography>
+						<Typography variant='body1' sx={{ color: isDarkMode ? '#ffffff' : '#000000' }}>
+							@{username}
+						</Typography>
+						<Typography variant='body1' sx={{ mt: 2, color: isDarkMode ? '#ffffff' : '#000000' }}>
+							{bio}
+						</Typography>
+					</Box>
 
 					<motion.div
 						initial={{ opacity: 0, y: -20 }}
@@ -377,20 +389,25 @@ const Profile = () => {
 			</Paper>
 
 			{/* Posts Section */}
-			<Box sx={{ mt: 4, width: '100%', maxWidth: 800, mx: 'auto' }}>
-				<Typography variant="h5" gutterBottom sx={{ color: isDarkMode ? '#ffffff' : '#000000' }}>
-					Мои посты
-				</Typography>
-				<Box sx={{ display: 'grid', gap: 3 }}>
+			<Box sx={{ width: '100%', maxWidth: 935, margin: '0 auto', padding: '0 20px' }}>
+				<Box sx={{
+					display: 'grid',
+					gridTemplateColumns: 'repeat(3, 1fr)',
+					gap: 2,
+					mt: 4
+				}}>
 					{posts.map((post) => (
 						<Card
 							key={post.id}
 							component={motion.div}
-							whileHover={{ y: -2 }}
+							whileHover={{ scale: 1.02 }}
+							onClick={() => handleOpenComments(post.id)}
 							sx={{
 								backgroundColor: isDarkMode ? '#1e1e1e' : '#ffffff',
+								position: 'relative',
+								aspectRatio: '1',
+								cursor: 'pointer'
 							}}
-						>
 							<Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 								<Box sx={{ display: 'flex', alignItems: 'center' }}>
 									<Avatar src={post.user.avatar} />
@@ -416,28 +433,34 @@ const Profile = () => {
 								component="img"
 								image={post.image}
 								alt="Post image"
-								height="400"
-								sx={{ objectFit: 'cover' }}
-							/>
+								sx={{
+									height: '100%',
+									objectFit: 'cover'
+								}}
 							<CardContent>
 								<Typography variant="body1" sx={{ color: isDarkMode ? '#ffffff' : '#000000' }}>
 									{post.description}
 								</Typography>
 								<Divider sx={{ my: 1 }} />
-								<Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-									<Box sx={{ display: 'flex', alignItems: 'center' }}>
-										<IconButton size="small" sx={{ color: isDarkMode ? '#bb86fc' : '#3f51b5' }}>
-											<FavoriteIcon />
-											<Typography variant="caption" sx={{ ml: 1 }}>{post.likes}</Typography>
-										</IconButton>
-										<IconButton size="small" sx={{ color: isDarkMode ? '#bb86fc' : '#3f51b5' }}>
-											<CommentIcon />
-											<Typography variant="caption" sx={{ ml: 1 }}>{post.comments}</Typography>
-										</IconButton>
-										<IconButton size="small" sx={{ color: isDarkMode ? '#bb86fc' : '#3f51b5' }}>
-											<ShareIcon />
-										</IconButton>
-									</Box>
+								<Box sx={{
+								position: 'absolute',
+								bottom: 0,
+								left: 0,
+								right: 0,
+								p: 1,
+								background: 'rgba(0,0,0,0.5)',
+								display: 'flex',
+								gap: 2
+							}}>
+								<Box sx={{ display: 'flex', alignItems: 'center', color: 'white' }}>
+									<FavoriteIcon sx={{ fontSize: 18, mr: 0.5 }} />
+									<Typography variant="caption">{post.likes}</Typography>
+								</Box>
+								<Box sx={{ display: 'flex', alignItems: 'center', color: 'white' }}>
+									<CommentIcon sx={{ fontSize: 18, mr: 0.5 }} />
+									<Typography variant="caption">
+										{(comments[post.id] || []).length}
+									</Typography>
 								</Box>
 							</CardContent>
 						</Card>
@@ -466,7 +489,8 @@ const Profile = () => {
 					<Button onClick={handleSaveEdit} variant="contained" color="primary">Сохранить</Button>
 				</DialogActions>
 			</Dialog>
-		</ProfileContainer>
+
+			{/* Comments Dialog */}
 	);
 };
 
