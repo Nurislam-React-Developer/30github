@@ -11,7 +11,20 @@ import {
 	Switch,
 	Paper,
 	CircularProgress,
+	Card,
+	CardContent,
+	CardMedia,
+	Divider,
+	Dialog,
+	DialogTitle,
+	DialogContent,
+	DialogActions,
 } from '@mui/material';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import CommentIcon from '@mui/icons-material/Comment';
+import ShareIcon from '@mui/icons-material/Share';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
@@ -39,10 +52,53 @@ const Profile = () => {
 	);
 
 	const [isAvatarLoading, setIsAvatarLoading] = useState(false);
+	const [posts, setPosts] = useState([]);
+	const [editingPost, setEditingPost] = useState(null);
+	const [editDialogOpen, setEditDialogOpen] = useState(false);
+	const [editedDescription, setEditedDescription] = useState('');
 
 	useEffect(() => {
 		localStorage.setItem('isDarkMode', isDarkMode);
 	}, [isDarkMode]);
+
+	useEffect(() => {
+		const savedPosts = localStorage.getItem('posts');
+		if (savedPosts) {
+			const allPosts = JSON.parse(savedPosts);
+			const userPosts = allPosts.filter(post => post.user.name === name);
+			setPosts(userPosts);
+		}
+	}, [name]);
+
+	const handleEditPost = (post) => {
+		setEditingPost(post);
+		setEditedDescription(post.description);
+		setEditDialogOpen(true);
+	};
+
+	const handleSaveEdit = () => {
+		const savedPosts = JSON.parse(localStorage.getItem('posts') || '[]');
+		const updatedPosts = savedPosts.map(post =>
+			post.id === editingPost.id
+				? { ...post, description: editedDescription }
+				: post
+		);
+		localStorage.setItem('posts', JSON.stringify(updatedPosts));
+		setPosts(updatedPosts.filter(post => post.user.name === name));
+		setEditDialogOpen(false);
+		setEditingPost(null);
+		toast.success('Пост успешно обновлен!');
+	};
+
+	const handleDeletePost = (postId) => {
+		if (window.confirm('Вы уверены, что хотите удалить этот пост?')) {
+			const savedPosts = JSON.parse(localStorage.getItem('posts') || '[]');
+			const updatedPosts = savedPosts.filter(post => post.id !== postId);
+			localStorage.setItem('posts', JSON.stringify(updatedPosts));
+			setPosts(updatedPosts.filter(post => post.user.name === name));
+			toast.success('Пост успешно удален!');
+		}
+	};
 
 	const handleNameChange = (e) => setName(e.target.value);
 	const handleUsernameChange = (e) => setUsername(e.target.value);
@@ -319,9 +375,101 @@ const Profile = () => {
 					</Box>
 				</Box>
 			</Paper>
+
+			{/* Posts Section */}
+			<Box sx={{ mt: 4, width: '100%', maxWidth: 800, mx: 'auto' }}>
+				<Typography variant="h5" gutterBottom sx={{ color: isDarkMode ? '#ffffff' : '#000000' }}>
+					Мои посты
+				</Typography>
+				<Box sx={{ display: 'grid', gap: 3 }}>
+					{posts.map((post) => (
+						<Card
+							key={post.id}
+							component={motion.div}
+							whileHover={{ y: -2 }}
+							sx={{
+								backgroundColor: isDarkMode ? '#1e1e1e' : '#ffffff',
+							}}
+						>
+							<Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+								<Box sx={{ display: 'flex', alignItems: 'center' }}>
+									<Avatar src={post.user.avatar} />
+									<Box sx={{ ml: 2 }}>
+										<Typography variant="subtitle1" sx={{ color: isDarkMode ? '#ffffff' : '#000000' }}>
+											{post.user.name}
+										</Typography>
+										<Typography variant="caption" sx={{ color: isDarkMode ? '#bb86fc' : '#3f51b5' }}>
+											{post.timestamp}
+										</Typography>
+									</Box>
+								</Box>
+								<Box>
+									<IconButton onClick={() => handleEditPost(post)} sx={{ color: isDarkMode ? '#bb86fc' : '#3f51b5' }}>
+										<EditIcon />
+									</IconButton>
+									<IconButton onClick={() => handleDeletePost(post.id)} sx={{ color: isDarkMode ? '#f44336' : '#f44336' }}>
+										<DeleteIcon />
+									</IconButton>
+								</Box>
+							</Box>
+							<CardMedia
+								component="img"
+								image={post.image}
+								alt="Post image"
+								height="400"
+								sx={{ objectFit: 'cover' }}
+							/>
+							<CardContent>
+								<Typography variant="body1" sx={{ color: isDarkMode ? '#ffffff' : '#000000' }}>
+									{post.description}
+								</Typography>
+								<Divider sx={{ my: 1 }} />
+								<Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+									<Box sx={{ display: 'flex', alignItems: 'center' }}>
+										<IconButton size="small" sx={{ color: isDarkMode ? '#bb86fc' : '#3f51b5' }}>
+											<FavoriteIcon />
+											<Typography variant="caption" sx={{ ml: 1 }}>{post.likes}</Typography>
+										</IconButton>
+										<IconButton size="small" sx={{ color: isDarkMode ? '#bb86fc' : '#3f51b5' }}>
+											<CommentIcon />
+											<Typography variant="caption" sx={{ ml: 1 }}>{post.comments}</Typography>
+										</IconButton>
+										<IconButton size="small" sx={{ color: isDarkMode ? '#bb86fc' : '#3f51b5' }}>
+											<ShareIcon />
+										</IconButton>
+									</Box>
+								</Box>
+							</CardContent>
+						</Card>
+					))}
+				</Box>
+			</Box>
+
+			{/* Edit Post Dialog */}
+			<Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
+				<DialogTitle>Редактировать пост</DialogTitle>
+				<DialogContent>
+					<TextField
+						autoFocus
+						margin="dense"
+						label="Описание"
+						type="text"
+						fullWidth
+						multiline
+						rows={4}
+						value={editedDescription}
+						onChange={(e) => setEditedDescription(e.target.value)}
+					/>
+				</DialogContent>
+				<DialogActions>
+					<Button onClick={() => setEditDialogOpen(false)}>Отмена</Button>
+					<Button onClick={handleSaveEdit} variant="contained" color="primary">Сохранить</Button>
+				</DialogActions>
+			</Dialog>
 		</ProfileContainer>
 	);
 };
+
 
 export default Profile;
 
