@@ -20,32 +20,42 @@ import { useTheme } from '../theme/ThemeContext';
 
 const Home = () => {
 	const { darkMode } = useTheme();
-	const [posts, setPosts] = useState([
-		{
-			id: 1,
-			user: {
-				name: 'Анна Смирнова',
-				avatar: 'https://i.pravatar.cc/150?img=1',
+	const [posts, setPosts] = useState(() => {
+		// Load posts from localStorage
+		const savedPosts = localStorage.getItem('posts');
+		const initialPosts = [
+			{
+				id: 1,
+				user: {
+					name: 'Анна Смирнова',
+					avatar: 'https://i.pravatar.cc/150?img=1',
+				},
+				image: 'https://source.unsplash.com/random/800x600?nature',
+				description: 'Прекрасный день на природе! 🌿',
+				likes: 42,
+				comments: 8,
+				timestamp: '2 часа назад',
 			},
-			image: 'https://source.unsplash.com/random/800x600?nature',
-			description: 'Прекрасный день на природе! 🌿',
-			likes: 42,
-			comments: 8,
-			timestamp: '2 часа назад',
-		},
-		{
-			id: 2,
-			user: {
-				name: 'Максим Петров',
-				avatar: 'https://i.pravatar.cc/150?img=2',
+			{
+				id: 2,
+				user: {
+					name: 'Максим Петров',
+					avatar: 'https://i.pravatar.cc/150?img=2',
+				},
+				image: 'https://source.unsplash.com/random/800x600?city',
+				description: 'Городские приключения продолжаются! 🌆',
+				likes: 28,
+				comments: 5,
+				timestamp: '4 часа назад',
 			},
-			image: 'https://source.unsplash.com/random/800x600?city',
-			description: 'Городские приключения продолжаются! 🌆',
-			likes: 28,
-			comments: 5,
-			timestamp: '4 часа назад',
-		},
-	]);
+		];
+		
+		if (savedPosts) {
+			const parsedPosts = JSON.parse(savedPosts);
+			return [...parsedPosts, ...initialPosts];
+		}
+		return initialPosts;
+	});
 
 	const handleLike = (postId) => {
 		const updatedPosts = posts.map(post => {
