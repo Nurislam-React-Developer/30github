@@ -11,25 +11,12 @@ import {
 	Switch,
 	Paper,
 	CircularProgress,
-	Card,
-	CardContent,
-	CardMedia,
-	Divider,
-	Dialog,
-	DialogTitle,
-	DialogContent,
-	DialogActions,
 } from '@mui/material';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import CommentIcon from '@mui/icons-material/Comment';
-import ShareIcon from '@mui/icons-material/Share';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { motion } from 'framer-motion'; 
+import { motion } from 'framer-motion';
 
 const Profile = () => {
 	const navigate = useNavigate();
@@ -52,81 +39,27 @@ const Profile = () => {
 	);
 
 	const [isAvatarLoading, setIsAvatarLoading] = useState(false);
-	const [posts, setPosts] = useState([]);
-	const [editingPost, setEditingPost] = useState(null);
-	const [editDialogOpen, setEditDialogOpen] = useState(false);
-	const [editedDescription, setEditedDescription] = useState('');
-	const [comments, setComments] = useState({});
-	const [newComment, setNewComment] = useState('');
-	const [commentDialogOpen, setCommentDialogOpen] = useState(false);
-	const [selectedPostId, setSelectedPostId] = useState(null);
 
 	useEffect(() => {
 		localStorage.setItem('isDarkMode', isDarkMode);
 	}, [isDarkMode]);
-
-	useEffect(() => {
-		const savedComments = localStorage.getItem('comments');
-		if (savedComments) {
-			setComments(JSON.parse(savedComments));
-		}
-	}, []);
-
-	useEffect(() => {
-		const savedPosts = localStorage.getItem('posts');
-		if (savedPosts) {
-			const allPosts = JSON.parse(savedPosts);
-			const userPosts = allPosts.filter(post => post.user.name === name);
-			setPosts(userPosts);
-		}
-	}, [name]);
-
-	const handleEditPost = (post) => {
-		setEditingPost(post);
-		setEditedDescription(post.description);
-		setEditDialogOpen(true);
-	};
-
-	const handleSaveEdit = () => {
-		const savedPosts = JSON.parse(localStorage.getItem('posts') || '[]');
-		const updatedPosts = savedPosts.map(post =>
-			post.id === editingPost.id
-				? { ...post, description: editedDescription }
-				: post
-		);
-		localStorage.setItem('posts', JSON.stringify(updatedPosts));
-		setPosts(updatedPosts.filter(post => post.user.name === name));
-		setEditDialogOpen(false);
-		setEditingPost(null);
-		toast.success('Пост успешно обновлен!');
-	};
-
-	const handleDeletePost = (postId) => {
-		if (window.confirm('Вы уверены, что хотите удалить этот пост?')) {
-			const savedPosts = JSON.parse(localStorage.getItem('posts') || '[]');
-			const updatedPosts = savedPosts.filter(post => post.id !== postId);
-			localStorage.setItem('posts', JSON.stringify(updatedPosts));
-			setPosts(updatedPosts.filter(post => post.user.name === name));
-			toast.success('Пост успешно удален!');
-		}
-	};
 
 	const handleNameChange = (e) => setName(e.target.value);
 	const handleUsernameChange = (e) => setUsername(e.target.value);
 
 	const handleBioChange = (e) => {
 		const value = e.target.value;
-		setBio(value); 
+		setBio(value);
 	};
 
 	const handleAvatarUpload = (e) => {
 		const file = e.target.files[0];
 		if (file) {
-			setIsAvatarLoading(true); 
+			setIsAvatarLoading(true);
 			const reader = new FileReader();
 			reader.onloadend = () => {
 				setAvatar(reader.result);
-				setIsAvatarLoading(false); 
+				setIsAvatarLoading(false);
 			};
 			reader.readAsDataURL(file);
 		}
@@ -142,47 +75,46 @@ const Profile = () => {
 
 	const handleGoHome = () => navigate('/');
 
-	const handleAddComment = (postId) => {
-		if (newComment.trim()) {
-			const updatedComments = {
-				...comments,
-				[postId]: [...(comments[postId] || []), {
-					id: Date.now(),
-					text: newComment,
-					user: name,
-					timestamp: new Date().toISOString()
-				}]
-			};
-			setComments(updatedComments);
-			localStorage.setItem('comments', JSON.stringify(updatedComments));
-			setNewComment('');
-			toast.success('Комментарий добавлен!');
-		}
-	};
-
-	const handleOpenComments = (postId) => {
-		setSelectedPostId(postId);
-		setCommentDialogOpen(true);
-	};
-
 	return (
 		<ProfileContainer isDarkMode={isDarkMode}>
-			{/* Profile Header */}
-			<Box sx={{ width: '100%', maxWidth: 935, margin: '0 auto', padding: '30px 20px' }}>
-				<Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 4 }}>
-				<Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-					<ProfileAvatar src={avatar} alt='User Avatar' />
-					<Box sx={{ ml: 4 }}>
-						<Typography variant='h4' sx={{ mb: 2, color: isDarkMode ? '#ffffff' : '#000000' }}>
-							{name}
-						</Typography>
-						<Typography variant='body1' sx={{ color: isDarkMode ? '#ffffff' : '#000000' }}>
-							@{username}
-						</Typography>
-						<Typography variant='body1' sx={{ mt: 2, color: isDarkMode ? '#ffffff' : '#000000' }}>
-							{bio}
-						</Typography>
-					</Box>
+			<Paper
+				elevation={3}
+				sx={{
+					padding: 4,
+					borderRadius: 3,
+					maxWidth: 500,
+					width: '100%',
+					backgroundColor: isDarkMode ? '#1e1e1e' : '#ffffff',
+					transition: 'background-color 0.5s ease-in-out',
+				}}
+			>
+				<Box
+					sx={{
+						display: 'flex',
+						flexDirection: 'column',
+						alignItems: 'center',
+					}}
+				>
+					<motion.div
+						initial={{ opacity: 0, scale: 0.8 }}
+						animate={{ opacity: 1, scale: 1 }}
+						transition={{ duration: 0.5 }}
+					>
+						<ProfileAvatar src={avatar} alt='User Avatar' />
+						{isAvatarLoading && (
+							<CircularProgress
+								size={40}
+								sx={{
+									position: 'absolute',
+									top: '50%',
+									left: '50%',
+									marginTop: '-20px',
+									marginLeft: '-20px',
+									color: isDarkMode ? '#bb86fc' : '#3f51b5',
+								}}
+							/>
+						)}
+					</motion.div>
 
 					<motion.div
 						initial={{ opacity: 0, y: -20 }}
@@ -294,8 +226,8 @@ const Profile = () => {
 							onChange={handleBioChange}
 							fullWidth
 							multiline
-							minRows={4} 
-							maxRows={8} 
+							minRows={4}
+							maxRows={8}
 							margin='normal'
 							variant='outlined'
 							sx={{
@@ -387,113 +319,9 @@ const Profile = () => {
 					</Box>
 				</Box>
 			</Paper>
-
-			{/* Posts Section */}
-			<Box sx={{ width: '100%', maxWidth: 935, margin: '0 auto', padding: '0 20px' }}>
-				<Box sx={{
-					display: 'grid',
-					gridTemplateColumns: 'repeat(3, 1fr)',
-					gap: 2,
-					mt: 4
-				}}>
-					{posts.map((post) => (
-						<Card
-							key={post.id}
-							component={motion.div}
-							whileHover={{ scale: 1.02 }}
-							onClick={() => handleOpenComments(post.id)}
-							sx={{
-								backgroundColor: isDarkMode ? '#1e1e1e' : '#ffffff',
-								position: 'relative',
-								aspectRatio: '1',
-								cursor: 'pointer'
-							}}
-							<Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-								<Box sx={{ display: 'flex', alignItems: 'center' }}>
-									<Avatar src={post.user.avatar} />
-									<Box sx={{ ml: 2 }}>
-										<Typography variant="subtitle1" sx={{ color: isDarkMode ? '#ffffff' : '#000000' }}>
-											{post.user.name}
-										</Typography>
-										<Typography variant="caption" sx={{ color: isDarkMode ? '#bb86fc' : '#3f51b5' }}>
-											{post.timestamp}
-										</Typography>
-									</Box>
-								</Box>
-								<Box>
-									<IconButton onClick={() => handleEditPost(post)} sx={{ color: isDarkMode ? '#bb86fc' : '#3f51b5' }}>
-										<EditIcon />
-									</IconButton>
-									<IconButton onClick={() => handleDeletePost(post.id)} sx={{ color: isDarkMode ? '#f44336' : '#f44336' }}>
-										<DeleteIcon />
-									</IconButton>
-								</Box>
-							</Box>
-							<CardMedia
-								component="img"
-								image={post.image}
-								alt="Post image"
-								sx={{
-									height: '100%',
-									objectFit: 'cover'
-								}}
-							<CardContent>
-								<Typography variant="body1" sx={{ color: isDarkMode ? '#ffffff' : '#000000' }}>
-									{post.description}
-								</Typography>
-								<Divider sx={{ my: 1 }} />
-								<Box sx={{
-								position: 'absolute',
-								bottom: 0,
-								left: 0,
-								right: 0,
-								p: 1,
-								background: 'rgba(0,0,0,0.5)',
-								display: 'flex',
-								gap: 2
-							}}>
-								<Box sx={{ display: 'flex', alignItems: 'center', color: 'white' }}>
-									<FavoriteIcon sx={{ fontSize: 18, mr: 0.5 }} />
-									<Typography variant="caption">{post.likes}</Typography>
-								</Box>
-								<Box sx={{ display: 'flex', alignItems: 'center', color: 'white' }}>
-									<CommentIcon sx={{ fontSize: 18, mr: 0.5 }} />
-									<Typography variant="caption">
-										{(comments[post.id] || []).length}
-									</Typography>
-								</Box>
-							</CardContent>
-						</Card>
-					))}
-				</Box>
-			</Box>
-
-			{/* Edit Post Dialog */}
-			<Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)}>
-				<DialogTitle>Редактировать пост</DialogTitle>
-				<DialogContent>
-					<TextField
-						autoFocus
-						margin="dense"
-						label="Описание"
-						type="text"
-						fullWidth
-						multiline
-						rows={4}
-						value={editedDescription}
-						onChange={(e) => setEditedDescription(e.target.value)}
-					/>
-				</DialogContent>
-				<DialogActions>
-					<Button onClick={() => setEditDialogOpen(false)}>Отмена</Button>
-					<Button onClick={handleSaveEdit} variant="contained" color="primary">Сохранить</Button>
-				</DialogActions>
-			</Dialog>
-
-			{/* Comments Dialog */}
+		</ProfileContainer>
 	);
 };
-
 
 export default Profile;
 
