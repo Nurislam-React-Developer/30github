@@ -15,8 +15,8 @@ import { Particles } from 'react-particles'; // Обновленный импо�
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { loadFull } from 'tsparticles'; // Обновленный импорт
-import ForestBackGround from '../../public/forestBackground.png';
-import MounthainBackground from '../../public/mountainsBackground.png';
+import ForestBackGround from '../../public/forestBackgorund.png';
+import MounthainBackground from '../../public/mounthBackground.png';
 import OceanBackground from '../../public/oceanBackground.png';
 import DefaultBackground from '../../public/redPhone.png';
 import SunsentBackGround from '../../public/sunsetBackground.png';

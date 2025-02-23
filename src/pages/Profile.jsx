@@ -16,7 +16,7 @@ import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { motion } from 'framer-motion'; 
+import { motion } from 'framer-motion';
 
 const Profile = () => {
 	const navigate = useNavigate();
@@ -49,17 +49,17 @@ const Profile = () => {
 
 	const handleBioChange = (e) => {
 		const value = e.target.value;
-		setBio(value); 
+		setBio(value);
 	};
 
 	const handleAvatarUpload = (e) => {
 		const file = e.target.files[0];
 		if (file) {
-			setIsAvatarLoading(true); 
+			setIsAvatarLoading(true);
 			const reader = new FileReader();
 			reader.onloadend = () => {
 				setAvatar(reader.result);
-				setIsAvatarLoading(false); 
+				setIsAvatarLoading(false);
 			};
 			reader.readAsDataURL(file);
 		}
@@ -226,8 +226,8 @@ const Profile = () => {
 							onChange={handleBioChange}
 							fullWidth
 							multiline
-							minRows={4} 
-							maxRows={8} 
+							minRows={4}
+							maxRows={8}
 							margin='normal'
 							variant='outlined'
 							sx={{
