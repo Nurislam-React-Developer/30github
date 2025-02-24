@@ -178,6 +178,7 @@ const Home = () => {
 								<IconButton
 									size="small"
 									color={darkMode ? 'secondary' : 'primary'}
+									variant="contained"
 									onClick={() => handleLike(post.id)}
 								>
 									<FavoriteIcon />
@@ -203,6 +204,19 @@ const Home = () => {
 										{post.comments}
 									</Typography>
 								</IconButton>
+								<Button
+									variant="contained"
+									size="small"
+									color={darkMode ? 'secondary' : 'primary'}
+									sx={{
+										backgroundColor: darkMode ? '#bb86fc' : '#3f51b5',
+										'&:hover': {
+											backgroundColor: darkMode ? '#9c27b0' : '#303f9f',
+										},
+									}}
+								>
+									Просто
+								</Button>
 								<IconButton
 									size="small"
 									color={darkMode ? 'secondary' : 'primary'}
