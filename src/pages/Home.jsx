@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
 	Box,
 	Card,
@@ -18,6 +18,7 @@ import {
 	ListItem,
 	ListItemAvatar,
 	ListItemText,
+	CircularProgress,
 } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import CommentIcon from '@mui/icons-material/Comment';
@@ -26,70 +27,46 @@ import { motion } from 'framer-motion';
 import { useTheme } from '../theme/ThemeContext';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../store/userSlice';
+import { getPosts, likePost, getComments, addComment } from '../store/request/api';
 
 const Home = () => {
 	const { darkMode } = useTheme();
 	const currentUser = useSelector(selectCurrentUser);
 	const [selectedPost, setSelectedPost] = useState(null);
 	const [commentText, setCommentText] = useState('');
-	const [posts, setPosts] = useState(() => {
-		// Load posts from localStorage
-		const savedPosts = localStorage.getItem('posts');
-		const initialPosts = [
-			{
-				id: 1,
-				user: {
-					name: 'Анна Смирнова',
-					avatar: 'https://i.pravatar.cc/150?img=1',
-				},
-				image: 'https://source.unsplash.com/random/800x600?nature',
-				description: 'Прекрасный день на природе! 🌿',
-				likes: 42,
-				liked: false,
-				comments: [],
-				timestamp: '2 часа назад',
-			},
-			{
-				id: 2,
-				user: {
-					name: 'Максим Петров',
-					avatar: 'https://i.pravatar.cc/150?img=2',
-				},
-				image: 'https://source.unsplash.com/random/800x600?city',
-				description: 'Городские приключения продолжаются! 🌆',
-				likes: 28,
-				liked: false,
-				comments: [],
-				timestamp: '4 часа назад',
-			},
-		];
-		
-		if (savedPosts) {
-			const parsedPosts = JSON.parse(savedPosts);
-			// Ensure comments array exists for each post
-			const postsWithComments = parsedPosts.map(post => ({
-				...post,
-				comments: Array.isArray(post.comments) ? post.comments : []
-			}));
-			return [...postsWithComments, ...initialPosts];
-		}
-		
-		return initialPosts;
-	});
+	const [posts, setPosts] = useState([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(null);
 
-	const handleLike = (postId) => {
-		const updatedPosts = posts.map(post => {
-			if (post.id === postId && !post.liked) {
-				return { 
-					...post, 
-					likes: post.likes + 1,
-					liked: true
-				};
+	useEffect(() => {
+		const fetchPosts = async () => {
+			try {
+				const data = await getPosts();
+				setPosts(data);
+				setError(null);
+			} catch (err) {
+				setError('Failed to fetch posts');
+				console.error('Error fetching posts:', err);
+			} finally {
+				setLoading(false);
 			}
-			return post;
-		});
-		setPosts(updatedPosts);
-		localStorage.setItem('posts', JSON.stringify(updatedPosts));
+		};
+		fetchPosts();
+	}, []);
+
+	const handleLike = async (postId) => {
+		try {
+			const updatedPost = await likePost(postId);
+			const updatedPosts = posts.map(post => {
+				if (post.id === postId) {
+					return { ...post, ...updatedPost };
+				}
+				return post;
+			});
+			setPosts(updatedPosts);
+		} catch (error) {
+			console.error('Error liking post:', error);
+		}
 	};
 
 	const handleOpenComments = (post) => {
@@ -101,34 +78,29 @@ const Home = () => {
 		setCommentText('');
 	};
 
-	const handleAddComment = () => {
+	const handleAddComment = async () => {
 		if (!commentText.trim()) return;
 
-		const updatedPosts = posts.map(post => {
-			if (post.id === selectedPost.id) {
-				const newComment = {
-					id: Date.now(),
-					user: {
-						name: currentUser.name,
-						avatar: currentUser.avatar
-					},
-					text: commentText,
-					timestamp: new Date().toLocaleString('ru-RU', {
-						hour: '2-digit',
-						minute: '2-digit'
-					})
-				};
-				return {
-					...post,
-					comments: [...(post.comments || []), newComment]
-				};
-			}
-			return post;
-		});
-
-		setPosts(updatedPosts);
-		localStorage.setItem('posts', JSON.stringify(updatedPosts));
-		setCommentText('');
+		try {
+			const commentData = {
+				text: commentText,
+				userId: currentUser.id
+			};
+			const newComment = await addComment(selectedPost.id, commentData);
+			const updatedPosts = posts.map(post => {
+				if (post.id === selectedPost.id) {
+					return {
+						...post,
+						comments: [...(post.comments || []), newComment]
+					};
+				}
+				return post;
+			});
+			setPosts(updatedPosts);
+			setCommentText('');
+		} catch (error) {
+			console.error('Error adding comment:', error);
+		}
 	};
 
 	return (
@@ -143,6 +115,15 @@ const Home = () => {
 				minHeight: '100vh',
 			}}
 		>
+			{loading ? (
+				<Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+					<CircularProgress color={darkMode ? 'secondary' : 'primary'} />
+				</Box>
+			) : error ? (
+				<Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+					<Typography color="error">{error}</Typography>
+				</Box>
+			) : (
 			<Box
 				sx={{
 					maxWidth: 600,
