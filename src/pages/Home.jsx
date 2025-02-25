@@ -124,13 +124,13 @@ const Home = () => {
 					<Typography color="error">{error}</Typography>
 				</Box>
 			) : (
-			<Box
-				sx={{
-					maxWidth: 600,
-					margin: '0 auto',
-					width: '100%',
-				}}
-			>
+				<Box
+					sx={{
+						maxWidth: 600,
+						margin: '0 auto',
+						width: '100%',
+					}}
+				>
 				{posts.map((post) => (
 					<Card
 						key={post.id}
@@ -222,7 +222,8 @@ const Home = () => {
 						</CardContent>
 					</Card>
 				))}
-			</Box>
+				</Box>
+			)}
 
 			{/* Comments Modal */}
 			<Dialog
