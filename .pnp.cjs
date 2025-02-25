@@ -39,6 +39,7 @@ const RAW_RUNTIME_STATE =
           ["@types/react-dom", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:19.0.3"],\
           ["@vitejs/plugin-react-swc", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:3.8.0"],\
           ["axios", "npm:1.7.9"],\
+          ["axios-retry", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:4.5.0"],\
           ["eslint", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:9.20.1"],\
           ["eslint-plugin-react", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:7.37.4"],\
           ["eslint-plugin-react-hooks", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:5.1.0"],\
@@ -75,6 +76,7 @@ const RAW_RUNTIME_STATE =
           ["@types/react-dom", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:19.0.3"],\
           ["@vitejs/plugin-react-swc", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:3.8.0"],\
           ["axios", "npm:1.7.9"],\
+          ["axios-retry", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:4.5.0"],\
           ["eslint", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:9.20.1"],\
           ["eslint-plugin-react", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:7.37.4"],\
           ["eslint-plugin-react-hooks", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:5.1.0"],\
@@ -2389,6 +2391,29 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["axios-retry", [\
+      ["npm:4.5.0", {\
+        "packageLocation": "../.yarn/berry/cache/axios-retry-npm-4.5.0-f595810c17-10c0.zip/node_modules/axios-retry/",\
+        "packageDependencies": [\
+          ["axios-retry", "npm:4.5.0"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:4.5.0", {\
+        "packageLocation": "./.yarn/__virtual__/axios-retry-virtual-1da99d580f/2/.yarn/berry/cache/axios-retry-npm-4.5.0-f595810c17-10c0.zip/node_modules/axios-retry/",\
+        "packageDependencies": [\
+          ["axios-retry", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:4.5.0"],\
+          ["@types/axios", null],\
+          ["axios", "npm:1.7.9"],\
+          ["is-retry-allowed", "npm:2.2.0"]\
+        ],\
+        "packagePeers": [\
+          "@types/axios",\
+          "axios"\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["babel-plugin-macros", [\
       ["npm:3.1.0", {\
         "packageLocation": "../.yarn/berry/cache/babel-plugin-macros-npm-3.1.0-320e781f4e-10c0.zip/node_modules/babel-plugin-macros/",\
@@ -3923,6 +3948,15 @@ const RAW_RUNTIME_STATE =
           ["gopd", "npm:1.2.0"],\
           ["has-tostringtag", "npm:1.0.2"],\
           ["hasown", "npm:2.0.2"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["is-retry-allowed", [\
+      ["npm:2.2.0", {\
+        "packageLocation": "../.yarn/berry/cache/is-retry-allowed-npm-2.2.0-b4b58fc581-10c0.zip/node_modules/is-retry-allowed/",\
+        "packageDependencies": [\
+          ["is-retry-allowed", "npm:2.2.0"]\
         ],\
         "linkType": "HARD"\
       }]\
