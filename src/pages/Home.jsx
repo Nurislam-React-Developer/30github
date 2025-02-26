@@ -43,20 +43,13 @@ const Home = () => {
 			try {
 				setLoading(true);
 				setError(null);
-				const data = await getPosts();
-				if (Array.isArray(data)) {
-					setPosts(data);
-				} else {
-					throw new Error('Invalid data format received from server');
-				}
+				// Load posts from localStorage
+				const localPosts = JSON.parse(localStorage.getItem('posts') || '[]');
+				setPosts(localPosts);
 			} catch (err) {
 				setPosts([]);
-				if (err.message === 'RESOURCE_NOT_FOUND') {
-					setError('The posts resource could not be found. Please try again later.');
-				} else {
-					setError(err.message || 'Failed to fetch posts. Please check your internet connection and try again.');
-				}
-				console.error('Error fetching posts:', err);
+				setError('Failed to load posts. Please try again.');
+				console.error('Error loading posts:', err);
 			} finally {
 				setLoading(false);
 			}
@@ -92,11 +85,16 @@ const Home = () => {
 		if (!commentText.trim()) return;
 
 		try {
-			const commentData = {
+			const newComment = {
+				id: Date.now(),
+				user: {
+					name: currentUser.name,
+					avatar: currentUser.avatar
+				},
 				text: commentText,
-				userId: currentUser.id
+				timestamp: new Date().toISOString()
 			};
-			const newComment = await addComment(selectedPost.id, commentData);
+
 			const updatedPosts = posts.map(post => {
 				if (post.id === selectedPost.id) {
 					return {
@@ -106,6 +104,9 @@ const Home = () => {
 				}
 				return post;
 			});
+
+			// Update posts in localStorage
+			localStorage.setItem('posts', JSON.stringify(updatedPosts));
 			setPosts(updatedPosts);
 			setCommentText('');
 		} catch (error) {
