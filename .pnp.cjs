@@ -40,6 +40,7 @@ const RAW_RUNTIME_STATE =
           ["@vitejs/plugin-react-swc", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:3.8.0"],\
           ["axios", "npm:1.7.9"],\
           ["axios-retry", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:4.5.0"],\
+          ["date-fns", "npm:4.1.0"],\
           ["eslint", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:9.20.1"],\
           ["eslint-plugin-react", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:7.37.4"],\
           ["eslint-plugin-react-hooks", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:5.1.0"],\
@@ -77,6 +78,7 @@ const RAW_RUNTIME_STATE =
           ["@vitejs/plugin-react-swc", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:3.8.0"],\
           ["axios", "npm:1.7.9"],\
           ["axios-retry", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:4.5.0"],\
+          ["date-fns", "npm:4.1.0"],\
           ["eslint", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:9.20.1"],\
           ["eslint-plugin-react", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:7.37.4"],\
           ["eslint-plugin-react-hooks", "virtual:8800d7b10d93095886df2266c0527421339ca4ef3781c51791cb6b36e581df804c2e992aa8ae33d645a35d239baa803faf3aacb81c9d8251fbd58b558b6196c0#npm:5.1.0"],\
@@ -2671,6 +2673,15 @@ const RAW_RUNTIME_STATE =
           ["call-bound", "npm:1.0.3"],\
           ["es-errors", "npm:1.3.0"],\
           ["is-data-view", "npm:1.0.2"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["date-fns", [\
+      ["npm:4.1.0", {\
+        "packageLocation": "../.yarn/berry/cache/date-fns-npm-4.1.0-764604ee0f-10c0.zip/node_modules/date-fns/",\
+        "packageDependencies": [\
+          ["date-fns", "npm:4.1.0"]\
         ],\
         "linkType": "HARD"\
       }]\

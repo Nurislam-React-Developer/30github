@@ -19,15 +19,22 @@ import {
 	ListItemAvatar,
 	ListItemText,
 	CircularProgress,
+	Menu,
+	MenuItem,
 } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import CommentIcon from '@mui/icons-material/Comment';
 import ShareIcon from '@mui/icons-material/Share';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { motion } from 'framer-motion';
 import { useTheme } from '../theme/ThemeContext';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../store/userSlice';
 import { getPosts, likePost, getComments, addComment } from '../store/request/api';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 const Home = () => {
 	const { darkMode } = useTheme();
@@ -37,6 +44,10 @@ const Home = () => {
 	const [posts, setPosts] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState(null);
+	const [editingPost, setEditingPost] = useState(null);
+	const [editText, setEditText] = useState('');
+	const [anchorEl, setAnchorEl] = useState(null);
+	const [selectedPostForMenu, setSelectedPostForMenu] = useState(null);
 
 	useEffect(() => {
 		const fetchPosts = async () => {
@@ -109,14 +120,64 @@ const Home = () => {
 				return post;
 			});
 
-			// Update posts in localStorage
 			localStorage.setItem('posts', JSON.stringify(updatedPosts));
 			setPosts(updatedPosts);
 			setCommentText('');
-			// Close the modal after adding comment
-			setSelectedPost(null);
 		} catch (error) {
 			console.error('Error adding comment:', error);
+		}
+	};
+
+	const handlePostMenuOpen = (event, post) => {
+		event.stopPropagation();
+		setAnchorEl(event.currentTarget);
+		setSelectedPostForMenu(post);
+	};
+
+	const handlePostMenuClose = () => {
+		setAnchorEl(null);
+		setSelectedPostForMenu(null);
+	};
+
+	const handleEditPost = (post) => {
+		setEditingPost(post);
+		setEditText(post.description);
+		handlePostMenuClose();
+	};
+
+	const handleSaveEdit = () => {
+		const updatedPosts = posts.map(post => {
+			if (post.id === editingPost.id) {
+				return {
+					...post,
+					description: editText,
+					edited: true
+				};
+			}
+			return post;
+		});
+		setPosts(updatedPosts);
+		localStorage.setItem('posts', JSON.stringify(updatedPosts));
+		setEditingPost(null);
+		setEditText('');
+	};
+
+	const handleDeletePost = (postId) => {
+		const updatedPosts = posts.filter(post => post.id !== postId);
+		setPosts(updatedPosts);
+		localStorage.setItem('posts', JSON.stringify(updatedPosts));
+		handlePostMenuClose();
+	};
+
+	const formatTimestamp = (timestamp) => {
+		try {
+			if (!timestamp) return 'Invalid date';
+			const date = new Date(timestamp);
+			if (isNaN(date.getTime())) return 'Invalid date';
+			return format(date, 'dd MMMM в HH:mm', { locale: ru });
+		} catch (error) {
+			console.error('Error formatting timestamp:', error);
+			return 'Invalid date';
 		}
 	};
 
@@ -158,89 +219,131 @@ const Home = () => {
 							backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
 						}}
 					>
-						<Box sx={{ p: 2, display: 'flex', alignItems: 'center' }}>
-							<Avatar src={post.user.avatar} />
-							<Box sx={{ ml: 2 }}>
-								<Typography
-									variant="subtitle1"
-									component="div"
-									sx={{ color: darkMode ? '#ffffff' : '#000000' }}
-								>
-									{post.user.name}
-								</Typography>
-								<Typography
-									variant="caption"
-									color="textSecondary"
-									component="div"
-									sx={{ color: darkMode ? '#bb86fc' : '#3f51b5' }}
-								>
-									{post.timestamp}
-								</Typography>
+						<Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+							<Box sx={{ display: 'flex', alignItems: 'center' }}>
+								<Avatar src={post.user.avatar} />
+								<Box sx={{ ml: 2 }}>
+									<Typography variant="subtitle1" component="div" sx={{ color: darkMode ? '#ffffff' : '#000000' }}>
+										{post.user.name}
+									</Typography>
+									<Typography variant="caption" color="textSecondary" component="div" sx={{ color: darkMode ? '#bb86fc' : '#3f51b5' }}>
+										{formatTimestamp(post.timestamp)}
+										{post.edited && ' (изменено)'}
+									</Typography>
+								</Box>
 							</Box>
+							{post.user.name === currentUser.name && (
+								<IconButton onClick={(e) => handlePostMenuOpen(e, post)}>
+									<MoreVertIcon sx={{ color: darkMode ? '#ffffff' : '#000000' }} />
+								</IconButton>
+							)}
 						</Box>
-						<CardMedia
-							component="img"
-							image={post.image}
-							alt="Post image"
-							height="400"
-							sx={{ objectFit: 'cover' }}
-						/>
-						<CardContent>
-							<Typography
-								variant="body1"
-								component="div"
-								gutterBottom
-								sx={{ color: darkMode ? '#ffffff' : '#000000' }}
-							>
-								{post.description}
-							</Typography>
-							<Divider sx={{ my: 1 }} />
-							<Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-								<IconButton
-									size="small"
-									color={darkMode ? 'secondary' : 'primary'}
-									variant="contained"
-									onClick={() => handleLike(post.id)}
-									
+						{editingPost?.id === post.id ? (
+							<Box sx={{ p: 2 }}>
+								<TextField
+									fullWidth
+									multiline
+									value={editText}
+									onChange={(e) => setEditText(e.target.value)}
 									sx={{
-										color: post.liked ? '#ff1744' : '#9e9e9e'
+										mb: 2,
+										'& .MuiInputBase-input': {
+											color: darkMode ? '#ffffff' : '#000000',
+										},
 									}}
-								>
-									<FavoriteIcon />
-									<Typography
-										variant="caption"
-										component="span"
-										sx={{ ml: 1 }}
-									>
-										{post.likes}
-									</Typography>
-								</IconButton>
-								<IconButton
-									size="small"
-									color={darkMode ? 'secondary' : 'primary'}
-									onClick={() => handleOpenComments(post)}
-								>
-									<CommentIcon />
-									<Typography
-										variant="caption"
-										component="span"
-										sx={{ ml: 1 }}
-									>
-										{post.comments?.length || 0}
-									</Typography>
-								</IconButton>
-								<IconButton
-									size="small"
-									color={darkMode ? 'secondary' : 'primary'}
-								>
-									<ShareIcon />
-								</IconButton>
+								/>
+								<Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+									<Button onClick={() => setEditingPost(null)}>Отмена</Button>
+									<Button variant="contained" onClick={handleSaveEdit}>Сохранить</Button>
+								</Box>
 							</Box>
-						</CardContent>
+						) : (
+							<>
+								<CardMedia
+									component="img"
+									image={post.image}
+									alt="Post image"
+									height="400"
+									sx={{ objectFit: 'cover' }}
+								/>
+								<CardContent>
+									<Typography
+										variant="body1"
+										component="div"
+										gutterBottom
+										sx={{ color: darkMode ? '#ffffff' : '#000000' }}
+									>
+										{post.description}
+									</Typography>
+									<Divider sx={{ my: 1 }} />
+									<Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+										<IconButton
+											size="small"
+											color={darkMode ? 'secondary' : 'primary'}
+											variant="contained"
+											onClick={() => handleLike(post.id)}
+											sx={{
+												color: post.liked ? '#ff1744' : '#9e9e9e'
+											}}
+										>
+											<FavoriteIcon />
+											<Typography
+												variant="caption"
+												component="span"
+												sx={{ ml: 1 }}
+											>
+												{post.likes}
+											</Typography>
+										</IconButton>
+										<IconButton
+											size="small"
+											color={darkMode ? 'secondary' : 'primary'}
+											onClick={() => handleOpenComments(post)}
+										>
+											<CommentIcon />
+											<Typography
+												variant="caption"
+												component="span"
+												sx={{ ml: 1 }}
+											>
+												{post.comments?.length || 0}
+											</Typography>
+										</IconButton>
+										<IconButton
+											size="small"
+											color={darkMode ? 'secondary' : 'primary'}
+										>
+											<ShareIcon />
+										</IconButton>
+									</Box>
+								</CardContent>
+							</>
+						)}
 					</Card>
 				))}
 				</Box>
 			)}
+
+			<Menu
+				anchorEl={anchorEl}
+				open={Boolean(anchorEl)}
+				onClose={handlePostMenuClose}
+				PaperProps={{
+					sx: {
+						backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
+						color: darkMode ? '#ffffff' : '#000000',
+					},
+				}}
+			>
+				<MenuItem onClick={() => handleEditPost(selectedPostForMenu)}>
+					<EditIcon sx={{ mr: 1 }} />
+					Редактировать
+				</MenuItem>
+				<MenuItem onClick={() => handleDeletePost(selectedPostForMenu.id)} sx={{ color: 'error.main' }}>
+					<DeleteIcon sx={{ mr: 1 }} />
+					Удалить
+				</MenuItem>
+			</Menu>
 
 			{/* Comments Modal */}
 			<Dialog
@@ -303,7 +406,7 @@ const Home = () => {
 											variant="caption"
 											color={darkMode ? 'rgba(255, 255, 255, 0.6)' : 'text.secondary'}
 										>
-											{comment.timestamp}
+											{formatTimestamp(comment.timestamp)}
 										</Typography>
 									}
 									sx={{
