@@ -41,11 +41,21 @@ const Home = () => {
 	useEffect(() => {
 		const fetchPosts = async () => {
 			try {
-				const data = await getPosts();
-				setPosts(data);
+				setLoading(true);
 				setError(null);
+				const data = await getPosts();
+				if (Array.isArray(data)) {
+					setPosts(data);
+				} else {
+					throw new Error('Invalid data format received from server');
+				}
 			} catch (err) {
-				setError('Failed to fetch posts');
+				setPosts([]);
+				if (err.message === 'RESOURCE_NOT_FOUND') {
+					setError('The posts resource could not be found. Please try again later.');
+				} else {
+					setError(err.message || 'Failed to fetch posts. Please check your internet connection and try again.');
+				}
 				console.error('Error fetching posts:', err);
 			} finally {
 				setLoading(false);

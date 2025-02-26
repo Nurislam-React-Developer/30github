@@ -1,13 +1,14 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 5000, // 5 second timeout
 });
 
 // Configure retry logic
@@ -25,7 +26,25 @@ export const getPosts = async () => {
     const response = await api.get('/posts');
     return response.data;
   } catch (error) {
-    const errorMessage = error.response?.data?.message || 'Failed to fetch posts. Please try again later.';
+    let errorMessage = 'Failed to fetch posts. Please try again later.';
+    
+    if (error.code === 'ECONNABORTED') {
+      errorMessage = 'Request timed out. Please check your internet connection.';
+    } else if (error.response) {
+      switch (error.response.status) {
+        case 404:
+          errorMessage = 'RESOURCE_NOT_FOUND';
+          break;
+        case 500:
+          errorMessage = 'Server error. Please try again later.';
+          break;
+        default:
+          errorMessage = error.response.data?.message || errorMessage;
+      }
+    } else if (error.request) {
+      errorMessage = 'No response received from server. Please check your internet connection.';
+    }
+    
     console.error('Error fetching posts:', error);
     throw new Error(errorMessage);
   }
