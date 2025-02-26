@@ -59,14 +59,18 @@ const Home = () => {
 
 	const handleLike = async (postId) => {
 		try {
-			const updatedPost = await likePost(postId);
 			const updatedPosts = posts.map(post => {
 				if (post.id === postId) {
-					return { ...post, ...updatedPost };
+					return {
+						...post,
+						liked: !post.liked,
+						likes: post.liked ? post.likes - 1 : post.likes + 1
+					};
 				}
 				return post;
 			});
 			setPosts(updatedPosts);
+			localStorage.setItem('posts', JSON.stringify(updatedPosts));
 		} catch (error) {
 			console.error('Error liking post:', error);
 		}
@@ -109,6 +113,8 @@ const Home = () => {
 			localStorage.setItem('posts', JSON.stringify(updatedPosts));
 			setPosts(updatedPosts);
 			setCommentText('');
+			// Close the modal after adding comment
+			setSelectedPost(null);
 		} catch (error) {
 			console.error('Error adding comment:', error);
 		}
@@ -195,9 +201,9 @@ const Home = () => {
 									color={darkMode ? 'secondary' : 'primary'}
 									variant="contained"
 									onClick={() => handleLike(post.id)}
-									disabled={post.liked}
+									
 									sx={{
-										color: post.liked ? '#ff1744' : (darkMode ? '#bb86fc' : '#3f51b5')
+										color: post.liked ? '#ff1744' : '#9e9e9e'
 									}}
 								>
 									<FavoriteIcon />
