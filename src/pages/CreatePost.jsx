@@ -12,12 +12,14 @@ import { motion } from 'framer-motion';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../theme/ThemeContext';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectCurrentUser } from '../store/userSlice';
 
 const CreatePost = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { darkMode } = useTheme();
+  const currentUser = useSelector(selectCurrentUser);
   const [postData, setPostData] = useState({
     description: '',
     image: null,
@@ -51,8 +53,8 @@ const CreatePost = () => {
     const newPost = {
       id: Date.now(),
       user: {
-        name: localStorage.getItem('profileName') || 'User',
-        avatar: localStorage.getItem('profileAvatar') || 'https://i.pravatar.cc/150?img=3',
+        name: currentUser.name,
+        avatar: currentUser.avatar,
       },
       image: postData.imagePreview,
       description: postData.description,
