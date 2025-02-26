@@ -1,7 +1,8 @@
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
+import { mockPosts } from '../mockData';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -26,7 +27,8 @@ export const getPosts = async () => {
     const response = await api.get('/posts');
     return response.data;
   } catch (error) {
-    let errorMessage = 'Failed to fetch posts. Please try again later.';
+    console.warn('API Error, falling back to mock data:', error);
+    return mockPosts;
     
     if (error.code === 'ECONNABORTED') {
       errorMessage = 'Request timed out. Please check your internet connection.';

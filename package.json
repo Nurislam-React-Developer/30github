@@ -19,6 +19,7 @@
     "@tsparticles/react": "^3.0.0",
     "axios": "^1.7.9",
     "axios-retry": "^4.5.0",
+    "date-fns": "^4.1.0",
     "framer-motion": "^12.4.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

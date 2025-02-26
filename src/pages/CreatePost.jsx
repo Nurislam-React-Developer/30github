@@ -12,12 +12,14 @@ import { motion } from 'framer-motion';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../theme/ThemeContext';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectCurrentUser } from '../store/userSlice';
 
 const CreatePost = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { darkMode } = useTheme();
+  const currentUser = useSelector(selectCurrentUser);
   const [postData, setPostData] = useState({
     description: '',
     image: null,
@@ -46,26 +48,86 @@ const CreatePost = () => {
       return;
     }
 
-    // Here we would typically send the data to a server
-    // For now, we'll just add it to local storage
-    const newPost = {
-      id: Date.now(),
-      user: {
-        name: localStorage.getItem('profileName') || 'User',
-        avatar: localStorage.getItem('profileAvatar') || 'https://i.pravatar.cc/150?img=3',
-      },
-      image: postData.imagePreview,
-      description: postData.description,
-      likes: 0,
-      comments: [],
-      timestamp: new Date().toISOString(),
-    };
+    try {
+      // Compress image if present
+      let compressedImage = postData.imagePreview;
+      if (postData.imagePreview) {
+        const img = new Image();
+        img.src = postData.imagePreview;
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set maximum dimensions
+        const maxWidth = 800;
+        const maxHeight = 600;
+        let width = img.width;
+        let height = img.height;
+        
+        // Calculate new dimensions
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Compress image to JPEG with reduced quality
+        compressedImage = canvas.toDataURL('image/jpeg', 0.7);
+      }
 
-    const existingPosts = JSON.parse(localStorage.getItem('posts') || '[]');
-    localStorage.setItem('posts', JSON.stringify([newPost, ...existingPosts]));
+      const newPost = {
+        id: Date.now(),
+        user: {
+          name: currentUser.name,
+          avatar: currentUser.avatar,
+        },
+        image: compressedImage,
+        description: postData.description,
+        likes: 0,
+        comments: [],
+        timestamp: new Date().toISOString(),
+      };
 
-    // Navigate back to home page
-    navigate('/');
+      // Get existing posts
+      const existingPosts = JSON.parse(localStorage.getItem('posts') || '[]');
+      
+      // Limit to most recent 20 posts
+      const updatedPosts = [newPost, ...existingPosts.slice(0, 19)];
+      
+      try {
+        localStorage.setItem('posts', JSON.stringify(updatedPosts));
+      } catch (storageError) {
+        // If storage is full, remove older posts until it fits
+        while (updatedPosts.length > 1) {
+          updatedPosts.pop(); // Remove the oldest post
+          try {
+            localStorage.setItem('posts', JSON.stringify(updatedPosts));
+            break;
+          } catch (e) {
+            continue;
+          }
+        }
+        
+        if (updatedPosts.length <= 1) {
+          throw new Error('Unable to save post due to storage limitations');
+        }
+      }
+
+      // Navigate back to home page
+      navigate('/');
+    } catch (error) {
+      console.error('Error saving post:', error);
+      alert('Failed to save post. ' + error.message);
+    }
   };
 
   return (
