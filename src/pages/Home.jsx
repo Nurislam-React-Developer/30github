@@ -10,7 +10,6 @@ import {
 	TextField,
 	Button,
 	Divider,
-	Paper,
 	Dialog,
 	DialogTitle,
 	DialogContent,
@@ -127,8 +126,46 @@ const Home = () => {
 			localStorage.setItem('posts', JSON.stringify(updatedPosts));
 			setPosts(updatedPosts);
 			setCommentText('');
+			toast.success('Комментарий добавлен!', {
+				position: "top-right",
+				autoClose: 3000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				theme: darkMode ? 'dark' : 'light'
+			});
 		} catch (error) {
 			console.error('Error adding comment:', error);
+			toast.error('Ошибка при добавлении комментария');
+		}
+	};
+
+	const handleDeleteComment = (postId, commentId) => {
+		try {
+			const updatedPosts = posts.map(post => {
+				if (post.id === postId) {
+					return {
+						...post,
+						comments: post.comments.filter(comment => comment.id !== commentId)
+					};
+				}
+				return post;
+			});
+			setPosts(updatedPosts);
+			localStorage.setItem('posts', JSON.stringify(updatedPosts));
+			toast.success('Комментарий удален!', {
+				position: "top-right",
+				autoClose: 3000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				theme: darkMode ? 'dark' : 'light'
+			});
+		} catch (error) {
+			console.error('Error deleting comment:', error);
+			toast.error('Ошибка при удалении комментария');
 		}
 	};
 
@@ -381,53 +418,67 @@ const Home = () => {
 								alignitems="flex-start"
 								sx={{
 									py: 0.5,
+									display: 'flex',
+									justifyContent: 'space-between',
 									'&:hover': {
 										backgroundColor: darkMode ? 'rgba(187, 134, 252, 0.08)' : 'rgba(63, 81, 181, 0.08)'
 									}
 								}}
 							>
-								<ListItemAvatar>
-									<Avatar 
-										src={comment.user.avatar}
-										sx={{ width: 32, height: 32 }}
-									/>
-								</ListItemAvatar>
-								<ListItemText
-									primary={
-										<Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-											<Typography
-												component="span"
-												variant="subtitle2"
-												color={darkMode ? '#ffffff' : 'text.primary'}
-												sx={{ fontWeight: 600 }}
-											>
-												{comment.user.name}
-											</Typography>
-											<Typography
-												component="span"
-												variant="body2"
-												color={darkMode ? '#ffffff' : 'text.primary'}
-											>
-												{comment.text}
-											</Typography>
-										</Box>
-									}
-									secondary={
-										<Typography
-											component="span"
-											variant="caption"
-											color={darkMode ? 'rgba(255, 255, 255, 0.6)' : 'text.secondary'}
-										>
-											{formatTimestamp(comment.timestamp)}
-										</Typography>
-									}
-									sx={{
-										margin: 0,
-										'& .MuiListItemText-secondary': {
-											mt: 0.5
+								<Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+									<ListItemAvatar>
+										<Avatar 
+											src={comment.user.avatar}
+											sx={{ width: 32, height: 32 }}
+										/>
+									</ListItemAvatar>
+									<ListItemText
+										primary={
+											<Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+												<Typography
+													component="span"
+													variant="subtitle2"
+													color={darkMode ? '#ffffff' : 'text.primary'}
+													sx={{ fontWeight: 600 }}
+												>
+													{comment.user.name}
+												</Typography>
+												<Typography
+													component="span"
+													variant="body2"
+													color={darkMode ? '#ffffff' : 'text.primary'}
+												>
+													{comment.text}
+												</Typography>
+											</Box>
 										}
-									}}
-								/>
+										secondary={
+											<Typography
+												component="span"
+												variant="caption"
+												color={darkMode ? 'rgba(255, 255, 255, 0.6)' : 'text.secondary'}
+											>
+												{formatTimestamp(comment.timestamp)}
+											</Typography>
+										}
+										sx={{
+											margin: 0,
+											'& .MuiListItemText-secondary': {
+												mt: 0.5
+											}
+										}}
+									/>
+								</Box>
+								{comment.user.name === currentUser.name && (
+									<IconButton
+										size="small"
+										onClick={() => handleDeleteComment(selectedPost.id, comment.id)}
+										color="error"
+										sx={{ ml: 1 }}
+									>
+										<DeleteIcon fontSize="small" />
+									</IconButton>
+								)}
 							</ListItem>
 						))}
 					</List>
