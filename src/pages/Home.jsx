@@ -123,18 +123,12 @@ const Home = () => {
 				return post;
 			});
 
-			localStorage.setItem('posts', JSON.stringify(updatedPosts));
+			// Update UI immediately
 			setPosts(updatedPosts);
 			setCommentText('');
-			toast.success('Комментарий добавлен!', {
-				position: "top-right",
-				autoClose: 3000,
-				hideProgressBar: false,
-				closeOnClick: true,
-				pauseOnHover: true,
-				draggable: true,
-				theme: darkMode ? 'dark' : 'light'
-			});
+
+			// Save to localStorage after UI update
+			localStorage.setItem('posts', JSON.stringify(updatedPosts));
 		} catch (error) {
 			console.error('Error adding comment:', error);
 			toast.error('Ошибка при добавлении комментария');
@@ -152,7 +146,11 @@ const Home = () => {
 				}
 				return post;
 			});
+
+			// Update UI immediately
 			setPosts(updatedPosts);
+
+			// Save to localStorage and show toast after UI update
 			localStorage.setItem('posts', JSON.stringify(updatedPosts));
 			toast.success('Комментарий удален!', {
 				position: "top-right",
