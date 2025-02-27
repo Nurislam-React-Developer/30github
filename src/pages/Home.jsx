@@ -448,8 +448,11 @@ const Home = () => {
 						position: 'absolute',
 						right: 8,
 						top: 8,
+						zIndex: 1300,
+						backgroundColor: darkMode ? 'rgba(187, 134, 252, 0.1)' : 'rgba(63, 81, 181, 0.1)',
 						color: darkMode ? '#bb86fc' : '#3f51b5',
 						'&:hover': {
+							backgroundColor: darkMode ? 'rgba(187, 134, 252, 0.2)' : 'rgba(63, 81, 181, 0.2)',
 							color: darkMode ? '#9c27b0' : '#303f9f',
 						}
 					}}
