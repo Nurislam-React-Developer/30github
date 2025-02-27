@@ -1,45 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import {
 	Box,
-	Card,
-	CardContent,
-	CardMedia,
-	Typography,
-	Avatar,
-	IconButton,
-	TextField,
-	Button,
-	Divider,
-	Dialog,
-	DialogTitle,
-	DialogContent,
-	List,
-	ListItem,
-	ListItemAvatar,
-	ListItemText,
-	CircularProgress,
 	Menu,
 	MenuItem,
+	Typography,
 } from '@mui/material';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
+import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import CommentIcon from '@mui/icons-material/Comment';
-import ShareIcon from '@mui/icons-material/Share';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { motion } from 'framer-motion';
-import { useTheme } from '../theme/ThemeContext';
-import { useSelector } from 'react-redux';
-import { selectCurrentUser } from '../store/userSlice';
-import { getPosts, likePost, getComments, addComment } from '../store/request/api';
-import { format } from 'date-fns';
-import { ru } from 'date-fns/locale';
-import CloseIcon from '@mui/icons-material/Close';
-import PostCard from '../components/ui/PostCard';
 import CommentModal from '../components/ui/CommentModal';
+import PostCard from '../components/ui/PostCard';
+import { selectCurrentUser } from '../store/userSlice';
+import { useTheme } from '../theme/ThemeContext';
+import TetrisLoader from '../components/ui/TetrisLoader';
 
 const Home = () => {
 	const { darkMode } = useTheme();
@@ -76,12 +55,12 @@ const Home = () => {
 
 	const handleLike = async (postId) => {
 		try {
-			const updatedPosts = posts.map(post => {
+			const updatedPosts = posts.map((post) => {
 				if (post.id === postId) {
 					return {
 						...post,
 						liked: !post.liked,
-						likes: post.liked ? post.likes - 1 : post.likes + 1
+						likes: post.liked ? post.likes - 1 : post.likes + 1,
 					};
 				}
 				return post;
@@ -110,24 +89,24 @@ const Home = () => {
 				id: Date.now(),
 				user: {
 					name: currentUser.name,
-					avatar: currentUser.avatar
+					avatar: currentUser.avatar,
 				},
 				text: commentText,
-				timestamp: new Date().toISOString()
+				timestamp: new Date().toISOString(),
 			};
 
 			// Update selected post with new comment
-			setSelectedPost(prev => ({
+			setSelectedPost((prev) => ({
 				...prev,
-				comments: [...(prev.comments || []), newComment]
+				comments: [...(prev.comments || []), newComment],
 			}));
 
 			// Update posts state
-			const updatedPosts = posts.map(post => {
+			const updatedPosts = posts.map((post) => {
 				if (post.id === selectedPost.id) {
 					return {
 						...post,
-						comments: [...(post.comments || []), newComment]
+						comments: [...(post.comments || []), newComment],
 					};
 				}
 				return post;
@@ -139,16 +118,16 @@ const Home = () => {
 
 			// Save to localStorage after UI update
 			localStorage.setItem('posts', JSON.stringify(updatedPosts));
-			
+
 			// Show success toast
 			toast.success('Комментарий добавлен!', {
-				position: "top-right",
+				position: 'top-right',
 				autoClose: 3000,
 				hideProgressBar: false,
 				closeOnClick: true,
 				pauseOnHover: true,
 				draggable: true,
-				theme: darkMode ? 'dark' : 'light'
+				theme: darkMode ? 'dark' : 'light',
 			});
 		} catch (error) {
 			console.error('Error adding comment:', error);
@@ -160,18 +139,20 @@ const Home = () => {
 		try {
 			// Update selected post
 			if (selectedPost && selectedPost.id === postId) {
-				setSelectedPost(prev => ({
+				setSelectedPost((prev) => ({
 					...prev,
-					comments: prev.comments.filter(comment => comment.id !== commentId)
+					comments: prev.comments.filter((comment) => comment.id !== commentId),
 				}));
 			}
 
 			// Update posts state
-			const updatedPosts = posts.map(post => {
+			const updatedPosts = posts.map((post) => {
 				if (post.id === postId) {
 					return {
 						...post,
-						comments: post.comments.filter(comment => comment.id !== commentId)
+						comments: post.comments.filter(
+							(comment) => comment.id !== commentId
+						),
 					};
 				}
 				return post;
@@ -183,13 +164,13 @@ const Home = () => {
 			// Save to localStorage and show toast after UI update
 			localStorage.setItem('posts', JSON.stringify(updatedPosts));
 			toast.success('Комментарий удален!', {
-				position: "top-right",
+				position: 'top-right',
 				autoClose: 3000,
 				hideProgressBar: false,
 				closeOnClick: true,
 				pauseOnHover: true,
 				draggable: true,
-				theme: darkMode ? 'dark' : 'light'
+				theme: darkMode ? 'dark' : 'light',
 			});
 		} catch (error) {
 			console.error('Error deleting comment:', error);
@@ -214,12 +195,12 @@ const Home = () => {
 	};
 
 	const handleSaveEdit = () => {
-		const updatedPosts = posts.map(post => {
+		const updatedPosts = posts.map((post) => {
 			if (post.id === editingPost.id) {
 				return {
 					...post,
 					description: editText,
-					edited: true
+					edited: true,
 				};
 			}
 			return post;
@@ -231,18 +212,18 @@ const Home = () => {
 	};
 
 	const handleDeletePost = (postId) => {
-		const updatedPosts = posts.filter(post => post.id !== postId);
+		const updatedPosts = posts.filter((post) => post.id !== postId);
 		setPosts(updatedPosts);
 		localStorage.setItem('posts', JSON.stringify(updatedPosts));
 		handlePostMenuClose();
 		toast.success('Пост успешно удален!', {
-			position: "top-right",
+			position: 'top-right',
 			autoClose: 3000,
 			hideProgressBar: false,
 			closeOnClick: true,
 			pauseOnHover: true,
 			draggable: true,
-			theme: darkMode ? 'dark' : 'light'
+			theme: darkMode ? 'dark' : 'light',
 		});
 	};
 
@@ -271,12 +252,22 @@ const Home = () => {
 			}}
 		>
 			{loading ? (
-				<Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-					<CircularProgress color={darkMode ? 'secondary' : 'primary'} />
+				<Box
+					display='flex'
+					justifyContent='center'
+					alignItems='center'
+					minHeight='60vh'
+				>
+					<TetrisLoader darkMode={darkMode} />
 				</Box>
 			) : error ? (
-				<Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-					<Typography color="error">{error}</Typography>
+				<Box
+					display='flex'
+					justifyContent='center'
+					alignItems='center'
+					minHeight='60vh'
+				>
+					<Typography color='error'>{error}</Typography>
 				</Box>
 			) : (
 				<Box
@@ -286,18 +277,18 @@ const Home = () => {
 						width: '100%',
 					}}
 				>
-				{posts.map((post) => (
-					<PostCard
-						key={post.id}
-						post={post}
-						darkMode={darkMode}
-						currentUser={currentUser}
-						onLike={handleLike}
-						onOpenComments={handleOpenComments}
-						onMenuOpen={handlePostMenuOpen}
-						formatTimestamp={formatTimestamp}
-					/>
-				))}
+					{posts.map((post) => (
+						<PostCard
+							key={post.id}
+							post={post}
+							darkMode={darkMode}
+							currentUser={currentUser}
+							onLike={handleLike}
+							onOpenComments={handleOpenComments}
+							onMenuOpen={handlePostMenuOpen}
+							formatTimestamp={formatTimestamp}
+						/>
+					))}
 				</Box>
 			)}
 
@@ -316,7 +307,10 @@ const Home = () => {
 					<EditIcon sx={{ mr: 1 }} />
 					Редактировать
 				</MenuItem>
-				<MenuItem onClick={() => handleDeletePost(selectedPostForMenu.id)} sx={{ color: 'error.main' }}>
+				<MenuItem
+					onClick={() => handleDeletePost(selectedPostForMenu.id)}
+					sx={{ color: 'error.main' }}
+				>
 					<DeleteIcon sx={{ mr: 1 }} />
 					Удалить
 				</MenuItem>
