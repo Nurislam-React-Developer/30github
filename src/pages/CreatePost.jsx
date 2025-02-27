@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -10,16 +10,21 @@ import {
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../theme/ThemeContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectCurrentUser } from '../store/userSlice';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const CreatePost = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const { darkMode } = useTheme();
   const currentUser = useSelector(selectCurrentUser);
+  const editPost = location.state?.editPost;
+  
   const [postData, setPostData] = useState({
     description: '',
     image: null,
@@ -41,10 +46,20 @@ const CreatePost = () => {
     }
   };
 
+  useEffect(() => {
+    if (editPost) {
+      setPostData({
+        description: editPost.description,
+        image: null,
+        imagePreview: editPost.image
+      });
+    }
+  }, [editPost]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!postData.description.trim() && !postData.image) {
-      alert('Please add a description or image');
+    if (!postData.description.trim() && !postData.image && !postData.imagePreview) {
+      toast.error('Пожалуйста, добавьте описание или изображение');
       return;
     }
 
@@ -84,24 +99,31 @@ const CreatePost = () => {
         compressedImage = canvas.toDataURL('image/jpeg', 0.7);
       }
 
-      const newPost = {
-        id: Date.now(),
-        user: {
-          name: currentUser.name,
-          avatar: currentUser.avatar,
-        },
-        image: compressedImage,
-        description: postData.description,
-        likes: 0,
-        comments: [],
-        timestamp: new Date().toISOString(),
-      };
+      const post = editPost
+        ? {
+            ...editPost,
+            description: postData.description,
+            image: compressedImage || editPost.image,
+            edited: true
+          }
+        : {
+            id: Date.now(),
+            user: {
+              name: currentUser.name,
+              avatar: currentUser.avatar,
+            },
+            image: compressedImage,
+            description: postData.description,
+            likes: 0,
+            comments: [],
+            timestamp: new Date().toISOString(),
+          };
 
-      // Get existing posts
       const existingPosts = JSON.parse(localStorage.getItem('posts') || '[]');
       
-      // Limit to most recent 20 posts
-      const updatedPosts = [newPost, ...existingPosts.slice(0, 19)];
+      const updatedPosts = editPost
+        ? existingPosts.map(p => p.id === editPost.id ? post : p)
+        : [post, ...existingPosts.slice(0, 19)];
       
       try {
         localStorage.setItem('posts', JSON.stringify(updatedPosts));
@@ -122,11 +144,27 @@ const CreatePost = () => {
         }
       }
 
-      // Navigate back to home page
+      toast.success(editPost ? 'Пост успешно обновлен!' : 'Пост успешно создан!', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: darkMode ? 'dark' : 'light'
+      });
       navigate('/');
     } catch (error) {
       console.error('Error saving post:', error);
-      alert('Failed to save post. ' + error.message);
+      toast.error('Не удалось сохранить пост: ' + error.message, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: darkMode ? 'dark' : 'light'
+      });
     }
   };
 
@@ -141,7 +179,7 @@ const CreatePost = () => {
         darkMode={darkMode}
       >
         <Typography variant="h4" gutterBottom align="center" color={darkMode ? '#fff' : '#000'}>
-          Создать новый пост
+          {editPost ? 'Редактировать пост' : 'Создать новый пост'}
         </Typography>
 
         <form onSubmit={handleSubmit}>
