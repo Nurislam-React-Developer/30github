@@ -38,6 +38,8 @@ import { getPosts, likePost, getComments, addComment } from '../store/request/ap
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import CloseIcon from '@mui/icons-material/Close';
+import PostCard from '../components/ui/PostCard';
+import CommentModal from '../components/ui/CommentModal';
 
 const Home = () => {
 	const { darkMode } = useTheme();
@@ -285,116 +287,16 @@ const Home = () => {
 					}}
 				>
 				{posts.map((post) => (
-					<Card
+					<PostCard
 						key={post.id}
-						component={motion.div}
-						whileHover={{ y: -2 }}
-						sx={{
-							mb: 3,
-							backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
-						}}
-					>
-						<Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-							<Box sx={{ display: 'flex', alignItems: 'center' }}>
-								<Avatar src={post.user.avatar} />
-								<Box sx={{ ml: 2 }}>
-									<Typography variant="subtitle1" component="div" sx={{ color: darkMode ? '#ffffff' : '#000000' }}>
-										{post.user.name}
-									</Typography>
-									<Typography variant="caption" color="textSecondary" component="div" sx={{ color: darkMode ? '#bb86fc' : '#3f51b5' }}>
-										{formatTimestamp(post.timestamp)}
-										{post.edited && ' (изменено)'}
-									</Typography>
-								</Box>
-							</Box>
-							{post.user.name === currentUser.name && (
-								<IconButton onClick={(e) => handlePostMenuOpen(e, post)}>
-									<MoreVertIcon sx={{ color: darkMode ? '#ffffff' : '#000000' }} />
-								</IconButton>
-							)}
-						</Box>
-						{editingPost?.id === post.id ? (
-							<Box sx={{ p: 2 }}>
-								<TextField
-									fullWidth
-									multiline
-									value={editText}
-									onChange={(e) => setEditText(e.target.value)}
-									sx={{
-										mb: 2,
-										'& .MuiInputBase-input': {
-											color: darkMode ? '#ffffff' : '#000000',
-										},
-									}}
-								/>
-								<Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-									<Button onClick={() => setEditingPost(null)}>Отмена</Button>
-									<Button variant="contained" onClick={handleSaveEdit}>Сохранить</Button>
-								</Box>
-							</Box>
-						) : (
-							<>
-								<CardMedia
-									component="img"
-									image={post.image}
-									alt="Post image"
-									height="400"
-									sx={{ objectFit: 'cover' }}
-								/>
-								<CardContent>
-									<Typography
-										variant="body1"
-										component="div"
-										gutterBottom
-										sx={{ color: darkMode ? '#ffffff' : '#000000' }}
-									>
-										{post.description}
-									</Typography>
-									<Divider sx={{ my: 1 }} />
-									<Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-										<IconButton
-											size="small"
-											color={darkMode ? 'secondary' : 'primary'}
-											variant="contained"
-											onClick={() => handleLike(post.id)}
-											sx={{
-												color: post.liked ? '#ff1744' : '#9e9e9e'
-											}}
-										>
-											<FavoriteIcon />
-											<Typography
-												variant="caption"
-												component="span"
-												sx={{ ml: 1 }}
-											>
-												{post.likes}
-											</Typography>
-										</IconButton>
-										<IconButton
-											size="small"
-											color={darkMode ? 'secondary' : 'primary'}
-											onClick={() => handleOpenComments(post)}
-										>
-											<CommentIcon />
-											<Typography
-												variant="caption"
-												component="span"
-												sx={{ ml: 1 }}
-											>
-												{post.comments?.length || 0}
-											</Typography>
-										</IconButton>
-										<IconButton
-											size="small"
-											color={darkMode ? 'secondary' : 'primary'}
-										>
-											<ShareIcon />
-										</IconButton>
-									</Box>
-								</CardContent>
-							</>
-						)}
-					</Card>
+						post={post}
+						darkMode={darkMode}
+						currentUser={currentUser}
+						onLike={handleLike}
+						onOpenComments={handleOpenComments}
+						onMenuOpen={handlePostMenuOpen}
+						formatTimestamp={formatTimestamp}
+					/>
 				))}
 				</Box>
 			)}
@@ -420,205 +322,16 @@ const Home = () => {
 				</MenuItem>
 			</Menu>
 
-			{/* Comments Modal */}
-			<Dialog
+			<CommentModal
 				open={Boolean(selectedPost)}
 				onClose={handleCloseComments}
-				fullWidth
-				maxWidth="md"
-				PaperProps={{
-					sx: {
-						backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
-						color: darkMode ? '#ffffff' : '#000000',
-						height: '90vh',
-						margin: '20px',
-						borderRadius: '12px',
-						overflow: 'hidden',
-						position: 'relative'
-					}
-				}}
-			>
-				<IconButton
-					onClick={handleCloseComments}
-					aria-label="close"
-					component={motion.button}
-					whileHover={{ scale: 1.1 }}
-					whileTap={{ scale: 0.9 }}
-					sx={{
-						position: 'absolute',
-						right: 8,
-						top: 8,
-						zIndex: 1300,
-						backgroundColor: darkMode ? 'rgba(187, 134, 252, 0.1)' : 'rgba(63, 81, 181, 0.1)',
-						color: darkMode ? '#bb86fc' : '#3f51b5',
-						'&:hover': {
-							backgroundColor: darkMode ? 'rgba(187, 134, 252, 0.2)' : 'rgba(63, 81, 181, 0.2)',
-							color: darkMode ? '#9c27b0' : '#303f9f',
-						}
-					}}
-				>
-					<CloseIcon />
-				</IconButton>
-				<DialogTitle 
-					sx={{ 
-						borderBottom: 1, 
-						borderColor: 'divider',
-						position: 'sticky',
-						top: 0,
-						zIndex: 1,
-						backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
-						pr: 6 // Add padding-right to prevent title overlap with close button
-					}}
-				>
-					Комментарии
-				</DialogTitle>
-				<DialogContent sx={{ p: 0 }}>
-					<List sx={{ 
-						pt: 0, 
-						height: 'calc(90vh - 180px)', 
-						overflowY: 'auto',
-						'&::-webkit-scrollbar': {
-							width: '8px'
-						},
-						'&::-webkit-scrollbar-track': {
-							background: darkMode ? '#121212' : '#f1f1f1'
-						},
-						'&::-webkit-scrollbar-thumb': {
-							background: darkMode ? '#bb86fc' : '#3f51b5',
-							borderRadius: '4px'
-						}
-					}}>
-						{selectedPost?.comments?.map((comment) => (
-							<ListItem 
-								key={comment.id} 
-								alignitems="flex-start"
-								component={motion.div}
-								initial={{ opacity: 0, y: 20 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ duration: 0.3 }}
-								sx={{
-									py: 1.5,
-									display: 'flex',
-									justifyContent: 'space-between',
-									borderBottom: '1px solid',
-									borderColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-									'&:hover': {
-										backgroundColor: darkMode ? 'rgba(187, 134, 252, 0.08)' : 'rgba(63, 81, 181, 0.08)'
-									}
-								}}
-							>
-								<Box sx={{ display: 'flex', alignItems: 'flex-start', flex: 1 }}>
-									<ListItemAvatar>
-										<Avatar 
-											src={comment.user.avatar}
-											sx={{ width: 40, height: 40 }}
-										/>
-									</ListItemAvatar>
-									<ListItemText
-										primary={
-											<Box sx={{ display: 'flex', flexDirection: 'column' }}>
-												<Typography
-													component="span"
-													variant="subtitle2"
-													color={darkMode ? '#ffffff' : 'text.primary'}
-													sx={{ fontWeight: 600, mb: 0.5 }}
-												>
-													{comment.user.name}
-												</Typography>
-												<Typography
-													component="span"
-													variant="body2"
-													color={darkMode ? '#ffffff' : 'text.primary'}
-												>
-													{comment.text}
-												</Typography>
-											</Box>
-										}
-										secondary={
-											<Typography
-												component="span"
-												variant="caption"
-												color={darkMode ? 'rgba(255, 255, 255, 0.6)' : 'text.secondary'}
-												sx={{ mt: 1, display: 'block' }}
-											>
-												{formatTimestamp(comment.timestamp)}
-											</Typography>
-										}
-										sx={{
-											margin: 0
-										}}
-									/>
-								</Box>
-								{comment.user.name === currentUser.name && (
-									<IconButton
-										size="small"
-										onClick={() => handleDeleteComment(selectedPost.id, comment.id)}
-										color="error"
-										component={motion.button}
-										whileHover={{ scale: 1.1 }}
-										whileTap={{ scale: 0.9 }}
-										sx={{ ml: 1 }}
-									>
-										<DeleteIcon fontSize="small" />
-									</IconButton>
-								)}
-							</ListItem>
-						))}
-					</List>
-					<Box sx={{ 
-						p: 2, 
-						position: 'sticky', 
-						bottom: 0, 
-						bgcolor: darkMode ? '#1e1e1e' : '#ffffff',
-						borderTop: 1,
-						borderColor: 'divider',
-						backgroundColor: darkMode ? '#1e1e1e' : '#ffffff'
-					}}>
-						<Box sx={{ display: 'flex', gap: 1 }}>
-							<TextField
-								fullWidth
-								size="small"
-								value={commentText}
-								onChange={(e) => setCommentText(e.target.value)}
-								placeholder="Добавить комментарий..."
-								variant="outlined"
-								InputProps={{
-									sx: {
-										color: darkMode ? '#ffffff' : '#000000',
-										'& fieldset': {
-											borderColor: darkMode ? '#bb86fc' : '#3f51b5',
-										},
-									},
-								}}
-								onKeyPress={(e) => {
-									if (e.key === 'Enter' && !e.shiftKey) {
-										e.preventDefault();
-										handleAddComment();
-									}
-								}}
-							/>
-							<Button
-								variant="contained"
-								color={darkMode ? 'secondary' : 'primary'}
-								onClick={handleAddComment}
-								disabled={!commentText.trim()}
-								component={motion.button}
-								whileHover={{ scale: 1.05 }}
-								whileTap={{ scale: 0.95 }}
-								sx={{
-									minWidth: 'auto',
-									backgroundColor: darkMode ? '#bb86fc' : '#3f51b5',
-									'&:hover': {
-										backgroundColor: darkMode ? '#9c27b0' : '#303f9f',
-									},
-								}}
-							>
-								Отправить
-							</Button>
-						</Box>
-					</Box>
-				</DialogContent>
-			</Dialog>
+				darkMode={darkMode}
+				selectedPost={selectedPost}
+				commentText={commentText}
+				onCommentChange={(e) => setCommentText(e.target.value)}
+				onAddComment={handleAddComment}
+				onDeleteComment={handleDeleteComment}
+			/>
 		</Box>
 	);
 };
