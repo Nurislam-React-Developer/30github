@@ -7,6 +7,7 @@ import Home from '../pages/Home';
 import Notifications from '../pages/Notifications';
 import Profile from '../pages/Profile';
 import Settings from '../pages/Settings';
+import NotFound from '../pages/NotFound';
 
 const router = createBrowserRouter([
 	{
@@ -41,6 +42,10 @@ const router = createBrowserRouter([
 				path: '/notifications',
 				element: <Notifications />,
 			},
+      {
+        path: '*',
+        element: <NotFound/>
+      }
 		],
 	},
 ]);

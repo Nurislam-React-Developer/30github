@@ -13,6 +13,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { addFriend, removeFriend } from '../store/frendSlice';
 import { getFrends } from '../store/request/request';
+import TetrisLoader from '../components/ui/TetrisLoader';
 
 const Friends = () => {
 	const dispatch = useDispatch();
@@ -36,7 +37,7 @@ const Friends = () => {
 	};
 
 	if (isLoading) {
-		return <Typography variant='h6'>Загрузка...</Typography>;
+		return <TetrisLoader/>;
 	}
 
 	if (error) {

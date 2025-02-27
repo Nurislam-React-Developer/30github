@@ -1,12 +1,24 @@
 import { motion } from 'framer-motion';
-import React from 'react';
-import { Outlet } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useTheme } from '../../theme/ThemeContext';
 import Footer from '../Footer';
 import Header from '../Header';
+import TetrisLoader from '../ui/TetrisLoader';
 
 const Layout = () => {
 	const { darkMode } = useTheme();
+	const location = useLocation();
+	const [isLoading, setIsLoading] = useState(true);
+
+	useEffect(() => {
+		setIsLoading(true);
+		const timer = setTimeout(() => {
+			setIsLoading(false);
+		}, 1000);
+
+		return () => clearTimeout(timer);
+	}, [location.pathname]);
 
 	return (
 		<motion.div
@@ -22,7 +34,11 @@ const Layout = () => {
 			style={{ minHeight: '100vh' }}
 		>
 			<Header />
-			<Outlet />
+			{isLoading ? (
+				<TetrisLoader />
+			) : (
+				<Outlet />
+			)}
 			<Footer />
 		</motion.div>
 	);
