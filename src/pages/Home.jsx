@@ -37,6 +37,7 @@ import { selectCurrentUser } from '../store/userSlice';
 import { getPosts, likePost, getComments, addComment } from '../store/request/api';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import CloseIcon from '@mui/icons-material/Close';
 
 const Home = () => {
 	const { darkMode } = useTheme();
@@ -113,6 +114,13 @@ const Home = () => {
 				timestamp: new Date().toISOString()
 			};
 
+			// Update selected post with new comment
+			setSelectedPost(prev => ({
+				...prev,
+				comments: [...(prev.comments || []), newComment]
+			}));
+
+			// Update posts state
 			const updatedPosts = posts.map(post => {
 				if (post.id === selectedPost.id) {
 					return {
@@ -129,6 +137,17 @@ const Home = () => {
 
 			// Save to localStorage after UI update
 			localStorage.setItem('posts', JSON.stringify(updatedPosts));
+			
+			// Show success toast
+			toast.success('Комментарий добавлен!', {
+				position: "top-right",
+				autoClose: 3000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				theme: darkMode ? 'dark' : 'light'
+			});
 		} catch (error) {
 			console.error('Error adding comment:', error);
 			toast.error('Ошибка при добавлении комментария');
@@ -137,6 +156,15 @@ const Home = () => {
 
 	const handleDeleteComment = (postId, commentId) => {
 		try {
+			// Update selected post
+			if (selectedPost && selectedPost.id === postId) {
+				setSelectedPost(prev => ({
+					...prev,
+					comments: prev.comments.filter(comment => comment.id !== commentId)
+				}));
+			}
+
+			// Update posts state
 			const updatedPosts = posts.map(post => {
 				if (post.id === postId) {
 					return {
@@ -397,47 +425,100 @@ const Home = () => {
 				open={Boolean(selectedPost)}
 				onClose={handleCloseComments}
 				fullWidth
-				maxWidth="sm"
+				maxWidth="md"
 				PaperProps={{
 					sx: {
 						backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
-						color: darkMode ? '#ffffff' : '#000000'
+						color: darkMode ? '#ffffff' : '#000000',
+						height: '90vh',
+						margin: '20px',
+						borderRadius: '12px',
+						overflow: 'hidden',
+						position: 'relative'
 					}
 				}}
 			>
-				<DialogTitle sx={{ borderBottom: 1, borderColor: 'divider' }}>
+				<IconButton
+					onClick={handleCloseComments}
+					aria-label="close"
+					component={motion.button}
+					whileHover={{ scale: 1.1 }}
+					whileTap={{ scale: 0.9 }}
+					sx={{
+						position: 'absolute',
+						right: 8,
+						top: 8,
+						color: darkMode ? '#bb86fc' : '#3f51b5',
+						'&:hover': {
+							color: darkMode ? '#9c27b0' : '#303f9f',
+						}
+					}}
+				>
+					<CloseIcon />
+				</IconButton>
+				<DialogTitle 
+					sx={{ 
+						borderBottom: 1, 
+						borderColor: 'divider',
+						position: 'sticky',
+						top: 0,
+						zIndex: 1,
+						backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
+						pr: 6 // Add padding-right to prevent title overlap with close button
+					}}
+				>
 					Комментарии
 				</DialogTitle>
-				<DialogContent>
-					<List sx={{ pt: 0, maxHeight: '60vh', overflowY: 'auto' }}>
+				<DialogContent sx={{ p: 0 }}>
+					<List sx={{ 
+						pt: 0, 
+						height: 'calc(90vh - 180px)', 
+						overflowY: 'auto',
+						'&::-webkit-scrollbar': {
+							width: '8px'
+						},
+						'&::-webkit-scrollbar-track': {
+							background: darkMode ? '#121212' : '#f1f1f1'
+						},
+						'&::-webkit-scrollbar-thumb': {
+							background: darkMode ? '#bb86fc' : '#3f51b5',
+							borderRadius: '4px'
+						}
+					}}>
 						{selectedPost?.comments?.map((comment) => (
 							<ListItem 
 								key={comment.id} 
 								alignitems="flex-start"
+								component={motion.div}
+								initial={{ opacity: 0, y: 20 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ duration: 0.3 }}
 								sx={{
-									py: 0.5,
+									py: 1.5,
 									display: 'flex',
 									justifyContent: 'space-between',
+									borderBottom: '1px solid',
+									borderColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
 									'&:hover': {
 										backgroundColor: darkMode ? 'rgba(187, 134, 252, 0.08)' : 'rgba(63, 81, 181, 0.08)'
 									}
 								}}
 							>
-								<Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+								<Box sx={{ display: 'flex', alignItems: 'flex-start', flex: 1 }}>
 									<ListItemAvatar>
 										<Avatar 
 											src={comment.user.avatar}
-											sx={{ width: 32, height: 32 }}
+											sx={{ width: 40, height: 40 }}
 										/>
 									</ListItemAvatar>
 									<ListItemText
 										primary={
-											<Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+											<Box sx={{ display: 'flex', flexDirection: 'column' }}>
 												<Typography
 													component="span"
 													variant="subtitle2"
 													color={darkMode ? '#ffffff' : 'text.primary'}
-													sx={{ fontWeight: 600 }}
+													sx={{ fontWeight: 600, mb: 0.5 }}
 												>
 													{comment.user.name}
 												</Typography>
@@ -455,15 +536,13 @@ const Home = () => {
 												component="span"
 												variant="caption"
 												color={darkMode ? 'rgba(255, 255, 255, 0.6)' : 'text.secondary'}
+												sx={{ mt: 1, display: 'block' }}
 											>
 												{formatTimestamp(comment.timestamp)}
 											</Typography>
 										}
 										sx={{
-											margin: 0,
-											'& .MuiListItemText-secondary': {
-												mt: 0.5
-											}
+											margin: 0
 										}}
 									/>
 								</Box>
@@ -472,6 +551,9 @@ const Home = () => {
 										size="small"
 										onClick={() => handleDeleteComment(selectedPost.id, comment.id)}
 										color="error"
+										component={motion.button}
+										whileHover={{ scale: 1.1 }}
+										whileTap={{ scale: 0.9 }}
 										sx={{ ml: 1 }}
 									>
 										<DeleteIcon fontSize="small" />
@@ -480,7 +562,15 @@ const Home = () => {
 							</ListItem>
 						))}
 					</List>
-					<Box sx={{ p: 2, position: 'sticky', bottom: 0, bgcolor: darkMode ? '#1e1e1e' : '#ffffff' }}>
+					<Box sx={{ 
+						p: 2, 
+						position: 'sticky', 
+						bottom: 0, 
+						bgcolor: darkMode ? '#1e1e1e' : '#ffffff',
+						borderTop: 1,
+						borderColor: 'divider',
+						backgroundColor: darkMode ? '#1e1e1e' : '#ffffff'
+					}}>
 						<Box sx={{ display: 'flex', gap: 1 }}>
 							<TextField
 								fullWidth
@@ -497,12 +587,28 @@ const Home = () => {
 										},
 									},
 								}}
+								onKeyPress={(e) => {
+									if (e.key === 'Enter' && !e.shiftKey) {
+										e.preventDefault();
+										handleAddComment();
+									}
+								}}
 							/>
 							<Button
 								variant="contained"
 								color={darkMode ? 'secondary' : 'primary'}
 								onClick={handleAddComment}
 								disabled={!commentText.trim()}
+								component={motion.button}
+								whileHover={{ scale: 1.05 }}
+								whileTap={{ scale: 0.95 }}
+								sx={{
+									minWidth: 'auto',
+									backgroundColor: darkMode ? '#bb86fc' : '#3f51b5',
+									'&:hover': {
+										backgroundColor: darkMode ? '#9c27b0' : '#303f9f',
+									},
+								}}
 							>
 								Отправить
 							</Button>
