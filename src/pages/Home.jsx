@@ -22,6 +22,9 @@ import {
 	Menu,
 	MenuItem,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import CommentIcon from '@mui/icons-material/Comment';
 import ShareIcon from '@mui/icons-material/Share';
@@ -39,6 +42,7 @@ import { ru } from 'date-fns/locale';
 const Home = () => {
 	const { darkMode } = useTheme();
 	const currentUser = useSelector(selectCurrentUser);
+	const navigate = useNavigate();
 	const [selectedPost, setSelectedPost] = useState(null);
 	const [commentText, setCommentText] = useState('');
 	const [posts, setPosts] = useState([]);
@@ -140,8 +144,7 @@ const Home = () => {
 	};
 
 	const handleEditPost = (post) => {
-		setEditingPost(post);
-		setEditText(post.description);
+		navigate('/create-post', { state: { editPost: post } });
 		handlePostMenuClose();
 	};
 
@@ -167,6 +170,15 @@ const Home = () => {
 		setPosts(updatedPosts);
 		localStorage.setItem('posts', JSON.stringify(updatedPosts));
 		handlePostMenuClose();
+		toast.success('Пост успешно удален!', {
+			position: "top-right",
+			autoClose: 3000,
+			hideProgressBar: false,
+			closeOnClick: true,
+			pauseOnHover: true,
+			draggable: true,
+			theme: darkMode ? 'dark' : 'light'
+		});
 	};
 
 	const formatTimestamp = (timestamp) => {
