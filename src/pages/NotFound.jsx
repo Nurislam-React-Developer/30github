@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Button, Typography, styled } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,22 @@ import { useTheme } from '../theme/ThemeContext';
 const NotFound = () => {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
+  const [countdown, setCountdown] = useState(5);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    const redirectTimer = setTimeout(() => {
+      navigate('/');
+    }, 5000);
+
+    return () => {
+      clearInterval(timer);
+      clearTimeout(redirectTimer);
+    };
+  }, [navigate]);
 
   return (
     <Container darkMode={darkMode}>
@@ -51,6 +67,8 @@ const NotFound = () => {
           darkMode={darkMode}
         >
           Похоже, страница, которую вы ищете, не существует или была перемещена.
+          <br />
+          Перенаправление на главную через {countdown} секунд...
         </Description>
 
         <HomeButton
