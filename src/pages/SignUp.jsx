@@ -18,11 +18,13 @@ import {
 import { motion } from 'framer-motion';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useLoading } from '../context/LoadingContext';
 import { useTheme } from '../theme/ThemeContext';
 
 const SignUp = () => {
 	const navigate = useNavigate();
 	const { darkMode } = useTheme();
+	const { showLoader, hideLoader } = useLoading();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
 	const [showPassword, setShowPassword] = useState(false);
@@ -91,7 +93,9 @@ const SignUp = () => {
 				theme: darkMode ? 'dark' : 'light'
 			});
 
+			showLoader();
 			navigate('/');
+			setTimeout(hideLoader, 1000);
 		} catch (err) {
 			setError(err.message || 'An error occurred during registration');
 		} finally {
