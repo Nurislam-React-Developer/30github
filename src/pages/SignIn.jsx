@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useForm } from 'react-hook-form';
 import {
   Box,
   Button,
@@ -29,22 +30,14 @@ const SignIn = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    defaultValues: {
+      email: '',
+      password: ''
+    }
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    setError('');
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (formData) => {
     setLoading(true);
     setError('');
 
@@ -60,7 +53,7 @@ const SignIn = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Authentication failed');
+        throw new Error(data.message === 'Authentication failed' ? 'Неверный email или пароль' : 'Ошибка аутентификации');
       }
 
       localStorage.setItem('token', data.token);
@@ -129,15 +122,21 @@ const SignIn = () => {
           </motion.div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <TextField
             fullWidth
             label="Email"
             name="email"
             type="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
+            {...register('email', { 
+              required: 'Email обязателен для заполнения',
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: 'Неверный формат email'
+              }
+            })}
+            error={!!errors.email}
+            helperText={errors.email?.message}
             margin="normal"
             sx={{
               '& .MuiOutlinedInput-root': {
@@ -165,9 +164,15 @@ const SignIn = () => {
             label="Password"
             name="password"
             type={showPassword ? 'text' : 'password'}
-            value={formData.password}
-            onChange={handleChange}
-            required
+            {...register('password', { 
+              required: 'Пароль обязателен для заполнения',
+              minLength: {
+                value: 6,
+                message: 'Пароль должен содержать минимум 6 символов'
+              }
+            })}
+            error={!!errors.password}
+            helperText={errors.password?.message}
             margin="normal"
             InputProps={{
               endAdornment: (
