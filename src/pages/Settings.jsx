@@ -493,24 +493,36 @@ const Settings = () => {
                   onClick={async () => {
                     setIsLoading(true);
                     try {
-                      // Simulate API call delay
-                      await new Promise(resolve => setTimeout(resolve, 1000));
                       // Очищаем данные пользователя из localStorage
                       localStorage.removeItem('token');
                       localStorage.removeItem('user');
-                      // Показываем уведомление
-                      toast.success('Вы успешно вышли из аккаунта', {
+                      localStorage.removeItem('userSettings');
+
+                      // Показываем уведомление об успешном выходе
+                      toast.success('Вы успешно вышли из аккаунта!', {
+                        position: 'top-right',
+                        autoClose: 2000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        theme: darkMode ? 'dark' : 'light'
+                      });
+
+                      // Добавляем небольшую задержку перед перенаправлением
+                      await new Promise(resolve => setTimeout(resolve, 1000));
+                      navigate('/signin');
+                    } catch (error) {
+                      console.error('Error during logout:', error);
+                      toast.error('Произошла ошибка при выходе из аккаунта', {
                         position: 'top-right',
                         autoClose: 3000,
                         hideProgressBar: false,
                         closeOnClick: true,
                         pauseOnHover: true,
                         draggable: true,
+                        theme: darkMode ? 'dark' : 'light'
                       });
-                      // Перенаправляем на страницу входа
-                      navigate('/signin');
-                    } catch (error) {
-                      toast.error('Произошла ошибка при выходе из аккаунта');
                     } finally {
                       setIsLoading(false);
                     }
