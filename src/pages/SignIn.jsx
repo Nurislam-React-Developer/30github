@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import {
   Box,
   Button,
@@ -61,6 +63,18 @@ const SignIn = () => {
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      
+      // Show success toast notification
+      toast.success('Вы успешно вошли в аккаунт!', {
+        position: 'top-right',
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: darkMode ? 'dark' : 'light'
+      });
+      
       navigate('/');
     } catch (err) {
       setError(err.message || 'An error occurred during sign in');

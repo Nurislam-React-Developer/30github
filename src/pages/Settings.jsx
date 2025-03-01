@@ -9,8 +9,11 @@ import {
   Switch,
   TextField,
   Typography,
+  Divider,
 } from '@mui/material';
+import LogoutIcon from '@mui/icons-material/Logout';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Particles } from 'react-particles'; // Обновленный импорт
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -22,6 +25,8 @@ import DefaultBackground from '../../public/redPhone.png';
 import SunsentBackGround from '../../public/sunsetBackground.png';
 
 const Settings = () => {
+	const navigate = useNavigate();
+	const [isLoading, setIsLoading] = useState(false);
 	// Состояния для полей формы
 	const [name, setName] = useState('');
 	const [email, setEmail] = useState('');
@@ -474,6 +479,51 @@ const Settings = () => {
 							>
 								Сбросить настройки
 							</Button>
+
+              <Box sx={{ mt: 4 }}>
+                <Divider sx={{ mb: 2 }} />
+                <Typography variant="h6" gutterBottom>
+                  Аккаунт
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="error"
+                  fullWidth
+                  startIcon={<LogoutIcon />}
+                  onClick={async () => {
+                    setIsLoading(true);
+                    try {
+                      // Simulate API call delay
+                      await new Promise(resolve => setTimeout(resolve, 1000));
+                      // Очищаем данные пользователя из localStorage
+                      localStorage.removeItem('token');
+                      localStorage.removeItem('user');
+                      // Показываем уведомление
+                      toast.success('Вы успешно вышли из аккаунта', {
+                        position: 'top-right',
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                      });
+                      // Перенаправляем на страницу входа
+                      navigate('/signin');
+                    } catch (error) {
+                      toast.error('Произошла ошибка при выходе из аккаунта');
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  }}
+                  sx={{ mt: 1 }}
+                >
+                  {isLoading ? (
+                    <CircularProgress size={24} sx={{ color: '#fff' }} />
+                  ) : (
+                    'Выйти из аккаунта'
+                  )}
+                </Button>
+              </Box>
 						</Box>
 					</Box>
 				</Box>
