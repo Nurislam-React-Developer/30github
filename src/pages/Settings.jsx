@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  CircularProgress,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -14,6 +15,7 @@ import {
 import LogoutIcon from '@mui/icons-material/Logout';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../theme/ThemeContext';
 import { Particles } from 'react-particles'; // Обновленный импорт
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -26,6 +28,7 @@ import SunsentBackGround from '../../public/sunsetBackground.png';
 
 const Settings = () => {
 	const navigate = useNavigate();
+	const { darkMode } = useTheme();
 	const [isLoading, setIsLoading] = useState(false);
 	// Состояния для полей формы
 	const [name, setName] = useState('');
@@ -491,6 +494,7 @@ const Settings = () => {
                   fullWidth
                   startIcon={<LogoutIcon />}
                   onClick={async () => {
+                    const { darkMode } = useTheme();
                     setIsLoading(true);
                     try {
                       // Очищаем данные пользователя из localStorage
