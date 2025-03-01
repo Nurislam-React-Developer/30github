@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useNavigate, Link } from 'react-router-dom';
+import { useLoading } from '../context/LoadingContext';
 import { useTheme } from '../theme/ThemeContext';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -23,6 +24,7 @@ import styled from '@emotion/styled';
 const SignIn = () => {
   const navigate = useNavigate();
   const { darkMode } = useTheme();
+  const { showLoader, hideLoader } = useLoading();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -75,7 +77,9 @@ const SignIn = () => {
         theme: darkMode ? 'dark' : 'light'
       });
       
+      showLoader();
       navigate('/');
+      setTimeout(hideLoader, 1000);
     } catch (err) {
       setError(err.message || 'An error occurred during sign in');
     } finally {

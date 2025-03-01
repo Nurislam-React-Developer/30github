@@ -1,4 +1,6 @@
 import styled from '@emotion/styled';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -77,6 +79,18 @@ const SignUp = () => {
 
 			localStorage.setItem('token', data.token);
 			localStorage.setItem('user', JSON.stringify(data.user));
+
+			// Show success toast notification
+			toast.success('Вы успешно зарегистрировались!', {
+				position: 'top-right',
+				autoClose: 3000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				theme: darkMode ? 'dark' : 'light'
+			});
+
 			navigate('/');
 		} catch (err) {
 			setError(err.message || 'An error occurred during registration');
