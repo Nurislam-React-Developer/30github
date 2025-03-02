@@ -11,11 +11,18 @@ import {
 	Switch,
 	Paper,
 	CircularProgress,
+	Grid,
+	Divider,
+	Tabs,
+	Tab,
 } from '@mui/material';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import GridViewIcon from '@mui/icons-material/GridView';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import { motion } from 'framer-motion';
 
 const Profile = () => {
@@ -39,10 +46,32 @@ const Profile = () => {
 	);
 
 	const [isAvatarLoading, setIsAvatarLoading] = useState(false);
+	const [tabValue, setTabValue] = useState(0);
+	const [userPosts, setUserPosts] = useState([]);
+	const [postsCount, setPostsCount] = useState(0);
+	const [followersCount, setFollowersCount] = useState(0);
+	const [followingCount, setFollowingCount] = useState(0);
 
 	useEffect(() => {
 		localStorage.setItem('isDarkMode', isDarkMode);
 	}, [isDarkMode]);
+
+	useEffect(() => {
+		// Загрузка постов пользователя из localStorage
+		const allPosts = JSON.parse(localStorage.getItem('posts') || '[]');
+		const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+		const userName = localStorage.getItem('profileName');
+		
+		// Фильтрация постов текущего пользователя
+		const filteredPosts = allPosts.filter(post => 
+			post?.user?.name === userName || post?.user?.name === currentUser?.name
+		);
+		
+		setUserPosts(filteredPosts);
+		setPostsCount(filteredPosts.length);
+		setFollowersCount(Math.floor(Math.random() * 500) + 50); // Имитация данных
+		setFollowingCount(Math.floor(Math.random() * 300) + 20); // Имитация данных
+	}, []);
 
 	const handleNameChange = (e) => setName(e.target.value);
 	const handleUsernameChange = (e) => setUsername(e.target.value);
@@ -75,6 +104,15 @@ const Profile = () => {
 
 	const handleGoHome = () => navigate('/');
 
+	const handleTabChange = (event, newValue) => {
+		setTabValue(newValue);
+	};
+
+	const handlePostClick = (post) => {
+		// Можно добавить переход к детальному просмотру поста
+		console.log('Открыть пост:', post);
+	};
+
 	return (
 		<ProfileContainer isDarkMode={isDarkMode}>
 			<Paper
@@ -82,17 +120,20 @@ const Profile = () => {
 				sx={{
 					padding: 4,
 					borderRadius: 3,
-					maxWidth: 500,
+					maxWidth: 900,
 					width: '100%',
 					backgroundColor: isDarkMode ? '#1e1e1e' : '#ffffff',
 					transition: 'background-color 0.5s ease-in-out',
 				}}
 			>
+				{/* Профиль пользователя */}
 				<Box
 					sx={{
 						display: 'flex',
-						flexDirection: 'column',
+						flexDirection: { xs: 'column', md: 'row' },
 						alignItems: 'center',
+						mb: 4,
+						gap: { xs: 2, md: 4 },
 					}}
 				>
 					<motion.div
@@ -115,6 +156,80 @@ const Profile = () => {
 							/>
 						)}
 					</motion.div>
+					
+					<Box sx={{ flex: 1 }}>
+						<Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
+							<Typography
+								variant='h5'
+								gutterBottom
+								component={motion.h2}
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								transition={{ delay: 0.2 }}
+								sx={{
+									fontWeight: 'bold',
+									color: isDarkMode ? '#ffffff' : '#3f51b5',
+									margin: 0,
+								}}
+							>
+								{name}
+							</Typography>
+							
+							<Button
+								variant='outlined'
+								size='small'
+								onClick={() => navigate('/settings')}
+								sx={{
+									borderColor: isDarkMode ? '#bb86fc' : '#3f51b5',
+									color: isDarkMode ? '#bb86fc' : '#3f51b5',
+									'&:hover': {
+										borderColor: isDarkMode ? '#9c27b0' : '#303f9f',
+										color: isDarkMode ? '#9c27b0' : '#303f9f',
+									},
+								}}
+							>
+								Редактировать профиль
+							</Button>
+						</Box>
+
+						<Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+							<Box sx={{ textAlign: 'center', px: 2 }}>
+								<Typography variant="h6" sx={{ fontWeight: 'bold', color: isDarkMode ? '#ffffff' : '#000000' }}>
+									{postsCount}
+								</Typography>
+								<Typography variant="body2" sx={{ color: isDarkMode ? '#bbbbbb' : '#666666' }}>
+									публикаций
+								</Typography>
+							</Box>
+							<Box sx={{ textAlign: 'center', px: 2 }}>
+								<Typography variant="h6" sx={{ fontWeight: 'bold', color: isDarkMode ? '#ffffff' : '#000000' }}>
+									{followersCount}
+								</Typography>
+								<Typography variant="body2" sx={{ color: isDarkMode ? '#bbbbbb' : '#666666' }}>
+									подписчиков
+								</Typography>
+							</Box>
+							<Box sx={{ textAlign: 'center', px: 2 }}>
+								<Typography variant="h6" sx={{ fontWeight: 'bold', color: isDarkMode ? '#ffffff' : '#000000' }}>
+									{followingCount}
+								</Typography>
+								<Typography variant="body2" sx={{ color: isDarkMode ? '#bbbbbb' : '#666666' }}>
+									подписок
+								</Typography>
+							</Box>
+						</Box>
+
+						<Typography 
+							variant="body1" 
+							component={motion.p}
+							initial={{ opacity: 0 }}
+							animate={{ opacity: 1 }}
+							transition={{ delay: 0.3 }}
+							gutterBottom 
+							sx={{ color: isDarkMode ? '#ffffff' : '#000000', mb: 2 }}
+						>
+							{bio}
+						</Typography>
 
 					<motion.div
 						initial={{ opacity: 0, y: -20 }}
@@ -316,6 +431,82 @@ const Profile = () => {
 								},
 							}}
 						/>
+					</Box>
+
+					{/* Вкладки и сетка постов */}
+					<Box sx={{ width: '100%', mt: 4 }}>
+						<Tabs
+							value={tabValue}
+							onChange={handleTabChange}
+							centered
+							sx={{
+								borderBottom: 1,
+								borderColor: 'divider',
+								mb: 3,
+								'& .MuiTab-root': {
+									color: isDarkMode ? '#ffffff80' : '#00000080',
+									'&.Mui-selected': {
+										color: isDarkMode ? '#bb86fc' : '#3f51b5',
+									},
+								},
+							}}
+						>
+							<Tab icon={<GridViewIcon />} label="ПУБЛИКАЦИИ" />
+							<Tab icon={<BookmarkBorderIcon />} label="СОХРАНЕННОЕ" />
+							<Tab icon={<AccountBoxIcon />} label="ОТМЕТКИ" />
+						</Tabs>
+
+						{tabValue === 0 && (
+							<Grid container spacing={1}>
+								{userPosts.map((post) => (
+									<Grid item xs={4} key={post.id}>
+										<Box
+											component={motion.div}
+											whileHover={{ opacity: 0.8 }}
+											whileTap={{ scale: 0.95 }}
+											onClick={() => handlePostClick(post)}
+											sx={{
+												position: 'relative',
+												paddingTop: '100%',
+												cursor: 'pointer',
+												overflow: 'hidden',
+												borderRadius: 1,
+											}}
+										>
+											<Box
+												component="img"
+												src={post.image || 'https://via.placeholder.com/300'}
+												alt={post.description}
+												sx={{
+													position: 'absolute',
+													top: 0,
+													left: 0,
+													width: '100%',
+													height: '100%',
+													objectFit: 'cover',
+												}}
+											/>
+										</Box>
+									</Grid>
+								))}
+							</Grid>
+						)}
+
+						{tabValue === 1 && (
+							<Box sx={{ textAlign: 'center', py: 4 }}>
+								<Typography variant="body1" sx={{ color: isDarkMode ? '#ffffff80' : '#00000080' }}>
+									Сохраненные публикации появятся здесь
+								</Typography>
+							</Box>
+						)}
+
+						{tabValue === 2 && (
+							<Box sx={{ textAlign: 'center', py: 4 }}>
+								<Typography variant="body1" sx={{ color: isDarkMode ? '#ffffff80' : '#00000080' }}>
+									Фото, на которых вы отмечены, появятся здесь
+								</Typography>
+							</Box>
+						)}
 					</Box>
 				</Box>
 			</Paper>
