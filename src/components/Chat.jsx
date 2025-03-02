@@ -447,13 +447,3 @@ const MessageActions = styled(Box)`
 	opacity: 0;
 	transition: opacity 0.2s;
 `;
-
-const ActionButton = styled(motion(IconButton))`
-	background: white;
-	padding: 4px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-	&:hover {
-		background: #f5f5f5;
-	}
-`;
