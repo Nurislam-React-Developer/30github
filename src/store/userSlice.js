@@ -2,10 +2,9 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const loadUserFromStorage = () => {
 	try {
-		// First try to get user from 'user' key (used by auth system)
-		const authUser = localStorage.getItem('user');
-		if (authUser) {
-			return JSON.parse(authUser);
+		const userData = localStorage.getItem('user');
+		if (userData) {
+			return JSON.parse(userData);
 		}
 		
 		// Fallback to 'currentUser' for backward compatibility

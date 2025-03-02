@@ -7,12 +7,10 @@ import {
 	Box,
 	styled,
 	Tooltip,
-	IconButton,
 	Switch,
 	Paper,
 	CircularProgress,
 	Grid,
-	Divider,
 	Tabs,
 	Tab,
 } from '@mui/material';
@@ -41,9 +39,10 @@ const Profile = () => {
 		localStorage.getItem('profileAvatar') || 'https://via.placeholder.com/150'
 	);
 
-	const [isDarkMode, setIsDarkMode] = useState(
-		localStorage.getItem('isDarkMode') === 'true' || false
-	);
+	const [isDarkMode, setIsDarkMode] = useState(() => {
+		const storedMode = localStorage.getItem('isDarkMode');
+		return storedMode ? storedMode === 'true' : false;
+	});
 
 	const [isAvatarLoading, setIsAvatarLoading] = useState(false);
 	const [tabValue, setTabValue] = useState(0);
@@ -57,20 +56,29 @@ const Profile = () => {
 	}, [isDarkMode]);
 
 	useEffect(() => {
-		// Загрузка постов пользователя из localStorage
-		const allPosts = JSON.parse(localStorage.getItem('posts') || '[]');
-		const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-		const userName = localStorage.getItem('profileName');
-		
-		// Фильтрация постов текущего пользователя
-		const filteredPosts = allPosts.filter(post => 
-			post?.user?.name === userName || post?.user?.name === currentUser?.name
-		);
-		
-		setUserPosts(filteredPosts);
-		setPostsCount(filteredPosts.length);
-		setFollowersCount(Math.floor(Math.random() * 500) + 50); // Имитация данных
-		setFollowingCount(Math.floor(Math.random() * 300) + 20); // Имитация данных
+		try {
+			// Загрузка постов пользователя из localStorage с проверкой на null
+			const postsData = localStorage.getItem('posts');
+			const userData = localStorage.getItem('user');
+			const userName = localStorage.getItem('profileName');
+
+			const allPosts = postsData ? JSON.parse(postsData) : [];
+			const currentUser = userData ? JSON.parse(userData) : {};
+			
+			// Фильтрация постов текущего пользователя
+			const filteredPosts = allPosts.filter(post => 
+				post?.user?.name === userName || post?.user?.name === currentUser?.name
+			);
+			
+			setUserPosts(filteredPosts);
+			setPostsCount(filteredPosts.length);
+			setFollowersCount(Math.floor(Math.random() * 500) + 50); // Имитация данных
+			setFollowingCount(Math.floor(Math.random() * 300) + 20); // Имитация данных
+		} catch (error) {
+			console.error('Error loading user data:', error);
+			setUserPosts([]);
+			setPostsCount(0);
+		}
 	}, []);
 
 	const handleNameChange = (e) => setName(e.target.value);
@@ -231,141 +239,58 @@ const Profile = () => {
 							{bio}
 						</Typography>
 
-					<motion.div
-						initial={{ opacity: 0, y: -20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: 0.2, duration: 0.5 }}
-					>
-						<Typography
-							variant='h5'
-							gutterBottom
-							sx={{
-								fontWeight: 'bold',
-								color: isDarkMode ? '#ffffff' : '#3f51b5',
-							}}
+					<Box sx={{ mb: 3 }}>
+						<motion.div
+							initial={{ opacity: 0, y: -20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.2, duration: 0.5 }}
 						>
-							{name}
-						</Typography>
-					</motion.div>
+							<Typography
+								variant='h5'
+								sx={{
+									fontWeight: 'bold',
+									color: isDarkMode ? '#ffffff' : '#3f51b5',
+									mb: 1
+								}}
+							>
+								{name}
+							</Typography>
+						</motion.div>
 
-					<motion.div
-						initial={{ opacity: 0, y: -20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: 0.4, duration: 0.5 }}
-					>
-						<Typography
-							variant='subtitle1'
-							gutterBottom
-							sx={{ color: isDarkMode ? '#ffffff' : '#000000' }}
+						<motion.div
+							initial={{ opacity: 0, y: -20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.4, duration: 0.5 }}
 						>
-							@{username}
-						</Typography>
-					</motion.div>
+							<Typography
+								variant='subtitle1'
+								sx={{ 
+									color: isDarkMode ? '#ffffff' : '#000000',
+									mb: 2,
+									fontWeight: 500
+								}}
+							>
+								@{username}
+							</Typography>
+						</motion.div>
 
-					<motion.div
-						initial={{ opacity: 0, y: -20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: 0.6, duration: 0.5 }}
-					>
-						<TextField
-							label='Имя'
-							value={name}
-							onChange={handleNameChange}
-							fullWidth
-							margin='normal'
-							variant='outlined'
-							sx={{
-								'& .MuiOutlinedInput-root': {
-									'& fieldset': {
-										borderColor: isDarkMode ? '#bb86fc' : '#3f51b5',
-									},
-									'&:hover fieldset': {
-										borderColor: isDarkMode ? '#bb86fc' : '#3f51b5',
-									},
-									'&.Mui-focused fieldset': {
-										borderColor: isDarkMode ? '#bb86fc' : '#3f51b5',
-									},
-								},
-								'& .MuiInputLabel-root': {
+						<motion.div
+							initial={{ opacity: 0, y: -20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.6, duration: 0.5 }}
+						>
+							<Typography
+								variant='body1'
+								sx={{ 
 									color: isDarkMode ? '#ffffff' : '#000000',
-								},
-								'& .MuiInputBase-input': {
-									color: isDarkMode ? '#ffffff' : '#000000',
-								},
-							}}
-						/>
-					</motion.div>
-
-					<motion.div
-						initial={{ opacity: 0, y: -20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: 0.8, duration: 0.5 }}
-					>
-						<TextField
-							label='Никнейм'
-							value={username}
-							onChange={handleUsernameChange}
-							fullWidth
-							margin='normal'
-							variant='outlined'
-							sx={{
-								'& .MuiOutlinedInput-root': {
-									'& fieldset': {
-										borderColor: isDarkMode ? '#bb86fc' : '#3f51b5',
-									},
-									'&:hover fieldset': {
-										borderColor: isDarkMode ? '#bb86fc' : '#3f51b5',
-									},
-									'&.Mui-focused fieldset': {
-										borderColor: isDarkMode ? '#bb86fc' : '#3f51b5',
-									},
-								},
-								'& .MuiInputLabel-root': {
-									color: isDarkMode ? '#ffffff' : '#000000',
-								},
-								'& .MuiInputBase-input': {
-									color: isDarkMode ? '#ffffff' : '#000000',
-								},
-							}}
-						/>
-					</motion.div>
-
-					<motion.div
-						initial={{ opacity: 0, y: -20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ delay: 1, duration: 0.5 }}
-					>
-						<TextField
-							label='Описание профиля'
-							value={bio}
-							onChange={handleBioChange}
-							fullWidth
-							multiline
-							minRows={4}
-							maxRows={8}
-							margin='normal'
-							variant='outlined'
-							sx={{
-								'& .MuiOutlinedInput-root': {
-									'& fieldset': {
-										borderColor: isDarkMode ? '#bb86fc' : '#3f51b5',
-									},
-									'&:hover fieldset': {
-										borderColor: isDarkMode ? '#bb86fc' : '#3f51b5',
-									},
-									'&.Mui-focused fieldset': {
-										borderColor: isDarkMode ? '#bb86fc' : '#3f51b5',
-									},
-								},
-								'& .MuiInputLabel-root': {
-									color: isDarkMode ? '#ffffff' : '#000000',
-								},
-								'& .MuiInputBase-input': {
-									color: isDarkMode ? '#ffffff' : '#000000',
-								},
-							}}
-						/>
-					</motion.div>
+									whiteSpace: 'pre-line',
+									lineHeight: 1.6
+								}}
+							>
+								{bio}
+							</Typography>
+						</motion.div>
+					</Box>
 
 					<Tooltip title='Загрузить аватар'>
 						<Button
