@@ -4,6 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Routes from './routes/Route';
 import { ThemeProvider } from './theme/ThemeContext';
 import { useTheme } from './theme/ThemeContext';
+import { LoadingProvider } from './context/LoadingContext';
 
 const AppContent = () => {
 	const { darkMode } = useTheme();
@@ -31,7 +32,9 @@ const AppContent = () => {
 const App = () => {
 	return (
 		<ThemeProvider>
-			<AppContent />
+			<LoadingProvider>
+				<AppContent />
+			</LoadingProvider>
 		</ThemeProvider>
 	);
 };

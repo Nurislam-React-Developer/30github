@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  CircularProgress,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -14,6 +15,7 @@ import {
 import LogoutIcon from '@mui/icons-material/Logout';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../theme/ThemeContext';
 import { Particles } from 'react-particles'; // Обновленный импорт
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -23,9 +25,13 @@ import MounthainBackground from '../../public/mounthBackground.png';
 import OceanBackground from '../../public/oceanBackground.png';
 import DefaultBackground from '../../public/redPhone.png';
 import SunsentBackGround from '../../public/sunsetBackground.png';
+import UserSettings from '../components/settings/UserSettings';
+import VisualSettings from '../components/settings/VisualSettings';
+import AccountSettings from '../components/settings/AccountSettings';
 
 const Settings = () => {
 	const navigate = useNavigate();
+	const { darkMode } = useTheme();
 	const [isLoading, setIsLoading] = useState(false);
 	// Состояния для полей формы
 	const [name, setName] = useState('');
@@ -227,37 +233,20 @@ const Settings = () => {
 						id='tsparticles'
 						init={particlesInit}
 						options={{
-							background: {
-								color: {
-									value: 'transparent',
-								},
-							},
+							background: { color: { value: 'transparent' } },
 							fpsLimit: 60,
 							interactivity: {
 								events: {
-									onClick: {
-										enable: true,
-										mode: 'push',
-									},
-									onHover: {
-										enable: true,
-										mode: 'repulse',
-									},
+									onClick: { enable: true, mode: 'push' },
+									onHover: { enable: true, mode: 'repulse' },
 								},
 								modes: {
-									push: {
-										quantity: 4,
-									},
-									repulse: {
-										distance: 100,
-										duration: 0.4,
-									},
+									push: { quantity: 4 },
+									repulse: { distance: 100, duration: 0.4 },
 								},
 							},
 							particles: {
-								color: {
-									value: accentColor,
-								},
+								color: { value: accentColor },
 								links: {
 									color: accentColor,
 									distance: 150,
@@ -265,35 +254,22 @@ const Settings = () => {
 									opacity: 0.5,
 									width: 1,
 								},
-								collisions: {
-									enable: true,
-								},
+								collisions: { enable: true },
 								move: {
 									direction: 'none',
 									enable: true,
-									outModes: {
-										default: 'bounce',
-									},
+									outModes: { default: 'bounce' },
 									random: false,
 									speed: 2,
 									straight: false,
 								},
 								number: {
-									density: {
-										enable: true,
-										area: 800,
-									},
+									density: { enable: true, area: 800 },
 									value: particlesCount,
 								},
-								opacity: {
-									value: 0.5,
-								},
-								shape: {
-									type: 'circle',
-								},
-								size: {
-									value: { min: 1, max: 5 },
-								},
+								opacity: { value: 0.5 },
+								shape: { type: 'circle' },
+								size: { value: { min: 1, max: 5 } },
 							},
 							detectRetina: true,
 						}}
@@ -327,142 +303,27 @@ const Settings = () => {
 							gap: 4,
 						}}
 					>
-						{/* Блок основных настроек */}
+						<UserSettings
+							name={name}
+							setName={setName}
+							email={email}
+							setEmail={setEmail}
+							avatar={avatar}
+							handleAvatarChange={handleAvatarChange}
+						/>
+
 						<Box>
-							<Typography variant='h6' gutterBottom>
-								Основные настройки
-							</Typography>
-							<Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
-								<Typography variant='h6' gutterBottom>
-									Аватар
-								</Typography>
-								{avatar && (
-									<Box
-										component='img'
-										src={avatar}
-										alt='Avatar'
-										sx={{
-											width: 100,
-											height: 100,
-											borderRadius: '50%',
-											mb: 2,
-											objectFit: 'cover',
-											border: '2px solid #3f51b5'
-										}}
-									/>
-								)}
-								<Button
-									variant='contained'
-									component='label'
-									size='small'
-								>
-									{avatar ? 'Изменить аватар' : 'Загрузить аватар'}
-									<input
-										type='file'
-										hidden
-										onChange={handleAvatarChange}
-										accept='image/*'
-									/>
-								</Button>
-							</Box>
-							<TextField
-								label='Имя'
-								fullWidth
-								value={name}
-								onChange={(e) => setName(e.target.value)}
-								sx={{ mb: 2 }}
-							/>
-							<TextField
-								label='Электронная почта'
-								fullWidth
-								value={email}
-								onChange={(e) => setEmail(e.target.value)}
-								sx={{ mb: 2 }}
-							/>
-							<Typography variant='h6' gutterBottom sx={{ mt: 2 }}>
-								Количество частиц: {particlesCount}
-							</Typography>
-						</Box>
-
-						{/* Блок дополнительных настроек */}
-						<Box>
-							<Typography variant='h6' gutterBottom>
-								Визуальные настройки
-							</Typography>
-							<FormControl fullWidth sx={{ mb: 2 }}>
-								<InputLabel>Цвет акцента</InputLabel>
-								<Select
-									value={accentColor}
-									onChange={(e) => setAccentColor(e.target.value)}
-									fullWidth
-								>
-									<MenuItem value='#2196f3'>Синий</MenuItem>
-									<MenuItem value='#4caf50'>Зелёный</MenuItem>
-									<MenuItem value='#ff9800'>Оранжевый</MenuItem>
-									<MenuItem value='#e91e63'>Розовый</MenuItem>
-								</Select>
-							</FormControl>
-
-							<FormControlLabel
-								control={
-									<Switch
-										checked={particlesEnabled}
-										onChange={() => setParticlesEnabled((prev) => !prev)}
-									/>
-								}
-								label={
-									particlesEnabled ? 'Анимация включена' : 'Анимация выключена'
-								}
-								sx={{ mb: 2 }}
-							/>
-
-							<FormControl fullWidth sx={{ mb: 2 }}>
-								<InputLabel>Тема фона</InputLabel>
-								<Select
-									value={backgroundTheme}
-									onChange={(e) => handleBackgroundThemeChange(e.target.value)}
-									fullWidth
-								>
-									{backgroundThemes.map((theme) => (
-										<MenuItem key={theme.value} value={theme.value}>
-											{theme.name}
-										</MenuItem>
-									))}
-								</Select>
-							</FormControl>
-							<Button
-								variant='contained'
-								component='label'
-								fullWidth
-								sx={{ mb: 1 }}
-							>
-								Загрузить свой фон
-								<input
-									type='file'
-									hidden
-									onChange={handleBackgroundChange}
-									accept='image/*,video/*'
-								/>
-							</Button>
-
-							<Button
-								variant='contained'
-								color='primary'
-								onClick={saveSettings}
-								sx={{
-									background: accentColor,
-									'&:hover': {
-										background: `${accentColor}cc`,
-									},
-									flex: 1,
-								}}
-							>
-								Сохранить настройки
-							</Button>
-							<Button
-								variant='outlined'
-								color='error'
-								onClick={() => {
+							<VisualSettings
+								accentColor={accentColor}
+								setAccentColor={setAccentColor}
+								particlesEnabled={particlesEnabled}
+								setParticlesEnabled={setParticlesEnabled}
+								backgroundTheme={backgroundTheme}
+								handleBackgroundThemeChange={handleBackgroundThemeChange}
+								backgroundThemes={backgroundThemes}
+								handleBackgroundChange={handleBackgroundChange}
+								saveSettings={saveSettings}
+								resetSettings={() => {
 									setName('');
 									setEmail('');
 									setAvatar(null);
@@ -471,59 +332,48 @@ const Settings = () => {
 									setAccentColor('#2196f3');
 									setParticlesEnabled(false);
 									setParticlesCount(80);
-									setGradientColors(['#ff9a9e', '#fad0c4']);
 									localStorage.removeItem('userSettings');
 									toast.info('Настройки сброшены к значениям по умолчанию');
 								}}
-								sx={{ flex: 1 }}
-							>
-								Сбросить настройки
-							</Button>
+								particlesCount={particlesCount}
+							/>
 
-              <Box sx={{ mt: 4 }}>
-                <Divider sx={{ mb: 2 }} />
-                <Typography variant="h6" gutterBottom>
-                  Аккаунт
-                </Typography>
-                <Button
-                  variant="contained"
-                  color="error"
-                  fullWidth
-                  startIcon={<LogoutIcon />}
-                  onClick={async () => {
-                    setIsLoading(true);
-                    try {
-                      // Simulate API call delay
-                      await new Promise(resolve => setTimeout(resolve, 1000));
-                      // Очищаем данные пользователя из localStorage
-                      localStorage.removeItem('token');
-                      localStorage.removeItem('user');
-                      // Показываем уведомление
-                      toast.success('Вы успешно вышли из аккаунта', {
-                        position: 'top-right',
-                        autoClose: 3000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                      });
-                      // Перенаправляем на страницу входа
-                      navigate('/signin');
-                    } catch (error) {
-                      toast.error('Произошла ошибка при выходе из аккаунта');
-                    } finally {
-                      setIsLoading(false);
-                    }
-                  }}
-                  sx={{ mt: 1 }}
-                >
-                  {isLoading ? (
-                    <CircularProgress size={24} sx={{ color: '#fff' }} />
-                  ) : (
-                    'Выйти из аккаунта'
-                  )}
-                </Button>
-              </Box>
+							<AccountSettings
+								isLoading={isLoading}
+								handleLogout={async () => {
+									setIsLoading(true);
+									try {
+										localStorage.removeItem('token');
+										localStorage.removeItem('user');
+										localStorage.removeItem('userSettings');
+
+										toast.success('Вы успешно вышли из аккаунта!', {
+											position: 'top-right',
+											autoClose: 2000,
+											hideProgressBar: false,
+											closeOnClick: true,
+											pauseOnHover: true,
+											draggable: true,
+											theme: darkMode ? 'dark' : 'light'
+										});
+
+										navigate('/signin');
+									} catch (error) {
+										console.error('Error during logout:', error);
+										toast.error('Произошла ошибка при выходе из аккаунта', {
+											position: 'top-right',
+											autoClose: 3000,
+											hideProgressBar: false,
+											closeOnClick: true,
+											pauseOnHover: true,
+											draggable: true,
+											theme: darkMode ? 'dark' : 'light'
+										});
+									} finally {
+										setIsLoading(false);
+									}
+								}}
+							/>
 						</Box>
 					</Box>
 				</Box>

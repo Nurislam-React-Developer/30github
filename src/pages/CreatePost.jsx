@@ -109,8 +109,8 @@ const CreatePost = () => {
         : {
             id: Date.now(),
             user: {
-              name: currentUser.name,
-              avatar: currentUser.avatar,
+              name: currentUser?.name || 'Anonymous',
+              avatar: currentUser?.avatar || 'https://via.placeholder.com/150',
             },
             image: compressedImage,
             description: postData.description,

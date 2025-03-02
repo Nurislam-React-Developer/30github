@@ -2,6 +2,13 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const loadUserFromStorage = () => {
 	try {
+		// First try to get user from 'user' key (used by auth system)
+		const authUser = localStorage.getItem('user');
+		if (authUser) {
+			return JSON.parse(authUser);
+		}
+		
+		// Fallback to 'currentUser' for backward compatibility
 		const savedUser = localStorage.getItem('currentUser');
 		return savedUser ? JSON.parse(savedUser) : {
 			id: 1,
@@ -18,7 +25,7 @@ const loadUserFromStorage = () => {
 
 const initialState = {
 	currentUser: loadUserFromStorage(),
-	isAuthenticated: true, // For demo purposes, we'll assume user is always authenticated
+	isAuthenticated: !!localStorage.getItem('token'), // Check if token exists to determine authentication status
 };
 
 const userSlice = createSlice({

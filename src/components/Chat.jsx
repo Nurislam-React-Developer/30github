@@ -335,25 +335,35 @@ const MessageBox = styled(Box)`
 	margin-bottom: 12px;
 `;
 
-const MessageMenu = styled(motion(IconButton))`
-	position: absolute;
-	top: -8px;
-	right: -8px;
-	opacity: 0;
-	transition: opacity 0.2s;
-	background: white;
-	padding: 4px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+const MessageMenu = styled(motion.create(IconButton))`
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  background: white;
+  padding: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-	&:hover {
-		background: #f5f5f5;
-	}
+  &:hover {
+    background: #f5f5f5;
+  }
+`;
+
+const ActionButton = styled(motion.create(IconButton))`
+  background: white;
+  padding: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    background: #f5f5f5;
+  }
 `;
 
 const TimeStamp = styled(Typography)`
-	font-size: 0.75rem;
-	opacity: 0.7;
-	margin-top: 4px;
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-top: 4px;
 `;
 
 const InputContainer = styled(Box)`
@@ -436,14 +446,4 @@ const MessageActions = styled(Box)`
 	gap: 4px;
 	opacity: 0;
 	transition: opacity 0.2s;
-`;
-
-const ActionButton = styled(motion(IconButton))`
-	background: white;
-	padding: 4px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-	&:hover {
-		background: #f5f5f5;
-	}
 `;

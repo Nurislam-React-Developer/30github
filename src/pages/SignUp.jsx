@@ -1,4 +1,6 @@
 import styled from '@emotion/styled';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -16,11 +18,13 @@ import {
 import { motion } from 'framer-motion';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useLoading } from '../context/LoadingContext';
 import { useTheme } from '../theme/ThemeContext';
 
 const SignUp = () => {
 	const navigate = useNavigate();
 	const { darkMode } = useTheme();
+	const { showLoader, hideLoader } = useLoading();
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
 	const [showPassword, setShowPassword] = useState(false);
@@ -77,7 +81,40 @@ const SignUp = () => {
 
 			localStorage.setItem('token', data.token);
 			localStorage.setItem('user', JSON.stringify(data.user));
+
+			// Сохраняем данные пользователя для использования в настройках
+			localStorage.setItem('profileName', formData.name);
+			localStorage.setItem('profileUsername', formData.email.split('@')[0]);
+			localStorage.setItem('profileBio', 'Расскажите о себе...');
+			localStorage.setItem('profileAvatar', 'https://via.placeholder.com/150');
+
+			// Сохраняем настройки пользователя
+			const userSettings = {
+				name: formData.name,
+				email: formData.email,
+				notificationsEnabled: true,
+				privacySetting: 'public',
+				accentColor: '#2196f3',
+				particlesEnabled: false,
+				particlesCount: 80,
+				backgroundTheme: 'default'
+			};
+			localStorage.setItem('userSettings', JSON.stringify(userSettings));
+
+			// Show success toast notification
+			toast.success('Вы успешно зарегистрировались!', {
+				position: 'top-right',
+				autoClose: 3000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				theme: darkMode ? 'dark' : 'light'
+			});
+
+			showLoader();
 			navigate('/');
+			setTimeout(hideLoader, 1000);
 		} catch (err) {
 			setError(err.message || 'An error occurred during registration');
 		} finally {
