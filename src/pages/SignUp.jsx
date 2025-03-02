@@ -95,8 +95,6 @@ const SignUp = () => {
 				notificationsEnabled: true,
 				privacySetting: 'public',
 				accentColor: '#2196f3',
-				particlesEnabled: false,
-				particlesCount: 80,
 				backgroundTheme: 'default'
 			};
 			localStorage.setItem('userSettings', JSON.stringify(userSettings));

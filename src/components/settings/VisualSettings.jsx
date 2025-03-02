@@ -1,18 +1,15 @@
 import React from 'react';
-import { Box, Button, FormControl, FormControlLabel, InputLabel, MenuItem, Select, Switch, Typography } from '@mui/material';
+import { Box, Button, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
 
 const VisualSettings = ({
   accentColor,
   setAccentColor,
-  particlesEnabled,
-  setParticlesEnabled,
   backgroundTheme,
   handleBackgroundThemeChange,
   backgroundThemes,
   handleBackgroundChange,
   saveSettings,
-  resetSettings,
-  particlesCount
+  resetSettings
 }) => {
   return (
     <Box>
@@ -33,18 +30,6 @@ const VisualSettings = ({
         </Select>
       </FormControl>
 
-      <FormControlLabel
-        control={
-          <Switch
-            checked={particlesEnabled}
-            onChange={() => setParticlesEnabled((prev) => !prev)}
-          />
-        }
-        label={
-          particlesEnabled ? 'Анимация включена' : 'Анимация выключена'
-        }
-        sx={{ mb: 2 }}
-      />
 
       <FormControl fullWidth sx={{ mb: 2 }}>
         <InputLabel>Тема фона</InputLabel>
@@ -102,9 +87,7 @@ const VisualSettings = ({
         </Button>
       </Box>
       
-      <Typography variant='h6' gutterBottom sx={{ mt: 2 }}>
-        Количество частиц: {particlesCount}
-      </Typography>
+
     </Box>
   );
 };
