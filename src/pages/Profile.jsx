@@ -157,7 +157,7 @@ const Profile = () => {
 						)}
 					</motion.div>
 					
-					<Box sx={{ flex: 1 }}>
+					<Box sx={{ flex: 1, width: '100%' }}>
 						<Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
 							<Typography
 								variant='h5'
@@ -507,6 +507,7 @@ const Profile = () => {
 								</Typography>
 							</Box>
 						)}
+					</Box>
 					</Box>
 				</Box>
 			</Paper>
