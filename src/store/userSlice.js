@@ -32,13 +32,20 @@ const userSlice = createSlice({
 	initialState,
 	reducers: {
 		updateProfile: (state, action) => {
-			state.currentUser = { ...state.currentUser, ...action.payload };
-			localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
+			try {
+				state.currentUser = { ...state.currentUser, ...action.payload };
+				localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
+				localStorage.setItem('user', JSON.stringify(state.currentUser));
+			} catch (error) {
+				console.error('Error updating user profile:', error);
+			}
 		},
 		logout: (state) => {
 			state.currentUser = null;
 			state.isAuthenticated = false;
 			localStorage.removeItem('currentUser');
+			localStorage.removeItem('user');
+			localStorage.removeItem('token');
 		},
 	},
 });
