@@ -124,16 +124,19 @@ const Profile = () => {
 		localStorage.setItem('profileUsername', editUsername);
 		localStorage.setItem('profileBio', editBio);
 		localStorage.setItem('profileAvatar', avatar);
+		localStorage.setItem('userAvatar', avatar);
 		
 		// Update userSettings in localStorage
 		const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
 		userSettings.name = editName;
 		userSettings.username = editUsername;
+		userSettings.avatar = avatar;
 		localStorage.setItem('userSettings', JSON.stringify(userSettings));
 		
 		// Update user data in localStorage
 		const userData = JSON.parse(localStorage.getItem('user') || '{}');
 		userData.name = editName;
+		userData.avatar = avatar;
 		localStorage.setItem('user', JSON.stringify(userData));
 
 		// Show success message and close dialog
