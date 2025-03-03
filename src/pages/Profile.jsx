@@ -4,7 +4,6 @@ import {
 	Button,
 	Typography,
 	Box,
-	styled,
 	Paper,
 	CircularProgress,
 	Grid,
@@ -81,8 +80,23 @@ const Profile = () => {
 			setIsAvatarLoading(true);
 			const reader = new FileReader();
 			reader.onloadend = () => {
-				setAvatar(reader.result);
+				const base64String = reader.result;
+				setAvatar(base64String);
+				localStorage.setItem('profileAvatar', base64String);
+				localStorage.setItem('userAvatar', base64String);
+				
+				// Update userSettings in localStorage
+				const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+				userSettings.avatar = base64String;
+				localStorage.setItem('userSettings', JSON.stringify(userSettings));
+				
 				setIsAvatarLoading(false);
+				
+				// Close the dialog after saving
+				setOpenEditDialog(false);
+				
+				// Show success message
+				toast.success('Профиль успешно обновлен!');
 			};
 			reader.readAsDataURL(file);
 		}
@@ -100,15 +114,32 @@ const Profile = () => {
 	};
 
 	const handleSaveProfile = () => {
+		// Update local state
 		setName(editName);
 		setUsername(editUsername);
 		setBio(editBio);
 		
+		// Update localStorage
 		localStorage.setItem('profileName', editName);
 		localStorage.setItem('profileUsername', editUsername);
 		localStorage.setItem('profileBio', editBio);
 		localStorage.setItem('profileAvatar', avatar);
+		localStorage.setItem('userAvatar', avatar);
 		
+		// Update userSettings in localStorage
+		const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+		userSettings.name = editName;
+		userSettings.username = editUsername;
+		userSettings.avatar = avatar;
+		localStorage.setItem('userSettings', JSON.stringify(userSettings));
+		
+		// Update user data in localStorage
+		const userData = JSON.parse(localStorage.getItem('user') || '{}');
+		userData.name = editName;
+		userData.avatar = avatar;
+		localStorage.setItem('user', JSON.stringify(userData));
+
+		// Show success message and close dialog
 		toast.success('Профиль успешно обновлен!');
 		setOpenEditDialog(false);
 	};

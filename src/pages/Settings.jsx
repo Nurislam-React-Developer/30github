@@ -1,18 +1,7 @@
 import {
   Box,
-  Button,
-  CircularProgress,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Select,
-  Switch,
-  TextField,
   Typography,
-  Divider,
 } from '@mui/material';
-import LogoutIcon from '@mui/icons-material/Logout';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../theme/ThemeContext';
@@ -34,13 +23,12 @@ const Settings = () => {
 	// Состояния для полей формы
 	const [name, setName] = useState('');
 	const [email, setEmail] = useState('');
-	const [avatar, setAvatar] = useState(localStorage.getItem('userAvatar') || null);
 	const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 	const [privacySetting, setPrivacySetting] = useState('public');
 	const [accentColor, setAccentColor] = useState('#2196f3');
 
 	const [backgroundMedia, setBackgroundMedia] = useState(null);
-	const [backgroundType, setBackgroundType] = useState('none'); // 'none', 'image', or 'video'
+	const [backgroundType, setBackgroundType] = useState('none');
 	const [backgroundTheme, setBackgroundTheme] = useState('default');
 
 	// Set default background on initial load
@@ -94,28 +82,31 @@ const Settings = () => {
 
 	// Загрузка данных из localStorage при монтировании
 	useEffect(() => {
+		// Load user settings
 		const savedData = JSON.parse(localStorage.getItem('userSettings'));
-		if (savedData) {
-			setName(savedData.name || '');
-			setEmail(savedData.email || '');
-			setAvatar(savedData.avatar || null);
-			setNotificationsEnabled(savedData.notificationsEnabled || true);
-			setPrivacySetting(savedData.privacySetting || 'public');
-			setAccentColor(savedData.accentColor || '#2196f3');
+		// Load profile data
+		const profileName = localStorage.getItem('profileName');
+		const profileEmail = localStorage.getItem('profileUsername');
 
-			setBackgroundMedia(savedData.backgroundMedia || null);
-			setBackgroundType(savedData.backgroundType || 'none');
-			setBackgroundTheme(savedData.backgroundTheme || 'default');
+		// Set data with priority to profile data
+		setName(profileName || (savedData?.name || ''));
+		setEmail(profileEmail || (savedData?.email || ''));
+		setNotificationsEnabled(savedData?.notificationsEnabled || true);
+		setPrivacySetting(savedData?.privacySetting || 'public');
+		setAccentColor(savedData?.accentColor || '#2196f3');
+
+		setBackgroundMedia(savedData?.backgroundMedia || null);
+		setBackgroundType(savedData?.backgroundType || 'none');
+		setBackgroundTheme(savedData?.backgroundTheme || 'default');
 			
-			// Применяем тему фона при загрузке
-			if (savedData.backgroundTheme) {
-				const selectedTheme = backgroundThemes.find(
-					(theme) => theme.value === savedData.backgroundTheme
-				);
-				if (selectedTheme && selectedTheme.image) {
-					setBackgroundMedia(selectedTheme.image);
-					setBackgroundType('image');
-				}
+		// Применяем тему фона при загрузке
+		if (savedData?.backgroundTheme) {
+			const selectedTheme = backgroundThemes.find(
+				(theme) => theme.value === savedData.backgroundTheme
+			);
+			if (selectedTheme && selectedTheme.image) {
+				setBackgroundMedia(selectedTheme.image);
+				setBackgroundType('image');
 			}
 		}
 	}, [backgroundThemes]);
@@ -125,11 +116,9 @@ const Settings = () => {
 		const settings = {
 			name,
 			email,
-			avatar,
 			notificationsEnabled,
 			privacySetting,
 			accentColor,
-
 			backgroundMedia,
 			backgroundType,
 			backgroundTheme,
@@ -146,7 +135,6 @@ const Settings = () => {
 	}, [
 		name,
 		email,
-		avatar,
 		notificationsEnabled,
 		privacySetting,
 		accentColor,
@@ -154,35 +142,6 @@ const Settings = () => {
 		backgroundType,
 		backgroundTheme,
 	]);
-
-	// Обработчик загрузки фона
-	const handleBackgroundChange = useCallback((e) => {
-		const file = e.target.files[0];
-		if (file) {
-			const reader = new FileReader();
-			reader.onloadend = () => {
-				setBackgroundMedia(reader.result);
-				setBackgroundType(file.type.startsWith('image/') ? 'image' : 'video');
-			};
-			reader.readAsDataURL(file);
-		}
-	}, []);
-
-	// Преобразование файла в base64
-	const handleAvatarChange = useCallback((e) => {
-		const file = e.target.files[0];
-		if (file) {
-			const reader = new FileReader();
-			reader.onloadend = () => {
-				const base64String = reader.result;
-				setAvatar(base64String);
-				localStorage.setItem('userAvatar', base64String);
-			};
-			reader.readAsDataURL(file);
-		}
-	}, []);
-
-
 
 	return (
 		<>
@@ -193,7 +152,7 @@ const Settings = () => {
 					minHeight: '100vh',
 					position: 'relative',
 					overflow: 'hidden',
-					padding: 4,
+					padding: { xs: 2, sm: 4 },
 				}}
 			>
 				{backgroundMedia && (
@@ -221,14 +180,12 @@ const Settings = () => {
 					/>
 				)}
 
-
-
 				<Box
 					component='section'
 					sx={{
 						backgroundColor: 'rgba(255, 255, 255, 0.9)',
 						borderRadius: 4,
-						padding: 4,
+						padding: { xs: 2, sm: 4 },
 						margin: 'auto',
 						maxWidth: 1200,
 						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
@@ -255,8 +212,6 @@ const Settings = () => {
 							setName={setName}
 							email={email}
 							setEmail={setEmail}
-							avatar={avatar}
-							handleAvatarChange={handleAvatarChange}
 						/>
 
 						<Box>
@@ -266,12 +221,10 @@ const Settings = () => {
 								backgroundTheme={backgroundTheme}
 								handleBackgroundThemeChange={handleBackgroundThemeChange}
 								backgroundThemes={backgroundThemes}
-								handleBackgroundChange={handleBackgroundChange}
 								saveSettings={saveSettings}
 								resetSettings={() => {
 									setName('');
 									setEmail('');
-									setAvatar(null);
 									setNotificationsEnabled(true);
 									setPrivacySetting('public');
 									setAccentColor('#2196f3');
@@ -279,7 +232,6 @@ const Settings = () => {
 									localStorage.removeItem('userSettings');
 									toast.info('Настройки сброшены к значениям по умолчанию');
 								}}
-
 							/>
 
 							<AccountSettings
