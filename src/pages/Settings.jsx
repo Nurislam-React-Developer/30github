@@ -16,10 +16,8 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../theme/ThemeContext';
-import { Particles } from 'react-particles'; // Обновленный импорт
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { loadFull } from 'tsparticles'; // Обновленный импорт
 import ForestBackGround from '../../public/forestBackgorund.png';
 import MounthainBackground from '../../public/mounthBackground.png';
 import OceanBackground from '../../public/oceanBackground.png';
@@ -40,8 +38,7 @@ const Settings = () => {
 	const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 	const [privacySetting, setPrivacySetting] = useState('public');
 	const [accentColor, setAccentColor] = useState('#2196f3');
-	const [particlesEnabled, setParticlesEnabled] = useState(false);
-	const [particlesCount, setParticlesCount] = useState(80);
+
 	const [backgroundMedia, setBackgroundMedia] = useState(null);
 	const [backgroundType, setBackgroundType] = useState('none'); // 'none', 'image', or 'video'
 	const [backgroundTheme, setBackgroundTheme] = useState('default');
@@ -105,7 +102,7 @@ const Settings = () => {
 			setNotificationsEnabled(savedData.notificationsEnabled || true);
 			setPrivacySetting(savedData.privacySetting || 'public');
 			setAccentColor(savedData.accentColor || '#2196f3');
-			setParticlesEnabled(savedData.particlesEnabled || false);
+
 			setBackgroundMedia(savedData.backgroundMedia || null);
 			setBackgroundType(savedData.backgroundType || 'none');
 			setBackgroundTheme(savedData.backgroundTheme || 'default');
@@ -132,7 +129,7 @@ const Settings = () => {
 			notificationsEnabled,
 			privacySetting,
 			accentColor,
-			particlesEnabled,
+
 			backgroundMedia,
 			backgroundType,
 			backgroundTheme,
@@ -153,7 +150,6 @@ const Settings = () => {
 		notificationsEnabled,
 		privacySetting,
 		accentColor,
-		particlesEnabled,
 		backgroundMedia,
 		backgroundType,
 		backgroundTheme,
@@ -186,10 +182,7 @@ const Settings = () => {
 		}
 	}, []);
 
-	// Настройка частиц
-	const particlesInit = useCallback(async (main) => {
-		await loadFull(main);
-	});
+
 
 	return (
 		<>
@@ -228,53 +221,7 @@ const Settings = () => {
 					/>
 				)}
 
-				{particlesEnabled && (
-					<Particles
-						id='tsparticles'
-						init={particlesInit}
-						options={{
-							background: { color: { value: 'transparent' } },
-							fpsLimit: 60,
-							interactivity: {
-								events: {
-									onClick: { enable: true, mode: 'push' },
-									onHover: { enable: true, mode: 'repulse' },
-								},
-								modes: {
-									push: { quantity: 4 },
-									repulse: { distance: 100, duration: 0.4 },
-								},
-							},
-							particles: {
-								color: { value: accentColor },
-								links: {
-									color: accentColor,
-									distance: 150,
-									enable: true,
-									opacity: 0.5,
-									width: 1,
-								},
-								collisions: { enable: true },
-								move: {
-									direction: 'none',
-									enable: true,
-									outModes: { default: 'bounce' },
-									random: false,
-									speed: 2,
-									straight: false,
-								},
-								number: {
-									density: { enable: true, area: 800 },
-									value: particlesCount,
-								},
-								opacity: { value: 0.5 },
-								shape: { type: 'circle' },
-								size: { value: { min: 1, max: 5 } },
-							},
-							detectRetina: true,
-						}}
-					/>
-				)}
+
 
 				<Box
 					component='section'
@@ -316,8 +263,6 @@ const Settings = () => {
 							<VisualSettings
 								accentColor={accentColor}
 								setAccentColor={setAccentColor}
-								particlesEnabled={particlesEnabled}
-								setParticlesEnabled={setParticlesEnabled}
 								backgroundTheme={backgroundTheme}
 								handleBackgroundThemeChange={handleBackgroundThemeChange}
 								backgroundThemes={backgroundThemes}
@@ -330,12 +275,11 @@ const Settings = () => {
 									setNotificationsEnabled(true);
 									setPrivacySetting('public');
 									setAccentColor('#2196f3');
-									setParticlesEnabled(false);
-									setParticlesCount(80);
+
 									localStorage.removeItem('userSettings');
 									toast.info('Настройки сброшены к значениям по умолчанию');
 								}}
-								particlesCount={particlesCount}
+
 							/>
 
 							<AccountSettings
