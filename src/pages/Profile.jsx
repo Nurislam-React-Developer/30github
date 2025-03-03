@@ -57,10 +57,20 @@ const Profile = () => {
 			const userName = localStorage.getItem('profileName');
 
 			const allPosts = postsData ? JSON.parse(postsData) : [];
-			const currentUser = userData ? JSON.parse(userData) : {
-				name: localStorage.getItem('profileName') || 'Default Name',
-				avatar: localStorage.getItem('profileAvatar') || 'https://via.placeholder.com/150'
-			};
+			let currentUser;
+			try {
+				currentUser = userData ? JSON.parse(userData) : null;
+			} catch (parseError) {
+				console.error('Error parsing user data:', parseError);
+				currentUser = null;
+			}
+			
+			if (!currentUser) {
+				currentUser = {
+					name: localStorage.getItem('profileName') || 'Default Name',
+					avatar: localStorage.getItem('profileAvatar') || 'https://via.placeholder.com/150'
+				};
+			}
 			
 			const filteredPosts = allPosts.filter(post => 
 				post?.user?.name === userName || post?.user?.name === currentUser?.name
@@ -123,13 +133,23 @@ const Profile = () => {
 
 						// Update userSettings
 						const userSettings = localStorage.getItem('userSettings');
-			const parsedSettings = userSettings ? JSON.parse(userSettings) : {
-				name: editName,
-				username: editUsername,
-				avatar: avatar
-			};
-						userSettings.avatar = compressedBase64;
-						localStorage.setItem('userSettings', JSON.stringify(userSettings));
+						let parsedSettings = {};
+						try {
+							parsedSettings = userSettings ? JSON.parse(userSettings) : {
+								name: editName,
+								username: editUsername,
+								avatar: avatar
+							};
+						} catch (error) {
+							console.error('Error parsing user settings:', error);
+							parsedSettings = {
+								name: editName,
+								username: editUsername,
+								avatar: avatar
+							};
+						}
+						parsedSettings.avatar = compressedBase64;
+						localStorage.setItem('userSettings', JSON.stringify(parsedSettings));
 
 						// Show success message
 						toast.success('Профиль успешно обновлен!');
@@ -139,7 +159,7 @@ const Profile = () => {
 					}
 
 					setIsAvatarLoading(false);
-					setOpenEditDialog(false);
+					// Removed setOpenEditDialog(false) to keep the modal open
 				};
 				img.src = reader.result;
 			};
@@ -181,39 +201,60 @@ const Profile = () => {
 			
 			// Update userSettings in localStorage
 			const userSettings = localStorage.getItem('userSettings');
-			const parsedSettings = userSettings ? JSON.parse(userSettings) : {
-				name: editName,
-				username: editUsername,
-				avatar: avatar
-			};
-			userSettings.name = editName;
-			userSettings.username = editUsername;
+			let parsedSettings;
+			try {
+				parsedSettings = userSettings ? JSON.parse(userSettings) : {
+					name: editName,
+					username: editUsername,
+					avatar: avatar
+				};
+			} catch (error) {
+				console.error('Error parsing user settings:', error);
+				parsedSettings = {
+					name: editName,
+					username: editUsername,
+					avatar: avatar
+				};
+			}
+			
+			parsedSettings.name = editName;
+			parsedSettings.username = editUsername;
 			
 			// Try to save avatar to settings
 			try {
-				userSettings.avatar = avatar;
+				parsedSettings.avatar = avatar;
 			} catch (settingsAvatarError) {
 				console.error('Error saving avatar to settings:', settingsAvatarError);
 			}
 			
-			localStorage.setItem('userSettings', JSON.stringify(userSettings));
+			localStorage.setItem('userSettings', JSON.stringify(parsedSettings));
 			
 			// Update user data in localStorage
 			const userData = localStorage.getItem('user');
-			const parsedUserData = userData ? JSON.parse(userData) : {
-				name: editName,
-				avatar: avatar
-			};
-			userData.name = editName;
+			let parsedUserData;
+			try {
+				parsedUserData = userData ? JSON.parse(userData) : {
+					name: editName,
+					avatar: avatar
+				};
+			} catch (error) {
+				console.error('Error parsing user data:', error);
+				parsedUserData = {
+					name: editName,
+					avatar: avatar
+				};
+			}
+			
+			parsedUserData.name = editName;
 			
 			// Try to save avatar to user data
 			try {
-				userData.avatar = avatar;
+				parsedUserData.avatar = avatar;
 			} catch (userAvatarError) {
 				console.error('Error saving avatar to user data:', userAvatarError);
 			}
 			
-			localStorage.setItem('user', JSON.stringify(userData));
+			localStorage.setItem('user', JSON.stringify(parsedUserData));
 
 			// Show success message
 			toast.success('Профиль успешно обновлен!');
