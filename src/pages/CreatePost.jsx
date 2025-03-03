@@ -217,7 +217,10 @@ const CreatePost = () => {
               style={{ display: 'none' }}
               onChange={handleImageChange}
             />
-            <label htmlFor="image-upload">
+            <label htmlFor="image-upload">` 
+              `
+              90
+                
               <IconButton
                 component="span"
                 sx={{
