@@ -80,23 +80,60 @@ const Profile = () => {
 			setIsAvatarLoading(true);
 			const reader = new FileReader();
 			reader.onloadend = () => {
-				const base64String = reader.result;
-				setAvatar(base64String);
-				localStorage.setItem('profileAvatar', base64String);
-				localStorage.setItem('userAvatar', base64String);
-				
-				// Update userSettings in localStorage
-				const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
-				userSettings.avatar = base64String;
-				localStorage.setItem('userSettings', JSON.stringify(userSettings));
-				
-				setIsAvatarLoading(false);
-				
-				// Close the dialog after saving
-				setOpenEditDialog(false);
-				
-				// Show success message
-				toast.success('Профиль успешно обновлен!');
+				// Create an image element for compression
+				const img = new Image();
+				img.onload = () => {
+					// Create canvas for compression
+					const canvas = document.createElement('canvas');
+					const ctx = canvas.getContext('2d');
+
+					// Calculate new dimensions (max 800x800)
+					let width = img.width;
+					let height = img.height;
+					const maxSize = 800;
+
+					if (width > height) {
+						if (width > maxSize) {
+							height *= maxSize / width;
+							width = maxSize;
+						}
+					} else {
+						if (height > maxSize) {
+							width *= maxSize / height;
+							height = maxSize;
+						}
+					}
+
+					// Set canvas dimensions and draw image
+					canvas.width = width;
+					canvas.height = height;
+					ctx.drawImage(img, 0, 0, width, height);
+
+					// Get compressed base64 string
+					const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+					try {
+						// Update state and localStorage
+						setAvatar(compressedBase64);
+						localStorage.setItem('profileAvatar', compressedBase64);
+						localStorage.setItem('userAvatar', compressedBase64);
+
+						// Update userSettings
+						const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+						userSettings.avatar = compressedBase64;
+						localStorage.setItem('userSettings', JSON.stringify(userSettings));
+
+						// Show success message
+						toast.success('Профиль успешно обновлен!');
+					} catch (error) {
+						console.error('Error saving avatar:', error);
+						toast.error('Ошибка при сохранении аватара. Попробуйте изображение меньшего размера.');
+					}
+
+					setIsAvatarLoading(false);
+					setOpenEditDialog(false);
+				};
+				img.src = reader.result;
 			};
 			reader.readAsDataURL(file);
 		}
@@ -119,28 +156,56 @@ const Profile = () => {
 		setUsername(editUsername);
 		setBio(editBio);
 		
-		// Update localStorage
-		localStorage.setItem('profileName', editName);
-		localStorage.setItem('profileUsername', editUsername);
-		localStorage.setItem('profileBio', editBio);
-		localStorage.setItem('profileAvatar', avatar);
-		localStorage.setItem('userAvatar', avatar);
-		
-		// Update userSettings in localStorage
-		const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
-		userSettings.name = editName;
-		userSettings.username = editUsername;
-		userSettings.avatar = avatar;
-		localStorage.setItem('userSettings', JSON.stringify(userSettings));
-		
-		// Update user data in localStorage
-		const userData = JSON.parse(localStorage.getItem('user') || '{}');
-		userData.name = editName;
-		userData.avatar = avatar;
-		localStorage.setItem('user', JSON.stringify(userData));
+		try {
+			// Update localStorage
+			localStorage.setItem('profileName', editName);
+			localStorage.setItem('profileUsername', editUsername);
+			localStorage.setItem('profileBio', editBio);
+			
+			// Try to save avatar - this might cause quota issues
+			try {
+				localStorage.setItem('profileAvatar', avatar);
+				localStorage.setItem('userAvatar', avatar);
+			} catch (avatarError) {
+				console.error('Error saving avatar to localStorage:', avatarError);
+				// Continue with other operations even if avatar save fails
+			}
+			
+			// Update userSettings in localStorage
+			const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+			userSettings.name = editName;
+			userSettings.username = editUsername;
+			
+			// Try to save avatar to settings
+			try {
+				userSettings.avatar = avatar;
+			} catch (settingsAvatarError) {
+				console.error('Error saving avatar to settings:', settingsAvatarError);
+			}
+			
+			localStorage.setItem('userSettings', JSON.stringify(userSettings));
+			
+			// Update user data in localStorage
+			const userData = JSON.parse(localStorage.getItem('user') || '{}');
+			userData.name = editName;
+			
+			// Try to save avatar to user data
+			try {
+				userData.avatar = avatar;
+			} catch (userAvatarError) {
+				console.error('Error saving avatar to user data:', userAvatarError);
+			}
+			
+			localStorage.setItem('user', JSON.stringify(userData));
 
-		// Show success message and close dialog
-		toast.success('Профиль успешно обновлен!');
+			// Show success message
+			toast.success('Профиль успешно обновлен!');
+		} catch (error) {
+			console.error('Error saving profile data:', error);
+			toast.error('Ошибка при сохранении данных профиля. Возможно, превышен лимит хранилища.');
+		}
+		
+		// Close dialog regardless of success/failure
 		setOpenEditDialog(false);
 	};
 
