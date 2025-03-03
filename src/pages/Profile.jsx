@@ -57,7 +57,10 @@ const Profile = () => {
 			const userName = localStorage.getItem('profileName');
 
 			const allPosts = postsData ? JSON.parse(postsData) : [];
-			const currentUser = userData ? JSON.parse(userData) : {};
+			const currentUser = userData ? JSON.parse(userData) : {
+				name: localStorage.getItem('profileName') || 'Default Name',
+				avatar: localStorage.getItem('profileAvatar') || 'https://via.placeholder.com/150'
+			};
 			
 			const filteredPosts = allPosts.filter(post => 
 				post?.user?.name === userName || post?.user?.name === currentUser?.name
@@ -119,7 +122,12 @@ const Profile = () => {
 						localStorage.setItem('userAvatar', compressedBase64);
 
 						// Update userSettings
-						const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+						const userSettings = localStorage.getItem('userSettings');
+			const parsedSettings = userSettings ? JSON.parse(userSettings) : {
+				name: editName,
+				username: editUsername,
+				avatar: avatar
+			};
 						userSettings.avatar = compressedBase64;
 						localStorage.setItem('userSettings', JSON.stringify(userSettings));
 
@@ -172,7 +180,12 @@ const Profile = () => {
 			}
 			
 			// Update userSettings in localStorage
-			const userSettings = JSON.parse(localStorage.getItem('userSettings') || '{}');
+			const userSettings = localStorage.getItem('userSettings');
+			const parsedSettings = userSettings ? JSON.parse(userSettings) : {
+				name: editName,
+				username: editUsername,
+				avatar: avatar
+			};
 			userSettings.name = editName;
 			userSettings.username = editUsername;
 			
@@ -186,7 +199,11 @@ const Profile = () => {
 			localStorage.setItem('userSettings', JSON.stringify(userSettings));
 			
 			// Update user data in localStorage
-			const userData = JSON.parse(localStorage.getItem('user') || '{}');
+			const userData = localStorage.getItem('user');
+			const parsedUserData = userData ? JSON.parse(userData) : {
+				name: editName,
+				avatar: avatar
+			};
 			userData.name = editName;
 			
 			// Try to save avatar to user data
