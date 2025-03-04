@@ -88,8 +88,8 @@ const Home = () => {
 			const newComment = {
 				id: Date.now(),
 				user: {
-					name: currentUser.name,
-					avatar: currentUser.avatar,
+					name: currentUser?.name || localStorage.getItem('profileName') || 'Anonymous',
+					avatar: currentUser?.avatar || localStorage.getItem('profileAvatar') || 'https://via.placeholder.com/150',
 				},
 				text: commentText,
 				timestamp: new Date().toISOString(),
@@ -120,7 +120,7 @@ const Home = () => {
 			localStorage.setItem('posts', JSON.stringify(updatedPosts));
 
 			// Show success toast
-			toast.success('Комментарий добавлен!', {
+			toast.success('Комментарий успешно добавлен!', {
 				position: 'top-right',
 				autoClose: 3000,
 				hideProgressBar: false,
@@ -131,7 +131,15 @@ const Home = () => {
 			});
 		} catch (error) {
 			console.error('Error adding comment:', error);
-			toast.error('Ошибка при добавлении комментария');
+			toast.error('Ошибка при добавлении комментария', {
+				position: 'top-right',
+				autoClose: 3000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				theme: darkMode ? 'dark' : 'light',
+			});
 		}
 	};
 
@@ -163,7 +171,7 @@ const Home = () => {
 
 			// Save to localStorage and show toast after UI update
 			localStorage.setItem('posts', JSON.stringify(updatedPosts));
-			toast.success('Комментарий удален!', {
+			toast.success('Комментарий успешно удален!', {
 				position: 'top-right',
 				autoClose: 3000,
 				hideProgressBar: false,
@@ -174,7 +182,15 @@ const Home = () => {
 			});
 		} catch (error) {
 			console.error('Error deleting comment:', error);
-			toast.error('Ошибка при удалении комментария');
+			toast.error('Ошибка при удалении комментария', {
+				position: 'top-right',
+				autoClose: 3000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				theme: darkMode ? 'dark' : 'light',
+			});
 		}
 	};
 
@@ -192,6 +208,16 @@ const Home = () => {
 	const handleEditPost = (post) => {
 		navigate('/create-post', { state: { editPost: post } });
 		handlePostMenuClose();
+		// Show toast notification when navigating to edit post
+		toast.info('Редактирование поста...', {
+			position: 'top-right',
+			autoClose: 2000,
+			hideProgressBar: false,
+			closeOnClick: true,
+			pauseOnHover: true,
+			draggable: true,
+			theme: darkMode ? 'dark' : 'light',
+		});
 	};
 
 	const handleSaveEdit = () => {
@@ -209,6 +235,17 @@ const Home = () => {
 		localStorage.setItem('posts', JSON.stringify(updatedPosts));
 		setEditingPost(null);
 		setEditText('');
+		
+		// Show success toast notification
+		toast.success('Пост успешно отредактирован!', {
+			position: 'top-right',
+			autoClose: 3000,
+			hideProgressBar: false,
+			closeOnClick: true,
+			pauseOnHover: true,
+			draggable: true,
+			theme: darkMode ? 'dark' : 'light',
+		});
 	};
 
 	const handleDeletePost = (postId) => {
