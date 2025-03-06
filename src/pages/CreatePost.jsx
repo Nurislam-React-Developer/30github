@@ -63,6 +63,23 @@ const CreatePost = () => {
       return;
     }
 
+    // Add notification handlers for likes and comments
+    const addNotification = (type, sender, postId, comment = '') => {
+      const notification = {
+        id: Date.now(),
+        type,
+        sender,
+        senderAvatar: currentUser?.avatar || localStorage.getItem('profileAvatar') || 'https://via.placeholder.com/150',
+        postId,
+        comment,
+        timestamp: new Date().toISOString()
+      };
+      
+      const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+      notifications.unshift(notification);
+      localStorage.setItem('notifications', JSON.stringify(notifications));
+    };
+
     try {
       // Compress image if present
       let compressedImage = postData.imagePreview;

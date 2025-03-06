@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
 	Box,
 	Typography,
@@ -7,9 +7,36 @@ import {
 	ListItemText,
 	Button,
 	styled,
+	Avatar,
+	Divider,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
-const Notifications = ({ notifications, onAccept, onDecline }) => {
+const Notifications = () => {
+	const navigate = useNavigate();
+	const [notifications, setNotifications] = useState([]);
+
+	useEffect(() => {
+		// Load notifications from localStorage
+		const savedNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+		setNotifications(savedNotifications);
+	}, []);
+
+	const handleAcceptFriend = (notificationId) => {
+		const updatedNotifications = notifications.filter(n => n.id !== notificationId);
+		setNotifications(updatedNotifications);
+		localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+	};
+
+	const handleDeclineFriend = (notificationId) => {
+		const updatedNotifications = notifications.filter(n => n.id !== notificationId);
+		setNotifications(updatedNotifications);
+		localStorage.setItem('notifications', JSON.stringify(updatedNotifications));
+	};
+
+	const handleViewPost = (postId) => {
+		navigate(`/profile?postId=${postId}`);
+	};
 	return (
 		<NotificationsContainer>
 			<Typography
@@ -20,7 +47,6 @@ const Notifications = ({ notifications, onAccept, onDecline }) => {
 				Уведомления
 			</Typography>
 
-			{/* Проверяем, передан ли массив уведомлений */}
 			{!notifications || notifications.length === 0 ? (
 				<Typography variant='body1' sx={{ textAlign: 'center', color: '#666' }}>
 					Нет новых уведомлений
@@ -28,31 +54,68 @@ const Notifications = ({ notifications, onAccept, onDecline }) => {
 			) : (
 				<List>
 					{notifications.map((notification) => (
-						<ListItem
-							key={notification.id}
-							sx={{ display: 'flex', alignItems: 'center' }}
-						>
-							<ListItemText
-								primary={`${notification.sender} хочет добавить вас в друзья`}
-								secondary='Новый запрос'
-							/>
-							<Box sx={{ display: 'flex', gap: 1 }}>
-								<Button
-									variant='contained'
-									color='primary'
-									onClick={() => onAccept(notification.id)}
-								>
-									Принять
-								</Button>
-								<Button
-									variant='outlined'
-									color='error'
-									onClick={() => onDecline(notification.id)}
-								>
-									Отклонить
-								</Button>
-							</Box>
-						</ListItem>
+						<React.Fragment key={notification.id}>
+							<ListItem sx={{ display: 'flex', alignItems: 'center' }}>
+								<Avatar
+									src={notification.senderAvatar}
+									alt={notification.sender}
+									sx={{ mr: 2 }}
+								/>
+								{notification.type === 'friend_request' ? (
+									<>
+										<ListItemText
+											primary={`${notification.sender} хочет добавить вас в друзья`}
+											secondary='Новый запрос'
+										/>
+										<Box sx={{ display: 'flex', gap: 1 }}>
+											<Button
+												variant='contained'
+												color='primary'
+												onClick={() => handleAcceptFriend(notification.id)}
+											>
+												Принять
+											</Button>
+											<Button
+												variant='outlined'
+												color='error'
+												onClick={() => handleDeclineFriend(notification.id)}
+											>
+												Отклонить
+											</Button>
+										</Box>
+									</>
+								) : notification.type === 'like' ? (
+									<>
+										<ListItemText
+											primary={`${notification.sender} лайкнул ваш пост`}
+											secondary={new Date(notification.timestamp).toLocaleString()}
+										/>
+										<Button
+											variant='text'
+											color='primary'
+											onClick={() => handleViewPost(notification.postId)}
+										>
+											Посмотреть пост
+										</Button>
+									</>
+								) : (
+									<>
+										<ListItemText
+											primary={`${notification.sender} оставил комментарий: "${notification.comment}"`}
+											secondary={new Date(notification.timestamp).toLocaleString()}
+										/>
+										<Button
+											variant='text'
+											color='primary'
+											onClick={() => handleViewPost(notification.postId)}
+										>
+											Посмотреть комментарий
+										</Button>
+									</>
+								)}
+							</ListItem>
+							<Divider />
+						</React.Fragment>
 					))}
 				</List>
 			)}

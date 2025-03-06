@@ -55,6 +55,13 @@ const Home = () => {
 
 	const handleLike = async (postId) => {
 		try {
+			// Get current user info
+			const userName = currentUser?.name || localStorage.getItem('profileName') || 'Anonymous';
+			
+			// Find the post being liked
+			const targetPost = posts.find(post => post.id === postId);
+			const isLiking = !targetPost.liked;
+			
 			const updatedPosts = posts.map((post) => {
 				if (post.id === postId) {
 					return {
@@ -65,8 +72,56 @@ const Home = () => {
 				}
 				return post;
 			});
+			
+			// Update UI immediately
 			setPosts(updatedPosts);
-			localStorage.setItem('posts', JSON.stringify(updatedPosts));
+			try {
+				localStorage.setItem('posts', JSON.stringify(updatedPosts));
+			} catch (storageError) {
+				// If storage is full, remove older posts
+				const postsToKeep = updatedPosts.slice(0, Math.max(1, Math.floor(updatedPosts.length / 2)));
+				localStorage.setItem('posts', JSON.stringify(postsToKeep));
+				setPosts(postsToKeep);
+				toast.warning('Старые посты были автоматически удалены для освобождения места', {
+					position: 'top-right',
+					autoClose: 5000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+					theme: darkMode ? 'dark' : 'light',
+				});
+			}
+			
+			// Create notification if the user is liking (not unliking) and it's not their own post
+			if (isLiking && targetPost.user.name !== userName) {
+				// Get existing notifications or create empty array
+				const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+				
+				// Add new notification at the beginning of the array
+				notifications.unshift({
+					id: Date.now(),
+					type: 'post_like',
+					user: userName,
+					postId: postId,
+					timestamp: new Date().toISOString(),
+					read: false
+				});
+				
+				// Save updated notifications
+				localStorage.setItem('notifications', JSON.stringify(notifications));
+				
+				// Show notification to post owner
+				toast.info(`${userName} лайкнул ваш пост`, {
+					position: 'top-right',
+					autoClose: 3000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+					theme: darkMode ? 'dark' : 'light',
+				});
+			}
 		} catch (error) {
 			console.error('Error liking post:', error);
 		}
@@ -85,14 +140,18 @@ const Home = () => {
 		if (!commentText.trim()) return;
 
 		try {
+			const userName = currentUser?.name || localStorage.getItem('profileName') || 'Anonymous';
+			const userAvatar = currentUser?.avatar || localStorage.getItem('profileAvatar') || 'https://via.placeholder.com/150';
+			
 			const newComment = {
-				id: Date.now(),
+				id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
 				user: {
-					name: currentUser?.name || localStorage.getItem('profileName') || 'Anonymous',
-					avatar: currentUser?.avatar || localStorage.getItem('profileAvatar') || 'https://via.placeholder.com/150',
+					name: userName,
+					avatar: userAvatar,
 				},
 				text: commentText,
 				timestamp: new Date().toISOString(),
+				likes: []
 			};
 
 			// Update selected post with new comment
@@ -117,7 +176,55 @@ const Home = () => {
 			setCommentText('');
 
 			// Save to localStorage after UI update
-			localStorage.setItem('posts', JSON.stringify(updatedPosts));
+			try {
+				localStorage.setItem('posts', JSON.stringify(updatedPosts));
+			} catch (storageError) {
+				// If storage is full, remove older posts
+				const postsToKeep = updatedPosts.slice(0, Math.max(1, Math.floor(updatedPosts.length / 2)));
+				localStorage.setItem('posts', JSON.stringify(postsToKeep));
+				setPosts(postsToKeep);
+				toast.warning('Старые посты были автоматически удалены для освобождения места', {
+					position: 'top-right',
+					autoClose: 5000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+					theme: darkMode ? 'dark' : 'light',
+				});
+			}
+			
+			// Create notification if it's not the post owner commenting
+			if (selectedPost.user.name !== userName) {
+				// Get existing notifications or create empty array
+				const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+				
+				// Add new notification at the beginning of the array
+				notifications.unshift({
+					id: Date.now(),
+					type: 'comment',
+					user: userName,
+					postId: selectedPost.id,
+					commentId: newComment.id,
+					commentText: commentText.substring(0, 50) + (commentText.length > 50 ? '...' : ''),
+					timestamp: new Date().toISOString(),
+					read: false
+				});
+				
+				// Save updated notifications
+				localStorage.setItem('notifications', JSON.stringify(notifications));
+				
+				// Show notification to post owner
+				toast.info(`${userName} оставил комментарий к вашему посту`, {
+					position: 'top-right',
+					autoClose: 3000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+					theme: darkMode ? 'dark' : 'light',
+				});
+			}
 
 			// Show success toast
 			toast.success('Комментарий успешно добавлен!', {
@@ -170,7 +277,23 @@ const Home = () => {
 			setPosts(updatedPosts);
 
 			// Save to localStorage and show toast after UI update
-			localStorage.setItem('posts', JSON.stringify(updatedPosts));
+			try {
+				localStorage.setItem('posts', JSON.stringify(updatedPosts));
+			} catch (storageError) {
+				// If storage is full, remove older posts
+				const postsToKeep = updatedPosts.slice(0, Math.max(1, Math.floor(updatedPosts.length / 2)));
+				localStorage.setItem('posts', JSON.stringify(postsToKeep));
+				setPosts(postsToKeep);
+				toast.warning('Старые посты были автоматически удалены для освобождения места', {
+					position: 'top-right',
+					autoClose: 5000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+					theme: darkMode ? 'dark' : 'light',
+				});
+			}
 			toast.success('Комментарий успешно удален!', {
 				position: 'top-right',
 				autoClose: 3000,
@@ -232,7 +355,23 @@ const Home = () => {
 			return post;
 		});
 		setPosts(updatedPosts);
-		localStorage.setItem('posts', JSON.stringify(updatedPosts));
+		try {
+				localStorage.setItem('posts', JSON.stringify(updatedPosts));
+			} catch (storageError) {
+				// If storage is full, remove older posts
+				const postsToKeep = updatedPosts.slice(0, Math.max(1, Math.floor(updatedPosts.length / 2)));
+				localStorage.setItem('posts', JSON.stringify(postsToKeep));
+				setPosts(postsToKeep);
+				toast.warning('Старые посты были автоматически удалены для освобождения места', {
+					position: 'top-right',
+					autoClose: 5000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+					theme: darkMode ? 'dark' : 'light',
+				});
+			}
 		setEditingPost(null);
 		setEditText('');
 		
@@ -251,7 +390,23 @@ const Home = () => {
 	const handleDeletePost = (postId) => {
 		const updatedPosts = posts.filter((post) => post.id !== postId);
 		setPosts(updatedPosts);
-		localStorage.setItem('posts', JSON.stringify(updatedPosts));
+		try {
+				localStorage.setItem('posts', JSON.stringify(updatedPosts));
+			} catch (storageError) {
+				// If storage is full, remove older posts
+				const postsToKeep = updatedPosts.slice(0, Math.max(1, Math.floor(updatedPosts.length / 2)));
+				localStorage.setItem('posts', JSON.stringify(postsToKeep));
+				setPosts(postsToKeep);
+				toast.warning('Старые посты были автоматически удалены для освобождения места', {
+					position: 'top-right',
+					autoClose: 5000,
+					hideProgressBar: false,
+					closeOnClick: true,
+					pauseOnHover: true,
+					draggable: true,
+					theme: darkMode ? 'dark' : 'light',
+				});
+			}
 		handlePostMenuClose();
 		toast.success('Пост успешно удален!', {
 			position: 'top-right',
