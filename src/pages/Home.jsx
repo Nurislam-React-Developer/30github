@@ -144,7 +144,7 @@ const Home = () => {
 			const userAvatar = currentUser?.avatar || localStorage.getItem('profileAvatar') || 'https://via.placeholder.com/150';
 			
 			const newComment = {
-				id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+				id: `comment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
 				user: {
 					name: userName,
 					avatar: userAvatar,
@@ -176,22 +176,48 @@ const Home = () => {
 			setCommentText('');
 
 			// Save to localStorage after UI update
-			try {
-				localStorage.setItem('posts', JSON.stringify(updatedPosts));
-			} catch (storageError) {
-				// If storage is full, remove older posts
-				const postsToKeep = updatedPosts.slice(0, Math.max(1, Math.floor(updatedPosts.length / 2)));
-				localStorage.setItem('posts', JSON.stringify(postsToKeep));
-				setPosts(postsToKeep);
-				toast.warning('Старые посты были автоматически удалены для освобождения места', {
-					position: 'top-right',
-					autoClose: 5000,
-					hideProgressBar: false,
-					closeOnClick: true,
-					pauseOnHover: true,
-					draggable: true,
-					theme: darkMode ? 'dark' : 'light',
-				});
+			let savedSuccessfully = false;
+			let attempts = 0;
+			const maxAttempts = 3;
+
+			while (!savedSuccessfully && attempts < maxAttempts) {
+				try {
+					localStorage.setItem('posts', JSON.stringify(updatedPosts));
+					savedSuccessfully = true;
+				} catch (storageError) {
+					attempts++;
+					// Progressive cleanup strategy
+					let postsToKeep;
+					if (attempts === 1) {
+						// First attempt: keep 75% of posts
+						postsToKeep = updatedPosts.slice(0, Math.ceil(updatedPosts.length * 0.75));
+					} else if (attempts === 2) {
+						// Second attempt: keep 50% of posts
+						postsToKeep = updatedPosts.slice(0, Math.ceil(updatedPosts.length * 0.5));
+					} else {
+						// Last attempt: keep only 25% of posts (newest ones)
+						postsToKeep = updatedPosts.slice(0, Math.max(1, Math.ceil(updatedPosts.length * 0.25)));
+					}
+
+					// Try to save the reduced set
+					try {
+						localStorage.setItem('posts', JSON.stringify(postsToKeep));
+						savedSuccessfully = true;
+						setPosts(postsToKeep);
+						toast.warning('Старые посты были автоматически удалены для освобождения места', {
+							position: 'top-right',
+							autoClose: 5000,
+							hideProgressBar: false,
+							closeOnClick: true,
+							pauseOnHover: true,
+							draggable: true,
+							theme: darkMode ? 'dark' : 'light',
+						});
+					} catch (innerError) {
+						// Continue to next attempt
+						console.error('Failed cleanup attempt:', innerError);
+					}
+				}
 			}
 			
 			// Create notification if it's not the post owner commenting
