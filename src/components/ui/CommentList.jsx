@@ -101,7 +101,7 @@ const CommentList = ({ comments, darkMode, onDeleteComment, postId }) => {
 
         return (
           <ListItem 
-            key={`${comment.id}-${index}`} 
+            key={comment.id} 
             alignitems="flex-start"
             component={motion.div}
             initial={{ opacity: 0, y: 20 }}
