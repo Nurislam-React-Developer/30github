@@ -271,8 +271,14 @@ const Profile = () => {
 		setTabValue(newValue);
 	};
 
+	const [selectedPost, setSelectedPost] = useState(null);
+
 	const handlePostClick = (post) => {
-		console.log('Открыть пост:', post);
+		setSelectedPost(post);
+	};
+
+	const handleClosePost = () => {
+		setSelectedPost(null);
 	};
 
 	return (
@@ -507,6 +513,41 @@ const Profile = () => {
                             Сохранить
                         </Button>
                     </DialogActions>
+                </Dialog>
+
+                <Dialog
+                    open={Boolean(selectedPost)}
+                    onClose={handleClosePost}
+                    maxWidth="md"
+                    fullWidth
+                >
+                    {selectedPost && (
+                        <Box sx={{ display: 'flex', height: '80vh' }}>
+                            <Box sx={{ flex: 1, bgcolor: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <img
+                                    src={selectedPost.image}
+                                    alt="Post"
+                                    style={{
+                                        maxWidth: '100%',
+                                        maxHeight: '100%',
+                                        objectFit: 'contain'
+                                    }}
+                                />
+                            </Box>
+                            <Box sx={{ width: 350, p: 2, borderLeft: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                    <Avatar src={selectedPost.user?.avatar} sx={{ width: 32, height: 32, mr: 1 }} />
+                                    <Typography variant="subtitle2">{selectedPost.user?.name}</Typography>
+                                </Box>
+                                <Typography variant="body2" sx={{ mb: 2 }}>{selectedPost.text}</Typography>
+                                <Box sx={{ mt: 'auto' }}>
+                                    <Typography variant="caption" color="text.secondary">
+                                        {new Date(selectedPost.timestamp).toLocaleDateString()}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        </Box>
+                    )}
                 </Dialog>
             </Paper>
         </Box>
