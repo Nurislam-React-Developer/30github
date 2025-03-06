@@ -140,8 +140,10 @@ const Home = () => {
 		if (!commentText.trim()) return;
 
 		try {
-			const userName = currentUser?.name || localStorage.getItem('profileName') || 'Anonymous';
-			const userAvatar = currentUser?.avatar || localStorage.getItem('profileAvatar') || 'https://via.placeholder.com/150';
+			// Get current user data from Redux store or localStorage
+			const userData = JSON.parse(localStorage.getItem('user')) || {};
+			const userName = currentUser?.name || userData.name || localStorage.getItem('profileName') || 'Anonymous';
+			const userAvatar = currentUser?.avatar || userData.avatar || localStorage.getItem('profileAvatar') || 'https://via.placeholder.com/150';
 			
 			const newComment = {
 				id: `comment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
