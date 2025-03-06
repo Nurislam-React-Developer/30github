@@ -101,7 +101,24 @@ const Notifications = () => {
 								) : (
 									<>
 										<ListItemText
-											primary={`${notification.sender} оставил комментарий: "${notification.comment}"`}
+											primary={
+												<Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+													<Typography variant="body1">
+														{`${notification.user} оставил комментарий:`}
+													</Typography>
+													<Typography
+														variant="body2"
+														sx={{
+															bgcolor: 'rgba(0, 0, 0, 0.04)',
+															p: 1,
+															borderRadius: 1,
+															fontStyle: 'italic'
+														}}
+													>
+														{notification.commentText}
+													</Typography>
+												</Box>
+											}
 											secondary={new Date(notification.timestamp).toLocaleString()}
 										/>
 										<Button
