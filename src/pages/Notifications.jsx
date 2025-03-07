@@ -86,10 +86,10 @@ const Notifications = () => {
 											</Button>
 										</Box>
 									</>
-								) : notification.type === 'like' ? (
+								) : notification.type === 'like' || notification.type === 'post_like' ? (
 									<>
 										<ListItemText
-											primary={`${notification.sender} лайкнул ваш пост`}
+											primary={`${notification.user || notification.sender} лайкнул ваш пост`}
 											secondary={new Date(notification.timestamp).toLocaleString()}
 										/>
 										<Button
