@@ -98,10 +98,49 @@ const Notifications = () => {
 											Посмотреть пост
 										</Button>
 									</>
+								) : notification.type === 'comment_like' ? (
+									<>
+										<ListItemText
+											primary={
+												<Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+													<Typography variant="body1">
+														{`${notification.user} лайкнул ваш комментарий`}
+													</Typography>
+												</Box>
+											}
+											secondary={new Date(notification.timestamp).toLocaleString()}
+										/>
+										<Button
+											variant='text'
+											color='primary'
+											onClick={() => handleViewPost(notification.postId)}
+										>
+											Посмотреть комментарий
+										</Button>
+									</>
 								) : (
 									<>
 										<ListItemText
-											primary={`${notification.sender} оставил комментарий: "${notification.comment}"`}
+											primary={
+												<Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+													<Typography variant="body1" sx={{ fontWeight: 'medium' }}>
+														{`${notification.user} оставил комментарий:`}
+													</Typography>
+													<Typography
+														variant="body2"
+														sx={{
+															bgcolor: darkMode ? 'rgba(187, 134, 252, 0.1)' : 'rgba(63, 81, 181, 0.1)',
+															color: darkMode ? '#fff' : '#000',
+															p: 1.5,
+															borderRadius: 1,
+															fontStyle: 'italic',
+															boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+														}}
+													>
+														{notification.commentText}
+													</Typography>
+												</Box>
+											}
 											secondary={new Date(notification.timestamp).toLocaleString()}
 										/>
 										<Button

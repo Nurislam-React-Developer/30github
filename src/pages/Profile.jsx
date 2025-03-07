@@ -15,6 +15,7 @@ import {
 	DialogActions,
 	TextField,
 } from '@mui/material';
+import CommentList from '../components/ui/CommentList';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import GridViewIcon from '@mui/icons-material/GridView';
@@ -539,8 +540,29 @@ const Profile = () => {
                                     <Avatar src={selectedPost.user?.avatar} sx={{ width: 32, height: 32, mr: 1 }} />
                                     <Typography variant="subtitle2">{selectedPost.user?.name}</Typography>
                                 </Box>
-                                <Typography variant="body2" sx={{ mb: 2 }}>{selectedPost.text}</Typography>
-                                <Box sx={{ mt: 'auto' }}>
+                                <Typography variant="body2" sx={{ mb: 2 }}>{selectedPost.description}</Typography>
+                                <Box sx={{ flex: 1, overflowY: 'auto', mt: 2 }}>
+                                    <Typography variant="subtitle2" sx={{ mb: 1 }}>Комментарии</Typography>
+                                    <CommentList
+                                        comments={selectedPost.comments || []}
+                                        darkMode={false}
+                                        onDeleteComment={(postId, commentId) => {
+                                            const updatedPosts = userPosts.map(post => {
+                                                if (post.id === postId) {
+                                                    return {
+                                                        ...post,
+                                                        comments: post.comments.filter(c => c.id !== commentId)
+                                                    };
+                                                }
+                                                return post;
+                                            });
+                                            setUserPosts(updatedPosts);
+                                            localStorage.setItem('posts', JSON.stringify(updatedPosts));
+                                        }}
+                                        postId={selectedPost.id}
+                                    />
+                                </Box>
+                                <Box sx={{ mt: 2, borderTop: 1, borderColor: 'divider', pt: 2 }}>
                                     <Typography variant="caption" color="text.secondary">
                                         {new Date(selectedPost.timestamp).toLocaleDateString()}
                                     </Typography>

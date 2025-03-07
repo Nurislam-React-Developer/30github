@@ -11,7 +11,7 @@ import Badge from '@mui/material/Badge';
 import { styled } from '@mui/material/styles';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../theme/ThemeContext';
 import AddBoxIcon from '@mui/icons-material/AddBox';
@@ -20,6 +20,25 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 
 const Header = () => {
 	const { darkMode, toggleTheme } = useTheme(); // Используем контекст темы
+	const [notificationCount, setNotificationCount] = useState(0);
+	
+	useEffect(() => {
+		// Load notifications from localStorage and count them
+		const savedNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+		setNotificationCount(savedNotifications.length);
+		
+		// Set up event listener for storage changes
+		const handleStorageChange = () => {
+			const updatedNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+			setNotificationCount(updatedNotifications.length);
+		};
+		
+		window.addEventListener('storage', handleStorageChange);
+		
+		return () => {
+			window.removeEventListener('storage', handleStorageChange);
+		};
+	}, []);
 
 	return (
 		<HeaderContainer
@@ -70,7 +89,7 @@ const Header = () => {
 								alignItems: 'center',
 							}}
 						>
-							<Badge badgeContent={3} color='error'>
+							<Badge badgeContent={notificationCount} color='error' invisible={notificationCount === 0}>
 								<NotificationsIcon sx={{ color: 'white' }} />
 							</Badge>{' '}
 							Уведомления
