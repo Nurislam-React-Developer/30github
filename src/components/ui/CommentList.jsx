@@ -55,24 +55,26 @@ const CommentList = ({ comments, darkMode, onDeleteComment, postId }) => {
                   likes: likes.filter(name => name !== userName)
                 };
               } else {
-                // Like and create notification
-                const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
-                notifications.unshift({
-                  id: Date.now(),
-                  type: 'comment_like',
-                  user: userName,
-                  postId: postId,
-                  commentId: commentId,
-                  timestamp: new Date().toISOString()
-                });
-                localStorage.setItem('notifications', JSON.stringify(notifications));
-                
-                // Show notification toast to comment owner
-                if (comment.user.name !== userName) {
-                  toast.info(`${userName} лайкнул ваш комментарий`, {
-                    position: 'top-right',
-                    autoClose: 3000
+                // Only create notification if the post author likes the comment
+                if (isPostAuthor) {
+                  const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+                  notifications.unshift({
+                    id: Date.now(),
+                    type: 'comment_like',
+                    user: userName,
+                    postId: postId,
+                    commentId: commentId,
+                    timestamp: new Date().toISOString()
                   });
+                  localStorage.setItem('notifications', JSON.stringify(notifications));
+                  
+                  // Show notification toast to comment owner
+                  if (comment.user.name !== userName) {
+                    toast.info(`${userName} лайкнул ваш комментарий`, {
+                      position: 'top-right',
+                      autoClose: 3000
+                    });
+                  }
                 }
                 
                 return {
@@ -87,6 +89,7 @@ const CommentList = ({ comments, darkMode, onDeleteComment, postId }) => {
         }
         return post;
       });
+
 
       localStorage.setItem('posts', JSON.stringify(updatedPosts));
       window.dispatchEvent(new Event('storage')); // Trigger update
@@ -205,7 +208,7 @@ const CommentList = ({ comments, darkMode, onDeleteComment, postId }) => {
               >
                 <FavoriteIcon fontSize="small" />
               </IconButton>
-              {(isPostAuthor || comment.user.name === userName) && (
+              {isPostAuthor && (
                 <IconButton
                   size="small"
                   onClick={() => onDeleteComment(postId, comment.id)}

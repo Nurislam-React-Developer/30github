@@ -111,6 +111,9 @@ const Home = () => {
 				// Save updated notifications
 				localStorage.setItem('notifications', JSON.stringify(notifications));
 				
+				// Dispatch custom event to update notification count
+				window.dispatchEvent(new Event('notificationsUpdated'));
+				
 				// Show notification to post owner
 				toast.info(`${userName} лайкнул ваш пост`, {
 					position: 'top-right',
@@ -242,6 +245,9 @@ const Home = () => {
 				// Save updated notifications
 				localStorage.setItem('notifications', JSON.stringify(notifications));
 				
+				// Dispatch custom event to update notification count
+				window.dispatchEvent(new Event('notificationsUpdated'));
+				
 				// Show notification to post owner
 				toast.info(`${userName} оставил комментарий к вашему посту`, {
 					position: 'top-right',
@@ -280,6 +286,10 @@ const Home = () => {
 
 	const handleDeleteComment = (postId, commentId) => {
 		try {
+			// Get the comment before deleting it
+			const postToUpdate = posts.find(post => post.id === postId);
+			const commentToDelete = postToUpdate?.comments?.find(comment => comment.id === commentId);
+			
 			// Update selected post
 			if (selectedPost && selectedPost.id === postId) {
 				setSelectedPost((prev) => ({
@@ -307,6 +317,20 @@ const Home = () => {
 			// Save to localStorage and show toast after UI update
 			try {
 				localStorage.setItem('posts', JSON.stringify(updatedPosts));
+				
+				// Also remove any notifications related to this comment
+				if (commentToDelete) {
+					const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+					const filteredNotifications = notifications.filter(notification => 
+						!(notification.commentId === commentId && notification.postId === postId)
+					);
+					
+					if (filteredNotifications.length !== notifications.length) {
+						localStorage.setItem('notifications', JSON.stringify(filteredNotifications));
+						// Dispatch custom event to update notification count
+						window.dispatchEvent(new Event('notificationsUpdated'));
+					}
+				}
 			} catch (storageError) {
 				// If storage is full, remove older posts
 				const postsToKeep = updatedPosts.slice(0, Math.max(1, Math.floor(updatedPosts.length / 2)));

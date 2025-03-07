@@ -23,20 +23,28 @@ const Header = () => {
 	const [notificationCount, setNotificationCount] = useState(0);
 	
 	useEffect(() => {
-		// Load notifications from localStorage and count them
-		const savedNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
-		setNotificationCount(savedNotifications.length);
-		
-		// Set up event listener for storage changes
-		const handleStorageChange = () => {
+		// Function to update notification count from localStorage
+		const updateNotificationCount = () => {
 			const updatedNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
 			setNotificationCount(updatedNotifications.length);
 		};
 		
-		window.addEventListener('storage', handleStorageChange);
+		// Initial load
+		updateNotificationCount();
 		
+		// Set up event listeners for storage changes and custom events
+		window.addEventListener('storage', updateNotificationCount);
+		
+		// Listen for custom event that will be dispatched when notifications change
+		const handleCustomEvent = () => {
+			updateNotificationCount();
+		};
+		window.addEventListener('notificationsUpdated', handleCustomEvent);
+		
+		// Clean up event listeners
 		return () => {
-			window.removeEventListener('storage', handleStorageChange);
+			window.removeEventListener('storage', updateNotificationCount);
+			window.removeEventListener('notificationsUpdated', handleCustomEvent);
 		};
 	}, []);
 
