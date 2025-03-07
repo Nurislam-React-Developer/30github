@@ -11,9 +11,11 @@ import {
 	Divider,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../theme/ThemeContext';
 
 const Notifications = () => {
 	const navigate = useNavigate();
+	const { darkMode } = useTheme();
 	const [notifications, setNotifications] = useState([]);
 
 	useEffect(() => {
@@ -38,7 +40,7 @@ const Notifications = () => {
 		navigate(`/profile?postId=${postId}`);
 	};
 	return (
-		<NotificationsContainer>
+		<NotificationsContainer darkMode={darkMode}>
 			<Typography
 				variant='h4'
 				gutterBottom
@@ -165,8 +167,9 @@ const Notifications = () => {
 export default Notifications;
 
 // Стилизация контейнера
-const NotificationsContainer = styled(Box)(({ theme }) => ({
+const NotificationsContainer = styled(Box)(({ theme, darkMode }) => ({
 	padding: theme.spacing(4),
-	backgroundColor: '#f5f5f5',
+	backgroundColor: darkMode ? '#121212' : '#f5f5f5',
+	color: darkMode ? '#fff' : '#000',
 	minHeight: '100vh',
 }));
