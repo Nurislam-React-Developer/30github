@@ -16,6 +16,11 @@ import { ru } from 'date-fns/locale';
 import { toast } from 'react-toastify';
 
 const CommentList = ({ comments, darkMode, onDeleteComment, postId }) => {
+  const currentUser = JSON.parse(localStorage.getItem('user'));
+  const userName = currentUser?.name || localStorage.getItem('profileName');
+  const posts = JSON.parse(localStorage.getItem('posts') || '[]');
+  const currentPost = posts.find(post => post.id === postId);
+  const isPostAuthor = currentPost?.author?.name === userName;
   const formatTimestamp = (timestamp) => {
     try {
       if (!timestamp) return 'Invalid date';
@@ -155,13 +160,34 @@ const CommentList = ({ comments, darkMode, onDeleteComment, postId }) => {
                     >
                       {formatTimestamp(comment.timestamp)}
                     </Typography>
-                    <Typography
-                      component="span"
-                      variant="caption"
-                      color={darkMode ? 'rgba(255, 255, 255, 0.6)' : 'text.secondary'}
-                    >
-                      {likes.length > 0 && `${likes.length} лайк${likes.length !== 1 ? 'ов' : ''}`}
-                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Typography
+                        component="span"
+                        variant="caption"
+                        color={darkMode ? 'rgba(255, 255, 255, 0.6)' : 'text.secondary'}
+                      >
+                        {likes.length > 0 && `${likes.length} лайк${likes.length !== 1 ? 'ов' : ''}`}
+                      </Typography>
+                      {likes.length > 0 && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                          {likes.slice(0, 3).map((likedBy, idx) => (
+                            <Avatar
+                              key={idx}
+                              src={posts.find(p => p.author?.name === likedBy)?.author?.avatar}
+                              sx={{ width: 16, height: 16 }}
+                            />
+                          ))}
+                          {likes.length > 3 && (
+                            <Typography
+                              variant="caption"
+                              color={darkMode ? 'rgba(255, 255, 255, 0.6)' : 'text.secondary'}
+                            >
+                              +{likes.length - 3}
+                            </Typography>
+                          )}
+                        </Box>
+                      )}
+                    </Box>
                   </Box>
                 }
                 sx={{
@@ -179,16 +205,18 @@ const CommentList = ({ comments, darkMode, onDeleteComment, postId }) => {
               >
                 <FavoriteIcon fontSize="small" />
               </IconButton>
-              <IconButton
-                size="small"
-                onClick={() => onDeleteComment(postId, comment.id)}
-                color="error"
-                component={motion.button}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <DeleteIcon fontSize="small" />
-              </IconButton>
+              {(isPostAuthor || comment.user.name === userName) && (
+                <IconButton
+                  size="small"
+                  onClick={() => onDeleteComment(postId, comment.id)}
+                  color="error"
+                  component={motion.button}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              )}
             </Box>
           </ListItem>
         );
