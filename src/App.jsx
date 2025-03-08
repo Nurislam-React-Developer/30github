@@ -1,7 +1,7 @@
 import React from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Routes from './routes/Route';
+import Route from './routes/Route';
 import { ThemeProvider } from './theme/ThemeContext';
 import { useTheme } from './theme/ThemeContext';
 import { LoadingProvider } from './context/LoadingContext';
@@ -10,7 +10,6 @@ import { BrowserRouter } from 'react-router-dom';
 import Footer from './components/Footer';
 import Header from './components/Header';
 import InitializeStories from './components/ui/InitializeStories';
-import store from './store/store';
 
 const AppContent = () => {
 	const { darkMode } = useTheme();
@@ -30,21 +29,12 @@ const AppContent = () => {
 				theme={darkMode ? 'dark' : 'light'}
 				limit={3}
 			/>
-			<Routes />
+			<Route />
 		</>
 	);
 };
 
-const App = () => {
-	return (
-		<ThemeProvider>
-			<LoadingProvider>
-				<AppContent />
-			</LoadingProvider>
-		</ThemeProvider>
-	);
-};
-
+// Keeping only one App function declaration
 function App() {
   return (
     <Provider store={store}>
