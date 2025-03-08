@@ -484,17 +484,19 @@ const Home = () => {
 	};
 
 	return (
-		<Box
-			component={motion.div}
-			initial={{ opacity: 0 }}
-			animate={{ opacity: 1 }}
-			transition={{ duration: 0.5 }}
-			sx={{
-				padding: { xs: 1, sm: 2, md: 3 },
-				backgroundColor: darkMode ? '#121212' : '#f5f5f5',
-				minHeight: '100vh',
-			}}
-		>
+		<>
+			<StoriesBar darkMode={darkMode} />
+			<Box
+				component={motion.div}
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				transition={{ duration: 0.5 }}
+				sx={{
+					padding: { xs: 1, sm: 2, md: 3 },
+					backgroundColor: darkMode ? '#121212' : '#f5f5f5',
+					minHeight: '100vh',
+				}}
+			>
 			{loading ? (
 				<Box
 					display='flex'
