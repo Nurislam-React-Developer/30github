@@ -16,6 +16,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CommentModal from '../components/ui/CommentModal';
 import PostCard from '../components/ui/PostCard';
+import StoriesBar from '../components/ui/StoriesBar';
 import { selectCurrentUser } from '../store/userSlice';
 import { useTheme } from '../theme/ThemeContext';
 import TetrisLoader from '../components/ui/TetrisLoader';
@@ -572,7 +573,9 @@ const Home = () => {
 				onAddComment={handleAddComment}
 				onDeleteComment={handleDeleteComment}
 			/>
+
 		</Box>
+    </>
 	);
 };
 
