@@ -5,6 +5,12 @@ import Routes from './routes/Route';
 import { ThemeProvider } from './theme/ThemeContext';
 import { useTheme } from './theme/ThemeContext';
 import { LoadingProvider } from './context/LoadingContext';
+import { Provider } from 'react-redux';
+import { BrowserRouter } from 'react-router-dom';
+import Footer from './components/Footer';
+import Header from './components/Header';
+import InitializeStories from './components/ui/InitializeStories';
+import store from './store/store';
 
 const AppContent = () => {
 	const { darkMode } = useTheme();
@@ -38,5 +44,23 @@ const App = () => {
 		</ThemeProvider>
 	);
 };
+
+function App() {
+  return (
+    <Provider store={store}>
+      <ThemeProvider>
+        <LoadingProvider>
+          <BrowserRouter>
+            <InitializeStories />
+            <Header />
+            <Route />
+            <Footer />
+            <ToastContainer />
+          </BrowserRouter>
+        </LoadingProvider>
+      </ThemeProvider>
+    </Provider>
+  );
+}
 
 export default App;
