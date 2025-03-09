@@ -1,0 +1,279 @@
+'use client'
+
+import {useStore} from '@/stores'
+import {User} from '@/types/user'
+import {apiManager} from '@/utils/apiManager'
+import {OTP_LENGTH} from '@/utils/config'
+import {observer} from 'mobx-react-lite'
+import Image from 'next/image'
+import Link from 'next/link'
+import {useRouter} from 'next/navigation'
+import {useCallback, useEffect, useMemo, useState} from 'react'
+import PhoneInput, {isValidPhoneNumber} from 'react-phone-number-input'
+import ru from 'react-phone-number-input/locale/ru'
+import 'react-phone-number-input/style.css'
+
+const AuthPage = () => {
+  const router = useRouter()
+  const store = useStore()
+
+  const [phoneNumber, setPhoneNumber] = useState('')
+  const [status, setStatus] = useState('')
+  const [otp, setOtp] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [attempts, setAttempts] = useState(5) // Добавляем счетчик попыток
+  const [cooldownTime, setCooldownTime] = useState(0) // Время ожидания в секундах
+  const [isCooldown, setIsCooldown] = useState(false) // Флаг активности кулдауна
+
+  const isCorrectPhoneNumber = useMemo(
+    () => isValidPhoneNumber(phoneNumber), // Убрали isPossiblePhoneNumber
+    [phoneNumber]
+  )
+
+  useEffect(() => {
+    setStatus('')
+    setErrorMessage('')
+    setFullName('') // Сбрасываем имя при изменении номера
+    setAttempts(5) // Сбрасываем счетчик попыток при изменении номера
+    setIsCooldown(false) // Сбрасываем флаг кулдауна
+    setCooldownTime(0) // Сбрасываем время кулдауна
+  }, [phoneNumber])
+
+  // Эффект для обратного отсчета времени кулдауна
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null
+
+    if (isCooldown && cooldownTime > 0) {
+      timer = setInterval(() => {
+        setCooldownTime((prevTime) => {
+          const newTime = prevTime - 1
+          if (newTime <= 0) {
+            setIsCooldown(false)
+            setAttempts(5) // Восстанавливаем попытки после окончания кулдауна
+            clearInterval(timer as NodeJS.Timeout)
+            return 0
+          }
+          return newTime
+        })
+      }, 1000)
+    }
+
+    return () => {
+      if (timer) clearInterval(timer)
+    }
+  }, [isCooldown, cooldownTime])
+
+  const sendOtp = useCallback(() => {
+    setIsLoading(true)
+    setErrorMessage('')
+    apiManager
+      .authSendOtp(phoneNumber.slice(1))
+      .then((res) => {
+        if (res?.status === 'exists') {
+          setStatus('exists')
+        } else if (res?.status === 'not_exists') {
+          setStatus('notExists')
+        } else if (res?.status === 'no_whatsapp') {
+          setErrorMessage('Этот WhatsApp номер не существует. Пожалуйста, введите корректный номер')
+        }
+      })
+      .catch((e) => {
+        console.log(e)
+        setErrorMessage('Ошибка при отправке кода. Попробуйте позже')
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }, [phoneNumber])
+
+  const verifyOtp = useCallback(() => {
+    setIsLoading(true)
+    apiManager
+      .authVerifyOtp(phoneNumber.slice(1), otp, undefined, status === 'notExists', fullName)
+      .then((res) => {
+        console.log('API Response:', res) // Добавляем логирование ответа API
+        
+        if (res?.status === 'incorrect_code') {
+          // Уменьшаем количество попыток при неверном коде
+          const newAttempts = attempts - 1
+          setAttempts(newAttempts)
+
+          // Если попытки закончились, активируем кулдаун
+          if (newAttempts <= 0) {
+            setIsCooldown(true)
+            setCooldownTime(60) // Устанавливаем время ожидания (60 секунд)
+            setErrorMessage('Слишком много неудачных попыток. Повторите попытку через 1 минуту')
+          } else {
+            setErrorMessage(`Неверный код. Проверьте код и попробуйте снова. Осталось попыток: ${newAttempts}`)
+          }
+        } else if (res?.status === 'logged_in' || res?.status === 'registered') {
+          console.log('Login successful, user data:', res.data) // Логируем данные пользователя
+          store.signIn(new User(res.data.user), res.data.token)
+          router.push('/profile') // Переход на профиль после успешной авторизации
+        } else if (res?.status === 'exception') {
+          // Обрабатываем статус exception
+          console.log('Exception occurred:', res.data?.message)
+          setErrorMessage(res.data?.message || 'Произошла ошибка при авторизации. Пожалуйста, попробуйте позже.')
+        } else {
+          // Обрабатываем другие возможные статусы
+          console.log('Unexpected status:', res?.status)
+          setErrorMessage('Ошибка при авторизации. Пожалуйста, попробуйте снова.')
+        }
+      })
+      .catch((e) => {
+        console.log(e)
+        setErrorMessage('Ошибка при проверке кода. Попробуйте позже')
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }, [phoneNumber, otp, status, router, attempts, fullName, store])
+
+  return (
+    <div
+      className="min-h-screen flex flex-col gap-8 items-center bg-repeat justify-center bg-white p-4"
+      style={{backgroundImage: 'url(/assets/images/bg-logo.png)'}}
+    >
+      <Link href={'/'}>
+        <Image src="/logo-684x301.png" alt="Som.kg" width={150} height={85} priority />
+      </Link>
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
+        <div className="text-center mb-5">
+          <h3 className="text-2xl font-normal text-gray-800">Аккаунтка кирүү</h3>
+          <p className="text-gray-600 mt-2">WhatsApp телефон номуруңузду жазыңыз</p>
+        </div>
+        <div>
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+            Телефон номур
+          </label>
+          <div>
+            <PhoneInput
+              international
+              defaultCountry="KG"
+              value={phoneNumber}
+              labels={ru}
+              numberInputProps={{id: 'phone'}}
+              countrySelectProps={{unicodeFlags: true}}
+              onChange={(v) => setPhoneNumber(v || '')}
+              focusInputOnCountrySelection={true}
+              className="border-gray-200 rounded-xl shadow-sm px-2 
+                [&_.PhoneInputCountry]:pl-3 
+                [&_.PhoneInputCountry]:pr-1 
+                [&_input:focus]:outline-none 
+                border hover:border-gray-300 
+                [&_input]:pr-4 
+                [&_input]:py-2"
+            />
+          </div>
+          {errorMessage && <p className="mt-3 text-sm text-red-600 text-center">{errorMessage}</p>}
+          {!errorMessage && status === 'exists' && (
+            <p className="mt-3 text-sm text-green-700 text-center">Код отправлен на WhatsApp. Введите его ниже</p>
+          )}
+          {!errorMessage && status === 'notExists' && (
+            <p className="mt-3 text-sm text-green-700 text-center">
+              Код отправлен на WhatsApp. Введите код и укажите имя
+            </p>
+          )}
+          {!errorMessage && status === '' && (
+            <p className="mt-3 text-sm text-gray-400 text-center">Код подтверждения будет отправлен через WhatsApp</p>
+          )}
+
+          {/* Отображаем сообщение о кулдауне */}
+          {isCooldown && cooldownTime > 0 && (
+            <p className="mt-2 text-sm text-orange-600 text-center">Повторите попытку через {cooldownTime} секунд</p>
+          )}
+        </div>
+
+        {status === 'notExists' && (
+          <div className="w-full mt-3 text-base">
+            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-2">
+              Ваше полное имя
+            </label>
+            <input
+              id="fullName"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              type="text"
+              placeholder="Введите ваше полное имя"
+              className="border py-2 rounded-xl border-gray-200 
+                hover:border-gray-300 shadow-sm w-full px-4 focus:outline-none"
+              required
+            />
+          </div>
+        )}
+
+        {status !== '' && (
+          <div className="w-full mt-3 text-base">
+            <input
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              type="number"
+              placeholder="Код подтверждения"
+              className="border py-2 rounded-xl border-gray-200 
+                hover:border-gray-300 shadow-sm w-full px-4 focus:outline-none"
+              required
+            />
+          </div>
+        )}
+
+        <button
+          disabled={
+            isLoading ||
+            isCooldown ||
+            (status === 'notExists' && (otp.length < OTP_LENGTH || !fullName)) ||
+            (status === 'exists' && otp.length < OTP_LENGTH) ||
+            (!status && !isCorrectPhoneNumber)
+          }
+          onClick={() => (status ? verifyOtp() : sendOtp())}
+          className={`
+    w-full py-2 mt-4 rounded-xl transition-all font-medium 
+    duration-300 ease-in-out shadow-md 
+    ${isLoading || isCooldown ? 'bg-gray-300' : ''} 
+    ${
+      (
+        status
+          ? status === 'notExists'
+            ? otp.length >= OTP_LENGTH && fullName && !isCooldown
+            : otp.length >= OTP_LENGTH && !isCooldown
+          : isCorrectPhoneNumber
+      )
+        ? 'bg-blue-600 hover:bg-blue-700 text-white transform hover:-translate-y-0.5'
+        : 'bg-blue-300 cursor-not-allowed text-white'
+    }
+  `}
+        >
+          <div className="flex justify-center items-center">
+            {isLoading && (
+              <svg
+                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+            )}
+            {isLoading
+              ? status
+                ? 'Проверка...'
+                : 'Отправка...'
+              : isCooldown
+              ? 'Подождите'
+              : status
+              ? 'Подтвердить'
+              : 'Отправить код'}
+          </div>
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default observer(AuthPage)
