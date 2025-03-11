@@ -277,3 +277,5 @@ const AuthPage = () => {
 }
 
 export default observer(AuthPage)
+
+ветка feature/fix-post-creation-and-stories
