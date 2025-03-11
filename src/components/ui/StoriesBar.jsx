@@ -298,7 +298,7 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
       const newStory = {
         id: Date.now(),
         user: {
-          name: userName || 'Нурислам Абдималиков', // Заменяем 'Пользователь' на имя пользователя
+          name: userName || '', // Удаляем хардкод имени и оставляем пустую строку как крайний вариант
           avatar: userAvatar,
         },
         image: compressedImage,
