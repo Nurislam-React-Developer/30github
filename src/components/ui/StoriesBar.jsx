@@ -20,11 +20,11 @@ import { selectCurrentUser } from '../../store/userSlice';
 
 // Стилизованный Avatar с градиентной рамкой для непросмотренных историй в стиле Instagram
 const StoryAvatar = styled(Avatar)(({ theme, viewed, darkMode }) => ({
-  width: 60,
-  height: 60,
+  width: 62,
+  height: 62,
   border: viewed 
     ? `2px solid ${darkMode ? '#333' : '#e0e0e0'}` 
-    : 'none',
+    : '2px solid transparent',
   cursor: 'pointer',
   transition: 'transform 0.2s',
   position: 'relative',
@@ -32,16 +32,25 @@ const StoryAvatar = styled(Avatar)(({ theme, viewed, darkMode }) => ({
   '&::before': viewed ? {} : {
     content: '""',
     position: 'absolute',
-    top: -4,
-    left: -4,
-    right: -4,
-    bottom: -4,
+    top: -3,
+    left: -3,
+    right: -3,
+    bottom: -3,
     borderRadius: '50%',
     background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)',
     zIndex: -1,
+    animation: 'rotate 1.5s linear infinite',
   },
   '&:hover': {
     transform: 'scale(1.05)',
+  },
+  '@keyframes rotate': {
+    '0%': {
+      transform: 'rotate(0deg)',
+    },
+    '100%': {
+      transform: 'rotate(360deg)',
+    },
   },
 }));
 
@@ -98,6 +107,37 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
       }
     }
   }, [progress, onClose, currentImageIndex, images.length]);
+  
+  // Обработчики для свайпа (как в Instagram)
+  const handleTouchStart = (e) => {
+    const touchDown = e.touches[0].clientX;
+    document.touchStartX = touchDown;
+  };
+  
+  const handleTouchMove = (e) => {
+    if (!document.touchStartX) return;
+    
+    const touchDown = document.touchStartX;
+    const currentTouch = e.touches[0].clientX;
+    const diff = touchDown - currentTouch;
+    
+    // Если свайп достаточно длинный
+    if (diff > 50) { // свайп влево - следующее изображение
+      if (currentImageIndex < images.length - 1) {
+        setCurrentImageIndex(currentImageIndex + 1);
+      } else {
+        onClose(); // закрыть историю, если это последнее изображение
+      }
+      document.touchStartX = null;
+    }
+    
+    if (diff < -50) { // свайп вправо - предыдущее изображение
+      if (currentImageIndex > 0) {
+        setCurrentImageIndex(currentImageIndex - 1);
+      }
+      document.touchStartX = null;
+    }
+  };
   
   return (
     <Dialog
@@ -225,6 +265,8 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
             setCurrentImageIndex(currentImageIndex + 1);
           }
         }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
       >
         <Box 
           component="img"
@@ -261,6 +303,32 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
         {/* Индикаторы навигации для мобильных устройств */}
         {images.length > 1 && (
           <>
+            {/* Индикаторы изображений в стиле Instagram */}
+            <Box sx={{
+              position: 'absolute',
+              top: 60,
+              left: 0,
+              right: 0,
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '4px',
+              padding: '0 16px',
+              zIndex: 10
+            }}>
+              {images.map((_, idx) => (
+                <Box 
+                  key={idx}
+                  sx={{
+                    height: '4px',
+                    flex: 1,
+                    backgroundColor: idx === currentImageIndex ? '#fff' : 'rgba(255,255,255,0.5)',
+                    borderRadius: '2px',
+                    transition: 'all 0.3s ease'
+                  }}
+                />
+              ))}
+            </Box>
+            
             {/* Левая область для навигации назад */}
             <Box 
               sx={{
@@ -378,7 +446,7 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
       const userAvatar = currentUser?.avatar || 
                         localStorage.getItem('profileAvatar') || 
                         JSON.parse(localStorage.getItem('user') || '{}')?.avatar || 
-                        'https://via.placeholder.com/150';
+                        '/logo.png';
       
       // Сжатие всех изображений
       const compressImages = async () => {
@@ -850,8 +918,8 @@ const StoriesBar = ({ darkMode }) => {
       <StoryItem>
         <Box
           sx={{
-            width: 60,
-            height: 60,
+            width: 62,
+            height: 62,
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
@@ -859,7 +927,7 @@ const StoriesBar = ({ darkMode }) => {
             backgroundColor: darkMode ? '#333' : '#f5f5f5',
             cursor: 'pointer',
             position: 'relative',
-            border: `2px solid ${darkMode ? '#333' : '#e0e0e0'}`,
+            border: `2px dashed ${darkMode ? '#bb86fc' : '#3f51b5'}`,
             '&::after': {
               content: '""',
               position: 'absolute',
