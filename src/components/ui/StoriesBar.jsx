@@ -15,28 +15,44 @@ import { motion } from 'framer-motion';
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
 import { toast } from 'react-toastify';
+import { useSelector } from 'react-redux';
+import { selectCurrentUser } from '../../store/userSlice';
 
-// Стилизованный Avatar с цветной рамкой для непросмотренных историй
+// Стилизованный Avatar с градиентной рамкой для непросмотренных историй в стиле Instagram
 const StoryAvatar = styled(Avatar)(({ theme, viewed, darkMode }) => ({
   width: 60,
   height: 60,
   border: viewed 
     ? `2px solid ${darkMode ? '#333' : '#e0e0e0'}` 
-    : `2px solid ${darkMode ? '#bb86fc' : '#3f51b5'}`,
+    : 'none',
   cursor: 'pointer',
   transition: 'transform 0.2s',
+  position: 'relative',
+  zIndex: 1,
+  '&::before': viewed ? {} : {
+    content: '""',
+    position: 'absolute',
+    top: -4,
+    left: -4,
+    right: -4,
+    bottom: -4,
+    borderRadius: '50%',
+    background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)',
+    zIndex: -1,
+  },
   '&:hover': {
     transform: 'scale(1.05)',
   },
 }));
 
-// Контейнер для аватарки и имени пользователя
+// Контейнер для аватарки и имени пользователя в стиле Instagram
 const StoryItem = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  margin: '0 8px',
-  maxWidth: 70,
+  margin: '0 4px',
+  maxWidth: 64,
+  padding: '0 2px',
 }));
 
 // Компонент для отображения одной истории в полноэкранном режиме
@@ -74,30 +90,41 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
       maxWidth="sm"
       PaperProps={{
         sx: {
-          backgroundColor: darkMode ? '#121212' : '#fff',
-          color: darkMode ? '#fff' : '#000',
-          height: '80vh',
+          backgroundColor: 'black',
+          color: '#fff',
+          height: '90vh',
           position: 'relative',
           overflow: 'hidden',
           borderRadius: 2,
+          margin: 0,
+          padding: 0,
         }
       }}
     >
-      <LinearProgress 
-        variant="determinate" 
-        value={progress} 
-        sx={{ 
-          position: 'absolute', 
-          top: 0, 
-          left: 0, 
-          right: 0,
-          height: 4,
-          backgroundColor: darkMode ? '#333' : '#e0e0e0',
-          '& .MuiLinearProgress-bar': {
-            backgroundColor: darkMode ? '#bb86fc' : '#3f51b5',
-          }
-        }} 
-      />
+      <Box sx={{ 
+        display: 'flex', 
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 10,
+        padding: '8px 8px 0 8px',
+        gap: 1
+      }}>
+        {/* Progress bar segments like Instagram */}
+        <LinearProgress 
+          variant="determinate" 
+          value={progress} 
+          sx={{ 
+            width: '100%',
+            height: 2,
+            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+            '& .MuiLinearProgress-bar': {
+              backgroundColor: '#fff',
+            }
+          }} 
+        />
+      </Box>
       
       <IconButton
         onClick={onClose}
@@ -124,14 +151,42 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
         top: 0,
         left: 0,
         zIndex: 5,
+        width: '100%',
+        background: 'linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%)',
+        paddingTop: '16px',
+        paddingBottom: '16px'
       }}>
-        <Avatar src={story.user.avatar} sx={{ mr: 1 }} />
-        <Typography variant="subtitle1" color={darkMode ? '#fff' : '#000'}>
-          {story.user.name}
-        </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-          {new Date(story.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-        </Typography>
+        <Avatar 
+          src={story.user.avatar} 
+          sx={{ 
+            mr: 1, 
+            width: 36, 
+            height: 36, 
+            border: '2px solid #fff' 
+          }} 
+        />
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Typography 
+            variant="subtitle2" 
+            sx={{ 
+              color: '#fff', 
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              lineHeight: 1.2
+            }}
+          >
+            {story.user.name}
+          </Typography>
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              color: 'rgba(255,255,255,0.8)', 
+              fontSize: '0.7rem' 
+            }}
+          >
+            {new Date(story.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+          </Typography>
+        </Box>
       </Box>
       
       <DialogContent sx={{ p: 0, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -142,7 +197,7 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
           sx={{
             width: '100%',
             height: '100%',
-            objectFit: 'contain',
+            objectFit: 'cover',
           }}
         />
         
@@ -156,9 +211,11 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
               right: 0, 
               textAlign: 'center', 
               color: '#fff',
-              textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+              textShadow: '0 2px 4px rgba(0,0,0,0.8)',
               padding: '0 20px',
               fontWeight: 'bold',
+              fontSize: '1.2rem',
+              letterSpacing: '0.5px'
             }}
           >
             {story.text}
@@ -171,6 +228,7 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
 
 // Компонент для создания новой истории
 const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
+  const currentUser = useSelector(selectCurrentUser);
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [text, setText] = useState('');
@@ -193,7 +251,7 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
       return;
     }
     
-    // Сжатие изображения
+    // Сжатие изображения с сохранением высокого качества
     const img = new Image();
     img.src = imagePreview;
     img.onload = () => {
@@ -201,8 +259,8 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
       const ctx = canvas.getContext('2d');
       
       // Установка максимальных размеров
-      const maxWidth = 800;
-      const maxHeight = 1200;
+      const maxWidth = 1200;
+      const maxHeight = 1800;
       let width = img.width;
       let height = img.height;
       
@@ -222,19 +280,25 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
       canvas.height = height;
       ctx.drawImage(img, 0, 0, width, height);
       
-      // Получение сжатого изображения
-      const compressedImage = canvas.toDataURL('image/jpeg', 0.7);
+      // Получение сжатого изображения с высоким качеством (0.95 вместо 0.7)
+      const compressedImage = canvas.toDataURL('image/jpeg', 0.95);
       
-      // Получение данных пользователя
-      const userData = JSON.parse(localStorage.getItem('user')) || {};
-      const userName = userData.name || localStorage.getItem('profileName') || 'Anonymous';
-      const userAvatar = userData.avatar || localStorage.getItem('profileAvatar') || 'https://via.placeholder.com/150';
+      // Получение данных пользователя с приоритетом на Redux store
+      const userName = currentUser?.name || 
+                      localStorage.getItem('profileName') || 
+                      JSON.parse(localStorage.getItem('user') || '{}')?.name || 
+                      JSON.parse(localStorage.getItem('userSettings') || '{}')?.name;
+      
+      const userAvatar = currentUser?.avatar || 
+                        localStorage.getItem('profileAvatar') || 
+                        JSON.parse(localStorage.getItem('user') || '{}')?.avatar || 
+                        'https://via.placeholder.com/150';
       
       // Создание новой истории
       const newStory = {
         id: Date.now(),
         user: {
-          name: userName,
+          name: userName || 'Пользователь', // Используем 'Пользователь' вместо 'Anonymous'
           avatar: userAvatar,
         },
         image: compressedImage,
@@ -440,10 +504,10 @@ const StoriesBar = ({ darkMode }) => {
     setStories([newStory, ...stories]);
   };
   
-  // Если нет историй, не отображаем компонент
-  if (stories.length === 0 && !createDialogOpen) {
-    return null;
-  }
+  // Удаляем условие, которое скрывает компонент, если нет историй
+  // if (stories.length === 0 && !createDialogOpen) {
+  //   return null;
+  // }
   
   return (
     <Box
@@ -452,20 +516,19 @@ const StoriesBar = ({ darkMode }) => {
         overflowX: 'auto',
         p: 2,
         mb: 2,
-        backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
-        borderRadius: 2,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        backgroundColor: 'transparent',
+        borderRadius: 0,
+        boxShadow: 'none',
+        position: 'relative',
         '&::-webkit-scrollbar': {
-          height: '6px',
+          display: 'none',
         },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: darkMode ? '#333' : '#f1f1f1',
-          borderRadius: '10px',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: darkMode ? '#bb86fc' : '#3f51b5',
-          borderRadius: '10px',
-        },
+        msOverflowStyle: 'none',
+        scrollbarWidth: 'none',
+        borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+        paddingBottom: '16px',
+        marginBottom: '16px',
+        gap: 2
       }}
       component={motion.div}
       initial={{ opacity: 0, y: -20 }}
@@ -484,14 +547,27 @@ const StoriesBar = ({ darkMode }) => {
             justifyContent: 'center',
             backgroundColor: darkMode ? '#333' : '#f5f5f5',
             cursor: 'pointer',
-            border: `2px dashed ${darkMode ? '#bb86fc' : '#3f51b5'}`,
+            position: 'relative',
+            border: `2px solid ${darkMode ? '#333' : '#e0e0e0'}`,
+            '&::after': {
+              content: '""',
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              backgroundColor: darkMode ? '#bb86fc' : '#3f51b5',
+              zIndex: 0
+            }
           }}
           component={motion.div}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={handleOpenCreateDialog}
         >
-          <AddIcon sx={{ color: darkMode ? '#bb86fc' : '#3f51b5' }} />
+          <AddIcon sx={{ color: '#fff', zIndex: 1, fontSize: '16px' }} />
         </Box>
         <Typography
           variant="caption"
@@ -503,6 +579,8 @@ const StoriesBar = ({ darkMode }) => {
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
+            fontSize: '0.7rem',
+            fontWeight: 500
           }}
         >
           Создать
