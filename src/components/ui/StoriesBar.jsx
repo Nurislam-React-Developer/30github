@@ -502,18 +502,86 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
         </Typography>
         
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
-          {imagePreview ? (
-            <Box 
-              component="img"
-              src={imagePreview}
-              alt="Preview"
-              sx={{
-                width: '100%',
-                maxHeight: '300px',
-                objectFit: 'contain',
-                borderRadius: 1,
-              }}
-            />
+          {imagePreviews.length > 0 ? (
+            <Box sx={{ position: 'relative', width: '100%' }}>
+              <Box 
+                component="img"
+                src={imagePreviews[currentPreviewIndex]}
+                alt="Preview"
+                sx={{
+                  width: '100%',
+                  maxHeight: '300px',
+                  objectFit: 'contain',
+                  borderRadius: 1,
+                }}
+              />
+              {imagePreviews.length > 1 && (
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  mt: 1, 
+                  gap: 1 
+                }}>
+                  {imagePreviews.map((_, index) => (
+                    <Box 
+                      key={index}
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        backgroundColor: index === currentPreviewIndex ? 
+                          (darkMode ? '#bb86fc' : '#3f51b5') : 
+                          (darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'),
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => setCurrentPreviewIndex(index)}
+                    />
+                  ))}
+                </Box>
+              )}
+              {imagePreviews.length > 1 && (
+                <>
+                  <IconButton 
+                    sx={{
+                      position: 'absolute',
+                      left: 0,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      backgroundColor: 'rgba(0,0,0,0.3)',
+                      color: '#fff',
+                      '&:hover': { backgroundColor: 'rgba(0,0,0,0.5)' },
+                      display: currentPreviewIndex > 0 ? 'flex' : 'none'
+                    }}
+                    onClick={() => setCurrentPreviewIndex(prev => Math.max(0, prev - 1))}
+                  >
+                    <Box component="span" sx={{ fontSize: '1.5rem' }}>&lt;</Box>
+                  </IconButton>
+                  <IconButton 
+                    sx={{
+                      position: 'absolute',
+                      right: 0,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      backgroundColor: 'rgba(0,0,0,0.3)',
+                      color: '#fff',
+                      '&:hover': { backgroundColor: 'rgba(0,0,0,0.5)' },
+                      display: currentPreviewIndex < imagePreviews.length - 1 ? 'flex' : 'none'
+                    }}
+                    onClick={() => setCurrentPreviewIndex(prev => Math.min(imagePreviews.length - 1, prev + 1))}
+                  >
+                    <Box component="span" sx={{ fontSize: '1.5rem' }}>&gt;</Box>
+                  </IconButton>
+                </>
+              )}
+              <Typography variant="caption" sx={{ 
+                display: 'block', 
+                textAlign: 'center', 
+                mt: 1, 
+                color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' 
+              }}>
+                {imagePreviews.length} фото {currentPreviewIndex + 1}/{imagePreviews.length}
+              </Typography>
+            </Box>
           ) : (
             <Box 
               sx={{
@@ -537,6 +605,7 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
                 type="file"
                 id="story-image-input"
                 accept="image/*"
+                multiple
                 style={{ display: 'none' }}
                 onChange={handleImageChange}
               />
