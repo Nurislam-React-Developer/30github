@@ -57,7 +57,17 @@ const StoryItem = styled(Box)(({ theme }) => ({
 
 // Компонент для отображения одной истории в полноэкранном режиме
 const StoryViewer = ({ story, onClose, darkMode }) => {
+  // Поддержка нескольких изображений в одной истории
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [progress, setProgress] = useState(0);
+  
+  // Получаем массив изображений (для обратной совместимости)
+  const images = Array.isArray(story.images) ? story.images : [story.image];
+  
+  // Сбрасываем прогресс при смене изображения
+  useEffect(() => {
+    setProgress(0);
+  }, [currentImageIndex]);
   
   useEffect(() => {
     const timer = setInterval(() => {
@@ -73,15 +83,21 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
     return () => {
       clearInterval(timer);
     };
-  }, []);
+  }, [currentImageIndex]);
   
   useEffect(() => {
     if (progress === 100) {
-      setTimeout(() => {
-        onClose();
-      }, 300);
+      // Если есть следующее изображение, переходим к нему
+      if (currentImageIndex < images.length - 1) {
+        setCurrentImageIndex(currentImageIndex + 1);
+      } else {
+        // Если это последнее изображение, закрываем историю
+        setTimeout(() => {
+          onClose();
+        }, 300);
+      }
     }
-  }, [progress, onClose]);
+  }, [progress, onClose, currentImageIndex, images.length]);
   
   return (
     <Dialog
@@ -112,18 +128,21 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
         gap: 1
       }}>
         {/* Progress bar segments like Instagram */}
-        <LinearProgress 
-          variant="determinate" 
-          value={progress} 
-          sx={{ 
-            width: '100%',
-            height: 2,
-            backgroundColor: 'rgba(255, 255, 255, 0.3)',
-            '& .MuiLinearProgress-bar': {
-              backgroundColor: '#fff',
-            }
-          }} 
-        />
+        {images.map((_, index) => (
+          <LinearProgress 
+            key={index}
+            variant="determinate" 
+            value={index < currentImageIndex ? 100 : index === currentImageIndex ? progress : 0} 
+            sx={{ 
+              width: `${100 / images.length}%`,
+              height: 2,
+              backgroundColor: 'rgba(255, 255, 255, 0.3)',
+              '& .MuiLinearProgress-bar': {
+                backgroundColor: '#fff',
+              }
+            }} 
+          />
+        ))}
       </Box>
       
       <IconButton
@@ -189,10 +208,27 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
         </Box>
       </Box>
       
-      <DialogContent sx={{ p: 0, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <DialogContent 
+        sx={{ p: 0, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}
+        onClick={(e) => {
+          // Добавляем навигацию по клику для мобильных устройств
+          const { clientX } = e;
+          const { left, width } = e.currentTarget.getBoundingClientRect();
+          const clickPosition = clientX - left;
+          
+          // Если клик в левой трети экрана - предыдущее изображение
+          if (clickPosition < width / 3 && currentImageIndex > 0) {
+            setCurrentImageIndex(currentImageIndex - 1);
+          }
+          // Если клик в правой трети экрана - следующее изображение
+          else if (clickPosition > (width * 2) / 3 && currentImageIndex < images.length - 1) {
+            setCurrentImageIndex(currentImageIndex + 1);
+          }
+        }}
+      >
         <Box 
           component="img"
-          src={story.image}
+          src={images[currentImageIndex]}
           alt="Story"
           sx={{
             width: '100%',
@@ -221,6 +257,74 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
             {story.text}
           </Typography>
         )}
+        
+        {/* Индикаторы навигации для мобильных устройств */}
+        {images.length > 1 && (
+          <>
+            {/* Левая область для навигации назад */}
+            <Box 
+              sx={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: '33%',
+                height: '100%',
+                cursor: currentImageIndex > 0 ? 'pointer' : 'default',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                padding: '0 16px',
+                opacity: 0
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (currentImageIndex > 0) {
+                  setCurrentImageIndex(currentImageIndex - 1);
+                }
+              }}
+            />
+            
+            {/* Правая область для навигации вперед */}
+            <Box 
+              sx={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '33%',
+                height: '100%',
+                cursor: currentImageIndex < images.length - 1 ? 'pointer' : 'default',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                padding: '0 16px',
+                opacity: 0
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (currentImageIndex < images.length - 1) {
+                  setCurrentImageIndex(currentImageIndex + 1);
+                }
+              }}
+            />
+            
+            {/* Индикатор текущего изображения */}
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                position: 'absolute', 
+                bottom: 16, 
+                right: 16, 
+                backgroundColor: 'rgba(0,0,0,0.5)', 
+                color: '#fff', 
+                padding: '4px 8px', 
+                borderRadius: 4,
+                fontSize: '0.7rem'
+              }}
+            >
+              {currentImageIndex + 1}/{images.length}
+            </Typography>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
@@ -229,99 +333,237 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
 // Компонент для создания новой истории
 const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
   const currentUser = useSelector(selectCurrentUser);
-  const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [text, setText] = useState('');
+  const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
   
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setImage(file);
-      };
-      reader.readAsDataURL(file);
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      // Ограничиваем количество изображений до 6
+      const selectedFiles = files.slice(0, 6);
+      
+      Promise.all(
+        selectedFiles.map((file) => {
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              resolve(reader.result);
+            };
+            reader.readAsDataURL(file);
+          });
+        })
+      ).then((previews) => {
+        setImagePreviews(previews);
+        setImages(selectedFiles);
+        setCurrentPreviewIndex(0);
+      });
     }
   };
   
   const handleSave = () => {
-    if (!imagePreview) {
-      toast.error('Пожалуйста, добавьте изображение для истории');
+    if (imagePreviews.length === 0) {
+      toast.error('Пожалуйста, добавьте хотя бы одно изображение для истории');
       return;
     }
     
-    // Сжатие изображения с сохранением высокого качества
-    const img = new Image();
-    img.src = imagePreview;
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      // Установка максимальных размеров
-      const maxWidth = 1200;
-      const maxHeight = 1800;
-      let width = img.width;
-      let height = img.height;
-      
-      if (width > height) {
-        if (width > maxWidth) {
-          height *= maxWidth / width;
-          width = maxWidth;
-        }
-      } else {
-        if (height > maxHeight) {
-          width *= maxHeight / height;
-          height = maxHeight;
-        }
-      }
-      
-      canvas.width = width;
-      canvas.height = height;
-      ctx.drawImage(img, 0, 0, width, height);
-      
-      // Получение сжатого изображения с высоким качеством (0.95 вместо 0.7)
-      const compressedImage = canvas.toDataURL('image/jpeg', 0.95);
-      
+    try {
       // Получение данных пользователя с приоритетом на Redux store
       const userName = currentUser?.name || 
                       localStorage.getItem('profileName') || 
                       JSON.parse(localStorage.getItem('user') || '{}')?.name || 
-                      JSON.parse(localStorage.getItem('userSettings') || '{}')?.name;
+                      JSON.parse(localStorage.getItem('userSettings') || '{}')?.name || 'Пользователь';
       
       const userAvatar = currentUser?.avatar || 
                         localStorage.getItem('profileAvatar') || 
                         JSON.parse(localStorage.getItem('user') || '{}')?.avatar || 
                         'https://via.placeholder.com/150';
       
-      // Создание новой истории
-      const newStory = {
-        id: Date.now(),
-        user: {
-          name: userName || 'Нурислам Абдималиков', // Заменяем 'Пользователь' на имя пользователя
-          avatar: userAvatar,
-        },
-        image: compressedImage,
-        text: text,
-        timestamp: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Истекает через 24 часа
+      // Сжатие всех изображений
+      const compressImages = async () => {
+        const compressedImages = [];
+        
+        for (let i = 0; i < imagePreviews.length; i++) {
+          try {
+            const preview = imagePreviews[i];
+            const img = new Image();
+            img.src = preview;
+            
+            // Ждем загрузки изображения
+            await new Promise((resolve, reject) => {
+              img.onload = resolve;
+              img.onerror = reject;
+            });
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Установка максимальных размеров (уменьшены для экономии памяти)
+            const maxWidth = 720; // Еще меньше для экономии памяти
+            const maxHeight = 1080; // Еще меньше для экономии памяти
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > height) {
+              if (width > maxWidth) {
+                height *= maxWidth / width;
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width *= maxHeight / height;
+                height = maxHeight;
+              }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Получение сжатого изображения с более низким качеством (0.6 вместо 0.7)
+            const compressedImage = canvas.toDataURL('image/jpeg', 0.6);
+            compressedImages.push(compressedImage);
+          } catch (error) {
+            console.error(`Ошибка при сжатии изображения ${i}:`, error);
+            // Если не удалось сжать, используем оригинал
+            compressedImages.push(imagePreviews[i]);
+          }
+        }
+        
+        return compressedImages;
       };
       
-      // Сохранение истории
-      const stories = JSON.parse(localStorage.getItem('stories') || '[]');
-      stories.unshift(newStory);
-      localStorage.setItem('stories', JSON.stringify(stories));
-      
-      // Обновление UI
-      onSave(newStory);
-      onClose();
-      
-      // Уведомление
-      toast.success('История успешно создана!', {
+      // Сжимаем изображения и создаем историю
+      compressImages().then(compressedImages => {
+        // Создание новой истории с массивом изображений
+        const newStory = {
+          id: Date.now(),
+          user: {
+            name: userName || 'Пользователь',
+            avatar: userAvatar,
+          },
+          images: compressedImages, // Массив изображений вместо одного
+          image: compressedImages[0], // Для обратной совместимости
+          text: text,
+          timestamp: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Истекает через 24 часа
+        };
+        
+        // Сохранение истории с обработкой ошибок
+        try {
+          const stories = JSON.parse(localStorage.getItem('stories') || '[]');
+          stories.unshift(newStory);
+          localStorage.setItem('stories', JSON.stringify(stories));
+          
+          // Обновление UI
+          onSave(newStory);
+          onClose();
+          
+          // Уведомление
+          toast.success(`История с ${compressedImages.length} фото успешно создана!`, {
+            position: 'top-right',
+            autoClose: 3000,
+          });
+        } catch (storageError) {
+          console.error('Ошибка при сохранении истории:', storageError);
+          
+          // Попытка сохранить с еще более низким качеством
+          try {
+            // Еще сильнее сжимаем изображения
+            const furtherCompressImages = async () => {
+              const lowerQualityImages = [];
+              
+              for (let i = 0; i < compressedImages.length; i++) {
+                try {
+                  const img = new Image();
+                  img.src = compressedImages[i];
+                  
+                  await new Promise((resolve) => {
+                    img.onload = resolve;
+                  });
+                  
+                  const canvas = document.createElement('canvas');
+                  const ctx = canvas.getContext('2d');
+                  
+                  // Еще меньшие размеры
+                  const maxWidth = 540;
+                  const maxHeight = 960;
+                  let width = img.width;
+                  let height = img.height;
+                  
+                  if (width > height) {
+                    if (width > maxWidth) {
+                      height *= maxWidth / width;
+                      width = maxWidth;
+                    }
+                  } else {
+                    if (height > maxHeight) {
+                      width *= maxHeight / height;
+                      height = maxHeight;
+                    }
+                  }
+                  
+                  canvas.width = width;
+                  canvas.height = height;
+                  ctx.drawImage(img, 0, 0, width, height);
+                  
+                  // Еще более низкое качество
+                  const lowerQualityImage = canvas.toDataURL('image/jpeg', 0.4);
+                  lowerQualityImages.push(lowerQualityImage);
+                } catch (error) {
+                  console.error(`Ошибка при повторном сжатии изображения ${i}:`, error);
+                  lowerQualityImages.push(compressedImages[i]);
+                }
+              }
+              
+              return lowerQualityImages;
+            };
+            
+            furtherCompressImages().then(lowerQualityImages => {
+              newStory.images = lowerQualityImages;
+              newStory.image = lowerQualityImages[0];
+              
+              const stories = JSON.parse(localStorage.getItem('stories') || '[]');
+              
+              // Если хранилище переполнено, удаляем старые истории
+              if (stories.length > 5) {
+                stories.splice(5); // Оставляем только 5 последних историй
+              }
+              
+              stories.unshift(newStory);
+              localStorage.setItem('stories', JSON.stringify(stories));
+              
+              // Обновление UI
+              onSave(newStory);
+              onClose();
+              
+              toast.success('История создана с пониженным качеством изображений', {
+                position: 'top-right',
+                autoClose: 3000,
+              });
+            });
+          } catch (finalError) {
+            toast.error('Не удалось сохранить историю. Попробуйте изображения меньшего размера', {
+              position: 'top-right',
+              autoClose: 3000,
+            });
+          }
+        }
+      }).catch(error => {
+        console.error('Ошибка при обработке изображений:', error);
+        toast.error('Ошибка при обработке изображений. Попробуйте другие изображения', {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+      });
+    } catch (error) {
+      console.error('Ошибка при создании истории:', error);
+      toast.error('Произошла ошибка при создании истории', {
         position: 'top-right',
         autoClose: 3000,
       });
-    };
+    }
   };
   
   return (
@@ -345,18 +587,86 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
         </Typography>
         
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
-          {imagePreview ? (
-            <Box 
-              component="img"
-              src={imagePreview}
-              alt="Preview"
-              sx={{
-                width: '100%',
-                maxHeight: '300px',
-                objectFit: 'contain',
-                borderRadius: 1,
-              }}
-            />
+          {imagePreviews.length > 0 ? (
+            <Box sx={{ position: 'relative', width: '100%' }}>
+              <Box 
+                component="img"
+                src={imagePreviews[currentPreviewIndex]}
+                alt="Preview"
+                sx={{
+                  width: '100%',
+                  maxHeight: '300px',
+                  objectFit: 'contain',
+                  borderRadius: 1,
+                }}
+              />
+              {imagePreviews.length > 1 && (
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  mt: 1, 
+                  gap: 1 
+                }}>
+                  {imagePreviews.map((_, index) => (
+                    <Box 
+                      key={index}
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        backgroundColor: index === currentPreviewIndex ? 
+                          (darkMode ? '#bb86fc' : '#3f51b5') : 
+                          (darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'),
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => setCurrentPreviewIndex(index)}
+                    />
+                  ))}
+                </Box>
+              )}
+              {imagePreviews.length > 1 && (
+                <>
+                  <IconButton 
+                    sx={{
+                      position: 'absolute',
+                      left: 0,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      backgroundColor: 'rgba(0,0,0,0.3)',
+                      color: '#fff',
+                      '&:hover': { backgroundColor: 'rgba(0,0,0,0.5)' },
+                      display: currentPreviewIndex > 0 ? 'flex' : 'none'
+                    }}
+                    onClick={() => setCurrentPreviewIndex(prev => Math.max(0, prev - 1))}
+                  >
+                    <Box component="span" sx={{ fontSize: '1.5rem' }}>&lt;</Box>
+                  </IconButton>
+                  <IconButton 
+                    sx={{
+                      position: 'absolute',
+                      right: 0,
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      backgroundColor: 'rgba(0,0,0,0.3)',
+                      color: '#fff',
+                      '&:hover': { backgroundColor: 'rgba(0,0,0,0.5)' },
+                      display: currentPreviewIndex < imagePreviews.length - 1 ? 'flex' : 'none'
+                    }}
+                    onClick={() => setCurrentPreviewIndex(prev => Math.min(imagePreviews.length - 1, prev + 1))}
+                  >
+                    <Box component="span" sx={{ fontSize: '1.5rem' }}>&gt;</Box>
+                  </IconButton>
+                </>
+              )}
+              <Typography variant="caption" sx={{ 
+                display: 'block', 
+                textAlign: 'center', 
+                mt: 1, 
+                color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' 
+              }}>
+                {imagePreviews.length} фото {currentPreviewIndex + 1}/{imagePreviews.length}
+              </Typography>
+            </Box>
           ) : (
             <Box 
               sx={{
@@ -380,6 +690,7 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
                 type="file"
                 id="story-image-input"
                 accept="image/*"
+                multiple
                 style={{ display: 'none' }}
                 onChange={handleImageChange}
               />
