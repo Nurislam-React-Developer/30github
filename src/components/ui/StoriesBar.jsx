@@ -257,6 +257,74 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
             {story.text}
           </Typography>
         )}
+        
+        {/* Индикаторы навигации для мобильных устройств */}
+        {images.length > 1 && (
+          <>
+            {/* Левая область для навигации назад */}
+            <Box 
+              sx={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: '33%',
+                height: '100%',
+                cursor: currentImageIndex > 0 ? 'pointer' : 'default',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+                padding: '0 16px',
+                opacity: 0
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (currentImageIndex > 0) {
+                  setCurrentImageIndex(currentImageIndex - 1);
+                }
+              }}
+            />
+            
+            {/* Правая область для навигации вперед */}
+            <Box 
+              sx={{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                width: '33%',
+                height: '100%',
+                cursor: currentImageIndex < images.length - 1 ? 'pointer' : 'default',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                padding: '0 16px',
+                opacity: 0
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (currentImageIndex < images.length - 1) {
+                  setCurrentImageIndex(currentImageIndex + 1);
+                }
+              }}
+            />
+            
+            {/* Индикатор текущего изображения */}
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                position: 'absolute', 
+                bottom: 16, 
+                right: 16, 
+                backgroundColor: 'rgba(0,0,0,0.5)', 
+                color: '#fff', 
+                padding: '4px 8px', 
+                borderRadius: 4,
+                fontSize: '0.7rem'
+              }}
+            >
+              {currentImageIndex + 1}/{images.length}
+            </Typography>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
