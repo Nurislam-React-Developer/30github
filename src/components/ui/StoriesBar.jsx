@@ -57,7 +57,17 @@ const StoryItem = styled(Box)(({ theme }) => ({
 
 // Компонент для отображения одной истории в полноэкранном режиме
 const StoryViewer = ({ story, onClose, darkMode }) => {
+  // Поддержка нескольких изображений в одной истории
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [progress, setProgress] = useState(0);
+  
+  // Получаем массив изображений (для обратной совместимости)
+  const images = Array.isArray(story.images) ? story.images : [story.image];
+  
+  // Сбрасываем прогресс при смене изображения
+  useEffect(() => {
+    setProgress(0);
+  }, [currentImageIndex]);
   
   useEffect(() => {
     const timer = setInterval(() => {
@@ -73,15 +83,21 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
     return () => {
       clearInterval(timer);
     };
-  }, []);
+  }, [currentImageIndex]);
   
   useEffect(() => {
     if (progress === 100) {
-      setTimeout(() => {
-        onClose();
-      }, 300);
+      // Если есть следующее изображение, переходим к нему
+      if (currentImageIndex < images.length - 1) {
+        setCurrentImageIndex(currentImageIndex + 1);
+      } else {
+        // Если это последнее изображение, закрываем историю
+        setTimeout(() => {
+          onClose();
+        }, 300);
+      }
     }
-  }, [progress, onClose]);
+  }, [progress, onClose, currentImageIndex, images.length]);
   
   return (
     <Dialog
@@ -112,18 +128,21 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
         gap: 1
       }}>
         {/* Progress bar segments like Instagram */}
-        <LinearProgress 
-          variant="determinate" 
-          value={progress} 
-          sx={{ 
-            width: '100%',
-            height: 2,
-            backgroundColor: 'rgba(255, 255, 255, 0.3)',
-            '& .MuiLinearProgress-bar': {
-              backgroundColor: '#fff',
-            }
-          }} 
-        />
+        {images.map((_, index) => (
+          <LinearProgress 
+            key={index}
+            variant="determinate" 
+            value={index < currentImageIndex ? 100 : index === currentImageIndex ? progress : 0} 
+            sx={{ 
+              width: `${100 / images.length}%`,
+              height: 2,
+              backgroundColor: 'rgba(255, 255, 255, 0.3)',
+              '& .MuiLinearProgress-bar': {
+                backgroundColor: '#fff',
+              }
+            }} 
+          />
+        ))}
       </Box>
       
       <IconButton
@@ -189,10 +208,10 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
         </Box>
       </Box>
       
-      <DialogContent sx={{ p: 0, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <DialogContent sx={{ p: 0, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
         <Box 
           component="img"
-          src={story.image}
+          src={images[currentImageIndex]}
           alt="Story"
           sx={{
             width: '100%',
@@ -229,108 +248,196 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
 // Компонент для создания новой истории
 const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
   const currentUser = useSelector(selectCurrentUser);
-  const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
+  const [images, setImages] = useState([]);
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [text, setText] = useState('');
+  const [currentPreviewIndex, setCurrentPreviewIndex] = useState(0);
   
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-        setImage(file);
-      };
-      reader.readAsDataURL(file);
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      // Ограничиваем количество изображений до 6
+      const selectedFiles = files.slice(0, 6);
+      
+      Promise.all(
+        selectedFiles.map((file) => {
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              resolve(reader.result);
+            };
+            reader.readAsDataURL(file);
+          });
+        })
+      ).then((previews) => {
+        setImagePreviews(previews);
+        setImages(selectedFiles);
+        setCurrentPreviewIndex(0);
+      });
     }
   };
   
   const handleSave = () => {
-    if (!imagePreview) {
-      toast.error('Пожалуйста, добавьте изображение для истории');
+    if (imagePreviews.length === 0) {
+      toast.error('Пожалуйста, добавьте хотя бы одно изображение для истории');
       return;
     }
     
     try {
-      // Сжатие изображения с более эффективным качеством
-      const img = new Image();
-      img.src = imagePreview;
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          
-          // Установка максимальных размеров (уменьшены для экономии памяти)
-          const maxWidth = 800; // Уменьшено с 1200
-          const maxHeight = 1200; // Уменьшено с 1800
-          let width = img.width;
-          let height = img.height;
-          
-          if (width > height) {
-            if (width > maxWidth) {
-              height *= maxWidth / width;
-              width = maxWidth;
-            }
-          } else {
-            if (height > maxHeight) {
-              width *= maxHeight / height;
-              height = maxHeight;
-            }
-          }
-          
-          canvas.width = width;
-          canvas.height = height;
-          ctx.drawImage(img, 0, 0, width, height);
-          
-          // Получение сжатого изображения с более низким качеством (0.7 вместо 0.95)
-          const compressedImage = canvas.toDataURL('image/jpeg', 0.7);
-          
-          // Получение данных пользователя с приоритетом на Redux store
-          const userName = currentUser?.name || 
-                          localStorage.getItem('profileName') || 
-                          JSON.parse(localStorage.getItem('user') || '{}')?.name || 
-                          JSON.parse(localStorage.getItem('userSettings') || '{}')?.name || 'Пользователь';
-          
-          const userAvatar = currentUser?.avatar || 
-                            localStorage.getItem('profileAvatar') || 
-                            JSON.parse(localStorage.getItem('user') || '{}')?.avatar || 
-                            'https://via.placeholder.com/150';
-          
-          // Создание новой истории
-          const newStory = {
-            id: Date.now(),
-            user: {
-              name: userName || 'Пользователь', // Добавляем дефолтное имя
-              avatar: userAvatar,
-            },
-            image: compressedImage,
-            text: text,
-            timestamp: new Date().toISOString(),
-            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Истекает через 24 часа
-          };
-          
-          // Сохранение истории с обработкой ошибок
+      // Получение данных пользователя с приоритетом на Redux store
+      const userName = currentUser?.name || 
+                      localStorage.getItem('profileName') || 
+                      JSON.parse(localStorage.getItem('user') || '{}')?.name || 
+                      JSON.parse(localStorage.getItem('userSettings') || '{}')?.name || 'Пользователь';
+      
+      const userAvatar = currentUser?.avatar || 
+                        localStorage.getItem('profileAvatar') || 
+                        JSON.parse(localStorage.getItem('user') || '{}')?.avatar || 
+                        'https://via.placeholder.com/150';
+      
+      // Сжатие всех изображений
+      const compressImages = async () => {
+        const compressedImages = [];
+        
+        for (let i = 0; i < imagePreviews.length; i++) {
           try {
-            const stories = JSON.parse(localStorage.getItem('stories') || '[]');
-            stories.unshift(newStory);
-            localStorage.setItem('stories', JSON.stringify(stories));
+            const preview = imagePreviews[i];
+            const img = new Image();
+            img.src = preview;
             
-            // Обновление UI
-            onSave(newStory);
-            onClose();
-            
-            // Уведомление
-            toast.success('История успешно создана!', {
-              position: 'top-right',
-              autoClose: 3000,
+            // Ждем загрузки изображения
+            await new Promise((resolve, reject) => {
+              img.onload = resolve;
+              img.onerror = reject;
             });
-          } catch (storageError) {
-            console.error('Ошибка при сохранении истории:', storageError);
             
-            // Попытка сохранить с еще более низким качеством
-            try {
-              const lowerQualityImage = canvas.toDataURL('image/jpeg', 0.4);
-              newStory.image = lowerQualityImage;
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Установка максимальных размеров (уменьшены для экономии памяти)
+            const maxWidth = 720; // Еще меньше для экономии памяти
+            const maxHeight = 1080; // Еще меньше для экономии памяти
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > height) {
+              if (width > maxWidth) {
+                height *= maxWidth / width;
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width *= maxHeight / height;
+                height = maxHeight;
+              }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Получение сжатого изображения с более низким качеством (0.6 вместо 0.7)
+            const compressedImage = canvas.toDataURL('image/jpeg', 0.6);
+            compressedImages.push(compressedImage);
+          } catch (error) {
+            console.error(`Ошибка при сжатии изображения ${i}:`, error);
+            // Если не удалось сжать, используем оригинал
+            compressedImages.push(imagePreviews[i]);
+          }
+        }
+        
+        return compressedImages;
+      };
+      
+      // Сжимаем изображения и создаем историю
+      compressImages().then(compressedImages => {
+        // Создание новой истории с массивом изображений
+        const newStory = {
+          id: Date.now(),
+          user: {
+            name: userName || 'Пользователь',
+            avatar: userAvatar,
+          },
+          images: compressedImages, // Массив изображений вместо одного
+          image: compressedImages[0], // Для обратной совместимости
+          text: text,
+          timestamp: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Истекает через 24 часа
+        };
+        
+        // Сохранение истории с обработкой ошибок
+        try {
+          const stories = JSON.parse(localStorage.getItem('stories') || '[]');
+          stories.unshift(newStory);
+          localStorage.setItem('stories', JSON.stringify(stories));
+          
+          // Обновление UI
+          onSave(newStory);
+          onClose();
+          
+          // Уведомление
+          toast.success(`История с ${compressedImages.length} фото успешно создана!`, {
+            position: 'top-right',
+            autoClose: 3000,
+          });
+        } catch (storageError) {
+          console.error('Ошибка при сохранении истории:', storageError);
+          
+          // Попытка сохранить с еще более низким качеством
+          try {
+            // Еще сильнее сжимаем изображения
+            const furtherCompressImages = async () => {
+              const lowerQualityImages = [];
+              
+              for (let i = 0; i < compressedImages.length; i++) {
+                try {
+                  const img = new Image();
+                  img.src = compressedImages[i];
+                  
+                  await new Promise((resolve) => {
+                    img.onload = resolve;
+                  });
+                  
+                  const canvas = document.createElement('canvas');
+                  const ctx = canvas.getContext('2d');
+                  
+                  // Еще меньшие размеры
+                  const maxWidth = 540;
+                  const maxHeight = 960;
+                  let width = img.width;
+                  let height = img.height;
+                  
+                  if (width > height) {
+                    if (width > maxWidth) {
+                      height *= maxWidth / width;
+                      width = maxWidth;
+                    }
+                  } else {
+                    if (height > maxHeight) {
+                      width *= maxHeight / height;
+                      height = maxHeight;
+                    }
+                  }
+                  
+                  canvas.width = width;
+                  canvas.height = height;
+                  ctx.drawImage(img, 0, 0, width, height);
+                  
+                  // Еще более низкое качество
+                  const lowerQualityImage = canvas.toDataURL('image/jpeg', 0.4);
+                  lowerQualityImages.push(lowerQualityImage);
+                } catch (error) {
+                  console.error(`Ошибка при повторном сжатии изображения ${i}:`, error);
+                  lowerQualityImages.push(compressedImages[i]);
+                }
+              }
+              
+              return lowerQualityImages;
+            };
+            
+            furtherCompressImages().then(lowerQualityImages => {
+              newStory.images = lowerQualityImages;
+              newStory.image = lowerQualityImages[0];
               
               const stories = JSON.parse(localStorage.getItem('stories') || '[]');
               
@@ -346,25 +453,25 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
               onSave(newStory);
               onClose();
               
-              toast.success('История создана с пониженным качеством изображения', {
+              toast.success('История создана с пониженным качеством изображений', {
                 position: 'top-right',
                 autoClose: 3000,
               });
-            } catch (finalError) {
-              toast.error('Не удалось сохранить историю. Попробуйте изображение меньшего размера', {
-                position: 'top-right',
-                autoClose: 3000,
-              });
-            }
+            });
+          } catch (finalError) {
+            toast.error('Не удалось сохранить историю. Попробуйте изображения меньшего размера', {
+              position: 'top-right',
+              autoClose: 3000,
+            });
           }
-        } catch (canvasError) {
-          console.error('Ошибка при обработке изображения:', canvasError);
-          toast.error('Ошибка при обработке изображения. Попробуйте другое изображение', {
-            position: 'top-right',
-            autoClose: 3000,
-          });
         }
-      };
+      }).catch(error => {
+        console.error('Ошибка при обработке изображений:', error);
+        toast.error('Ошибка при обработке изображений. Попробуйте другие изображения', {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+      });
     } catch (error) {
       console.error('Ошибка при создании истории:', error);
       toast.error('Произошла ошибка при создании истории', {
