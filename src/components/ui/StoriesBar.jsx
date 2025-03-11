@@ -17,6 +17,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from '../../store/userSlice';
+import { compressImage, StoriesManager, cleanupStorage, getStorageUsagePercentage } from '../../utils/storageUtils';
 
 // Стилизованный Avatar с градиентной рамкой для непросмотренных историй в стиле Instagram
 const StoryAvatar = styled(Avatar)(({ theme, viewed, darkMode }) => ({
@@ -430,7 +431,7 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
     }
   };
   
-  const handleSave = () => {
+  const handleSave = async () => {
     if (imagePreviews.length === 0) {
       toast.error('Пожалуйста, добавьте хотя бы одно изображение для истории');
       return;
@@ -448,9 +449,54 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
                         JSON.parse(localStorage.getItem('user') || '{}')?.avatar || 
                         '/logo.png';
       
-      // Сжатие всех изображений
+      // Функция для проверки размера localStorage и очистки при необходимости
+      const checkAndCleanStorage = () => {
+        try {
+          // Получаем текущие истории
+          const currentStories = JSON.parse(localStorage.getItem('stories') || '[]');
+          
+          // Если историй больше 10, удаляем самые старые
+          if (currentStories.length > 10) {
+            // Оставляем только 10 последних историй
+            const trimmedStories = currentStories.slice(0, 10);
+            localStorage.setItem('stories', JSON.stringify(trimmedStories));
+          }
+          
+          // Проверяем общий размер localStorage
+          let totalSize = 0;
+          for (let key in localStorage) {
+            if (localStorage.hasOwnProperty(key)) {
+              totalSize += localStorage[key].length * 2; // Умножаем на 2, т.к. каждый символ занимает 2 байта
+            }
+          }
+          
+          // Если размер близок к лимиту (4.5MB из 5MB), очищаем старые истории
+          const limitInBytes = 4.5 * 1024 * 1024; // 4.5MB
+          if (totalSize > limitInBytes && currentStories.length > 0) {
+            // Удаляем половину старых историй
+            const halfLength = Math.max(1, Math.floor(currentStories.length / 2));
+            const reducedStories = currentStories.slice(0, halfLength);
+            localStorage.setItem('stories', JSON.stringify(reducedStories));
+          }
+          
+          return true;
+        } catch (error) {
+          console.error('Ошибка при проверке хранилища:', error);
+          return false;
+        }
+      };
+      
+      // Сжатие всех изображений с адаптивным качеством
       const compressImages = async () => {
+        // Сначала проверяем и очищаем хранилище
+        checkAndCleanStorage();
+        
         const compressedImages = [];
+        // Определяем начальное качество сжатия в зависимости от количества изображений
+        let quality = imagePreviews.length > 3 ? 0.5 : 0.6;
+        // Уменьшаем размеры для большего количества изображений
+        const maxWidth = imagePreviews.length > 3 ? 540 : 720;
+        const maxHeight = imagePreviews.length > 3 ? 960 : 1080;
         
         for (let i = 0; i < imagePreviews.length; i++) {
           try {
@@ -467,9 +513,7 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
-            // Установка максимальных размеров (уменьшены для экономии памяти)
-            const maxWidth = 720; // Еще меньше для экономии памяти
-            const maxHeight = 1080; // Еще меньше для экономии памяти
+            // Расчет размеров с учетом соотношения сторон
             let width = img.width;
             let height = img.height;
             
@@ -489,13 +533,54 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
             canvas.height = height;
             ctx.drawImage(img, 0, 0, width, height);
             
-            // Получение сжатого изображения с более низким качеством (0.6 вместо 0.7)
-            const compressedImage = canvas.toDataURL('image/jpeg', 0.6);
+            // Получение сжатого изображения с адаптивным качеством
+            const compressedImage = canvas.toDataURL('image/jpeg', quality);
             compressedImages.push(compressedImage);
           } catch (error) {
             console.error(`Ошибка при сжатии изображения ${i}:`, error);
-            // Если не удалось сжать, используем оригинал
-            compressedImages.push(imagePreviews[i]);
+            // Если не удалось сжать, пробуем с еще более низким качеством
+            try {
+              const preview = imagePreviews[i];
+              const img = new Image();
+              img.src = preview;
+              
+              await new Promise((resolve) => {
+                img.onload = resolve;
+              });
+              
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              
+              // Еще меньшие размеры для аварийного сжатия
+              const emergencyMaxWidth = 400;
+              const emergencyMaxHeight = 800;
+              let width = img.width;
+              let height = img.height;
+              
+              if (width > height) {
+                if (width > emergencyMaxWidth) {
+                  height *= emergencyMaxWidth / width;
+                  width = emergencyMaxWidth;
+                }
+              } else {
+                if (height > emergencyMaxHeight) {
+                  width *= emergencyMaxHeight / height;
+                  height = emergencyMaxHeight;
+                }
+              }
+              
+              canvas.width = width;
+              canvas.height = height;
+              ctx.drawImage(img, 0, 0, width, height);
+              
+              // Экстремально низкое качество для аварийного случая
+              const emergencyCompressedImage = canvas.toDataURL('image/jpeg', 0.3);
+              compressedImages.push(emergencyCompressedImage);
+            } catch (finalError) {
+              console.error(`Критическая ошибка при сжатии изображения ${i}:`, finalError);
+              // В крайнем случае пропускаем это изображение
+              // Не добавляем оригинал, так как он может быть слишком большим
+            }
           }
         }
         
@@ -518,34 +603,91 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Истекает через 24 часа
         };
         
+        // Функция для безопасного сохранения в localStorage с проверкой размера
+        const safelyStoreStories = async (storiesToSave, currentStory, compressionLevel = 1) => {
+          try {
+            // Пробуем сохранить истории
+            localStorage.setItem('stories', JSON.stringify(storiesToSave));
+            
+            // Если успешно, обновляем UI
+            onSave(currentStory);
+            onClose();
+            
+            // Уведомление в зависимости от уровня сжатия
+            if (compressionLevel === 1) {
+              toast.success(`История с ${currentStory.images.length} фото успешно создана!`, {
+                position: 'top-right',
+                autoClose: 3000,
+              });
+            } else {
+              toast.success('История создана с пониженным качеством изображений', {
+                position: 'top-right',
+                autoClose: 3000,
+              });
+            }
+            
+            return true;
+          } catch (error) {
+            console.error(`Ошибка при сохранении истории (уровень сжатия ${compressionLevel}):`, error);
+            
+            if (error.name === 'QuotaExceededError' || error.toString().includes('quota')) {
+              // Если это ошибка квоты и мы еще не достигли максимального уровня сжатия
+              if (compressionLevel < 3) {
+                // Очищаем старые истории
+                if (storiesToSave.length > 2) {
+                  // Оставляем только новую историю и самую последнюю
+                  const reducedStories = [storiesToSave[0], storiesToSave[1]];
+                  return safelyStoreStories(reducedStories, currentStory, compressionLevel + 1);
+                } else {
+                  // Если осталась только одна история, пробуем сжать ее еще сильнее
+                  return false; // Переходим к следующему уровню сжатия
+                }
+              } else {
+                // Если достигли максимального уровня сжатия и все еще не можем сохранить
+                toast.error('Не удалось сохранить историю. Хранилище переполнено.', {
+                  position: 'top-right',
+                  autoClose: 3000,
+                });
+                return false;
+              }
+            } else {
+              // Если это другая ошибка
+              toast.error('Произошла ошибка при сохранении истории', {
+                position: 'top-right',
+                autoClose: 3000,
+              });
+              return false;
+            }
+          }
+        };
+        
         // Сохранение истории с обработкой ошибок
         try {
+          // Получаем текущие истории и добавляем новую в начало
           const stories = JSON.parse(localStorage.getItem('stories') || '[]');
+          
+          // Очищаем старые истории, если их слишком много
+          const maxStories = 15;
+          if (stories.length >= maxStories) {
+            stories.splice(maxStories - 1); // Оставляем только maxStories-1 историй + новая
+          }
+          
+          // Добавляем новую историю в начало
           stories.unshift(newStory);
-          localStorage.setItem('stories', JSON.stringify(stories));
           
-          // Обновление UI
-          onSave(newStory);
-          onClose();
+          // Пробуем сохранить
+          const saved = await safelyStoreStories(stories, newStory);
           
-          // Уведомление
-          toast.success(`История с ${compressedImages.length} фото успешно создана!`, {
-            position: 'top-right',
-            autoClose: 3000,
-          });
-        } catch (storageError) {
-          console.error('Ошибка при сохранении истории:', storageError);
-          
-          // Попытка сохранить с еще более низким качеством
-          try {
-            // Еще сильнее сжимаем изображения
-            const furtherCompressImages = async () => {
+          // Если не удалось сохранить, пробуем с более сильным сжатием
+          if (!saved) {
+            // Создаем функцию для еще более сильного сжатия
+            const furtherCompressImages = async (images, quality = 0.3, maxWidth = 400, maxHeight = 700) => {
               const lowerQualityImages = [];
               
-              for (let i = 0; i < compressedImages.length; i++) {
+              for (let i = 0; i < images.length; i++) {
                 try {
                   const img = new Image();
-                  img.src = compressedImages[i];
+                  img.src = images[i];
                   
                   await new Promise((resolve) => {
                     img.onload = resolve;
@@ -554,9 +696,7 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
                   const canvas = document.createElement('canvas');
                   const ctx = canvas.getContext('2d');
                   
-                  // Еще меньшие размеры
-                  const maxWidth = 540;
-                  const maxHeight = 960;
+                  // Уменьшенные размеры
                   let width = img.width;
                   let height = img.height;
                   
@@ -576,47 +716,52 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
                   canvas.height = height;
                   ctx.drawImage(img, 0, 0, width, height);
                   
-                  // Еще более низкое качество
-                  const lowerQualityImage = canvas.toDataURL('image/jpeg', 0.4);
+                  // Очень низкое качество
+                  const lowerQualityImage = canvas.toDataURL('image/jpeg', quality);
                   lowerQualityImages.push(lowerQualityImage);
                 } catch (error) {
-                  console.error(`Ошибка при повторном сжатии изображения ${i}:`, error);
-                  lowerQualityImages.push(compressedImages[i]);
+                  console.error(`Ошибка при экстремальном сжатии изображения ${i}:`, error);
+                  // Если не удалось сжать, пропускаем это изображение
                 }
               }
               
               return lowerQualityImages;
             };
             
-            furtherCompressImages().then(lowerQualityImages => {
-              newStory.images = lowerQualityImages;
-              newStory.image = lowerQualityImages[0];
+            // Пробуем сохранить с максимальным сжатием
+            const extremelyCompressedImages = await furtherCompressImages(compressedImages, 0.2, 300, 500);
+            
+            // Если после сжатия остались изображения
+            if (extremelyCompressedImages.length > 0) {
+              // Обновляем историю с сильно сжатыми изображениями
+              newStory.images = extremelyCompressedImages;
+              newStory.image = extremelyCompressedImages[0];
               
-              const stories = JSON.parse(localStorage.getItem('stories') || '[]');
+              // Получаем истории снова (могли измениться)
+              const updatedStories = JSON.parse(localStorage.getItem('stories') || '[]');
               
-              // Если хранилище переполнено, удаляем старые истории
-              if (stories.length > 5) {
-                stories.splice(5); // Оставляем только 5 последних историй
+              // Оставляем только 2 истории максимум
+              const minimalStories = [newStory];
+              if (updatedStories.length > 0) {
+                minimalStories.push(updatedStories[0]);
               }
               
-              stories.unshift(newStory);
-              localStorage.setItem('stories', JSON.stringify(stories));
-              
-              // Обновление UI
-              onSave(newStory);
-              onClose();
-              
-              toast.success('История создана с пониженным качеством изображений', {
+              // Пробуем сохранить с минимальным количеством историй и максимальным сжатием
+              await safelyStoreStories(minimalStories, newStory, 3);
+            } else {
+              // Если не осталось изображений после сжатия
+              toast.error('Не удалось сохранить историю. Попробуйте изображения меньшего размера', {
                 position: 'top-right',
                 autoClose: 3000,
               });
-            });
-          } catch (finalError) {
-            toast.error('Не удалось сохранить историю. Попробуйте изображения меньшего размера', {
-              position: 'top-right',
-              autoClose: 3000,
-            });
+            }
           }
+        } catch (storageError) {
+          console.error('Критическая ошибка при сохранении истории:', storageError);
+          toast.error('Не удалось сохранить историю. Попробуйте позже', {
+            position: 'top-right',
+            autoClose: 3000,
+          });
         }
       }).catch(error => {
         console.error('Ошибка при обработке изображений:', error);
@@ -831,40 +976,70 @@ const StoriesBar = ({ darkMode }) => {
   const [selectedStory, setSelectedStory] = useState(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   
-  // Загрузка историй и просмотренных историй из localStorage
+  // Загрузка историй и просмотренных историй из localStorage с использованием StoriesManager
   useEffect(() => {
-    const loadedStories = JSON.parse(localStorage.getItem('stories') || '[]');
-    const loadedViewedStories = JSON.parse(localStorage.getItem('viewedStories') || '[]');
-    
-    // Фильтрация историй, которые не истекли (24 часа)
-    const validStories = loadedStories.filter(story => {
-      const expiryTime = new Date(story.expiresAt).getTime();
-      return expiryTime > Date.now();
-    });
-    
-    // Если есть истории, которые истекли, обновляем localStorage
-    if (validStories.length !== loadedStories.length) {
-      localStorage.setItem('stories', JSON.stringify(validStories));
+    try {
+      // Удаляем истории с истекшим сроком действия
+      const removedCount = StoriesManager.removeExpiredStories();
+      if (removedCount > 0) {
+        console.log(`Удалено ${removedCount} историй с истекшим сроком действия`);
+      }
+      
+      // Очищаем просмотренные истории, которые больше не существуют
+      StoriesManager.cleanupViewedStories();
+      
+      // Получаем актуальные истории и просмотренные истории
+      const validStories = StoriesManager.getStories();
+      const validViewedStories = StoriesManager.getViewedStories();
+      
+      // Проверяем использование хранилища
+      const usagePercentage = getStorageUsagePercentage();
+      console.log(`Использование localStorage: ${usagePercentage.toFixed(2)}%`);
+      
+      // Если хранилище заполнено более чем на 80%, выполняем очистку
+      if (usagePercentage > 80) {
+        cleanupStorage({
+          keysToPreserve: ['user', 'userSettings', 'profileName', 'profileAvatar'],
+          targetPercentage: 70
+        });
+        console.log('Выполнена очистка localStorage для освобождения места');
+      }
+      
+      setStories(validStories);
+      setViewedStories(validViewedStories);
+    } catch (error) {
+      console.error('Ошибка при загрузке историй:', error);
+      // В случае ошибки, пробуем очистить хранилище историй
+      try {
+        localStorage.removeItem('stories');
+        localStorage.removeItem('viewedStories');
+        setStories([]);
+        setViewedStories([]);
+        toast.error('Произошла ошибка при загрузке историй. Хранилище очищено.', {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+      } catch (clearError) {
+        console.error('Не удалось очистить хранилище:', clearError);
+      }
     }
-    
-    setStories(validStories);
-    setViewedStories(loadedViewedStories);
   }, []);
   
   // Обработчик просмотра истории
   const handleViewStory = (story) => {
     setSelectedStory(story);
     
-    // Добавление истории в просмотренные
+    // Добавление истории в просмотренные с использованием StoriesManager
     if (!viewedStories.includes(story.id)) {
       const updatedViewedStories = [...viewedStories, story.id];
       setViewedStories(updatedViewedStories);
-      localStorage.setItem('viewedStories', JSON.stringify(updatedViewedStories));
+      // Используем StoriesManager для безопасного сохранения просмотренных историй
+      StoriesManager.markAsViewed(story.id);
     }
   };
   
   // Закрытие просмотра истории
-  const handleCloseStory = () => {
+  const handleCloseStory = async () => {
     setSelectedStory(null);
   };
   
