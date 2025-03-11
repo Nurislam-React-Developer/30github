@@ -251,77 +251,127 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
       return;
     }
     
-    // Сжатие изображения с сохранением высокого качества
-    const img = new Image();
-    img.src = imagePreview;
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      // Установка максимальных размеров
-      const maxWidth = 1200;
-      const maxHeight = 1800;
-      let width = img.width;
-      let height = img.height;
-      
-      if (width > height) {
-        if (width > maxWidth) {
-          height *= maxWidth / width;
-          width = maxWidth;
+    try {
+      // Сжатие изображения с более эффективным качеством
+      const img = new Image();
+      img.src = imagePreview;
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Установка максимальных размеров (уменьшены для экономии памяти)
+          const maxWidth = 800; // Уменьшено с 1200
+          const maxHeight = 1200; // Уменьшено с 1800
+          let width = img.width;
+          let height = img.height;
+          
+          if (width > height) {
+            if (width > maxWidth) {
+              height *= maxWidth / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width *= maxHeight / height;
+              height = maxHeight;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Получение сжатого изображения с более низким качеством (0.7 вместо 0.95)
+          const compressedImage = canvas.toDataURL('image/jpeg', 0.7);
+          
+          // Получение данных пользователя с приоритетом на Redux store
+          const userName = currentUser?.name || 
+                          localStorage.getItem('profileName') || 
+                          JSON.parse(localStorage.getItem('user') || '{}')?.name || 
+                          JSON.parse(localStorage.getItem('userSettings') || '{}')?.name || 'Пользователь';
+          
+          const userAvatar = currentUser?.avatar || 
+                            localStorage.getItem('profileAvatar') || 
+                            JSON.parse(localStorage.getItem('user') || '{}')?.avatar || 
+                            'https://via.placeholder.com/150';
+          
+          // Создание новой истории
+          const newStory = {
+            id: Date.now(),
+            user: {
+              name: userName || 'Пользователь', // Добавляем дефолтное имя
+              avatar: userAvatar,
+            },
+            image: compressedImage,
+            text: text,
+            timestamp: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Истекает через 24 часа
+          };
+          
+          // Сохранение истории с обработкой ошибок
+          try {
+            const stories = JSON.parse(localStorage.getItem('stories') || '[]');
+            stories.unshift(newStory);
+            localStorage.setItem('stories', JSON.stringify(stories));
+            
+            // Обновление UI
+            onSave(newStory);
+            onClose();
+            
+            // Уведомление
+            toast.success('История успешно создана!', {
+              position: 'top-right',
+              autoClose: 3000,
+            });
+          } catch (storageError) {
+            console.error('Ошибка при сохранении истории:', storageError);
+            
+            // Попытка сохранить с еще более низким качеством
+            try {
+              const lowerQualityImage = canvas.toDataURL('image/jpeg', 0.4);
+              newStory.image = lowerQualityImage;
+              
+              const stories = JSON.parse(localStorage.getItem('stories') || '[]');
+              
+              // Если хранилище переполнено, удаляем старые истории
+              if (stories.length > 5) {
+                stories.splice(5); // Оставляем только 5 последних историй
+              }
+              
+              stories.unshift(newStory);
+              localStorage.setItem('stories', JSON.stringify(stories));
+              
+              // Обновление UI
+              onSave(newStory);
+              onClose();
+              
+              toast.success('История создана с пониженным качеством изображения', {
+                position: 'top-right',
+                autoClose: 3000,
+              });
+            } catch (finalError) {
+              toast.error('Не удалось сохранить историю. Попробуйте изображение меньшего размера', {
+                position: 'top-right',
+                autoClose: 3000,
+              });
+            }
+          }
+        } catch (canvasError) {
+          console.error('Ошибка при обработке изображения:', canvasError);
+          toast.error('Ошибка при обработке изображения. Попробуйте другое изображение', {
+            position: 'top-right',
+            autoClose: 3000,
+          });
         }
-      } else {
-        if (height > maxHeight) {
-          width *= maxHeight / height;
-          height = maxHeight;
-        }
-      }
-      
-      canvas.width = width;
-      canvas.height = height;
-      ctx.drawImage(img, 0, 0, width, height);
-      
-      // Получение сжатого изображения с высоким качеством (0.95 вместо 0.7)
-      const compressedImage = canvas.toDataURL('image/jpeg', 0.95);
-      
-      // Получение данных пользователя с приоритетом на Redux store
-      const userName = currentUser?.name || 
-                      localStorage.getItem('profileName') || 
-                      JSON.parse(localStorage.getItem('user') || '{}')?.name || 
-                      JSON.parse(localStorage.getItem('userSettings') || '{}')?.name;
-      
-      const userAvatar = currentUser?.avatar || 
-                        localStorage.getItem('profileAvatar') || 
-                        JSON.parse(localStorage.getItem('user') || '{}')?.avatar || 
-                        'https://via.placeholder.com/150';
-      
-      // Создание новой истории
-      const newStory = {
-        id: Date.now(),
-        user: {
-          name: userName || '', // Удаляем хардкод имени и оставляем пустую строку как крайний вариант
-          avatar: userAvatar,
-        },
-        image: compressedImage,
-        text: text,
-        timestamp: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Истекает через 24 часа
       };
-      
-      // Сохранение истории
-      const stories = JSON.parse(localStorage.getItem('stories') || '[]');
-      stories.unshift(newStory);
-      localStorage.setItem('stories', JSON.stringify(stories));
-      
-      // Обновление UI
-      onSave(newStory);
-      onClose();
-      
-      // Уведомление
-      toast.success('История успешно создана!', {
+    } catch (error) {
+      console.error('Ошибка при создании истории:', error);
+      toast.error('Произошла ошибка при создании истории', {
         position: 'top-right',
         autoClose: 3000,
       });
-    };
+    }
   };
   
   return (
