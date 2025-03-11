@@ -93,36 +93,49 @@ const CreatePost = () => {
 			// Compress image if present
 			let compressedImage = postData.imagePreview;
 			if (postData.imagePreview) {
-				const img = new Image();
-				img.src = postData.imagePreview;
-				const canvas = document.createElement('canvas');
-				const ctx = canvas.getContext('2d');
+				try {
+					const img = new Image();
+					img.src = postData.imagePreview;
+					
+					// Wait for image to load before processing
+					await new Promise((resolve, reject) => {
+						img.onload = resolve;
+						img.onerror = reject;
+					});
+					
+					const canvas = document.createElement('canvas');
+					const ctx = canvas.getContext('2d');
 
-				// Set maximum dimensions
-				const maxWidth = 1200;
-				const maxHeight = 1800;
-				let width = img.width;
-				let height = img.height;
+					// Set maximum dimensions
+					const maxWidth = 1200;
+					const maxHeight = 1800;
+					let width = img.width;
+					let height = img.height;
 
-				// Calculate new dimensions
-				if (width > height) {
-					if (width > maxWidth) {
-						height *= maxWidth / width;
-						width = maxWidth;
+					// Calculate new dimensions
+					if (width > height) {
+						if (width > maxWidth) {
+							height *= maxWidth / width;
+							width = maxWidth;
+						}
+					} else {
+						if (height > maxHeight) {
+							width *= maxHeight / height;
+							height = maxHeight;
+						}
 					}
-				} else {
-					if (height > maxHeight) {
-						width *= maxHeight / height;
-						height = maxHeight;
-					}
+
+					canvas.width = width;
+					canvas.height = height;
+					ctx.drawImage(img, 0, 0, width, height);
+
+					// Compress image to JPEG with lower quality (0.8 instead of 0.95) to reduce size
+					compressedImage = canvas.toDataURL('image/jpeg', 0.8);
+				} catch (compressionError) {
+					console.error('Error compressing image:', compressionError);
+					// Use original image if compression fails
+					compressedImage = postData.imagePreview;
 				}
-
-				canvas.width = width;
-				canvas.height = height;
-				ctx.drawImage(img, 0, 0, width, height);
-
-				// Compress image to JPEG with higher quality (0.95 instead of 0.7)
-				compressedImage = canvas.toDataURL('image/jpeg', 0.95);
 			}
 
 			const post = editPost
@@ -160,14 +173,72 @@ const CreatePost = () => {
 			try {
 				localStorage.setItem('posts', JSON.stringify(updatedPosts));
 			} catch (storageError) {
-				// If storage is full, remove older posts until it fits
-				while (updatedPosts.length > 1) {
-					updatedPosts.pop(); // Remove the oldest post
+				// If storage is full, try with more aggressive compression
+				if (compressedImage && post.image) {
 					try {
-						localStorage.setItem('posts', JSON.stringify(updatedPosts));
-						break;
+						const canvas = document.createElement('canvas');
+						const ctx = canvas.getContext('2d');
+						const img = new Image();
+						img.src = compressedImage;
+						
+						// Wait for image to load
+						await new Promise((resolve) => {
+							img.onload = resolve;
+						});
+						
+						// Reduce dimensions further
+						const maxWidth = 800;
+						const maxHeight = 1200;
+						let width = img.width;
+						let height = img.height;
+						
+						if (width > height) {
+							if (width > maxWidth) {
+								height *= maxWidth / width;
+								width = maxWidth;
+							}
+						} else {
+							if (height > maxHeight) {
+								width *= maxHeight / height;
+								height = maxHeight;
+							}
+						}
+						
+						canvas.width = width;
+						canvas.height = height;
+						ctx.drawImage(img, 0, 0, width, height);
+						
+						// Use much lower quality
+						post.image = canvas.toDataURL('image/jpeg', 0.5);
+						
+						// Try saving again with more compressed image
+						const updatedPostsWithCompressedImage = editPost
+							? existingPosts.map((p) => (p.id === editPost.id ? post : p))
+							: [post, ...existingPosts.slice(0, 9)]; // Keep fewer posts
+						
+						localStorage.setItem('posts', JSON.stringify(updatedPostsWithCompressedImage));
 					} catch (e) {
-						continue;
+						// If still failing, remove older posts until it fits
+						while (updatedPosts.length > 1) {
+							updatedPosts.pop(); // Remove the oldest post
+							try {
+								localStorage.setItem('posts', JSON.stringify(updatedPosts));
+								break;
+							} catch (e) {
+								continue;
+							}
+						}
+					}
+				} else {
+					// If no image or compression failed, just remove older posts
+					while (updatedPosts.length > 1) {
+						updatedPosts.pop(); // Remove the oldest post
+						try {
+							localStorage.setItem('posts', JSON.stringify(updatedPosts));
+							break;
+						} catch (e) {
+							continue;
+						}
 					}
 				}
 
