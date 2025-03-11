@@ -431,7 +431,7 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
     }
   };
   
-  const handleSave = () => {
+  const handleSave = async () => {
     if (imagePreviews.length === 0) {
       toast.error('Пожалуйста, добавьте хотя бы одно изображение для истории');
       return;
@@ -1039,7 +1039,7 @@ const StoriesBar = ({ darkMode }) => {
   };
   
   // Закрытие просмотра истории
-  const handleCloseStory = () => {
+  const handleCloseStory = async () => {
     setSelectedStory(null);
   };
   
