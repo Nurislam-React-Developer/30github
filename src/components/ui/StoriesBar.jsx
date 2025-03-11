@@ -740,7 +740,7 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
             <Button 
               variant="contained" 
               onClick={handleSave}
-              disabled={!imagePreview}
+              disabled={imagePreviews.length === 0}
               sx={{
                 backgroundColor: darkMode ? '#bb86fc' : '#3f51b5',
                 '&:hover': {
