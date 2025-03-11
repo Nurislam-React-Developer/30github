@@ -208,7 +208,24 @@ const StoryViewer = ({ story, onClose, darkMode }) => {
         </Box>
       </Box>
       
-      <DialogContent sx={{ p: 0, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+      <DialogContent 
+        sx={{ p: 0, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}
+        onClick={(e) => {
+          // Добавляем навигацию по клику для мобильных устройств
+          const { clientX } = e;
+          const { left, width } = e.currentTarget.getBoundingClientRect();
+          const clickPosition = clientX - left;
+          
+          // Если клик в левой трети экрана - предыдущее изображение
+          if (clickPosition < width / 3 && currentImageIndex > 0) {
+            setCurrentImageIndex(currentImageIndex - 1);
+          }
+          // Если клик в правой трети экрана - следующее изображение
+          else if (clickPosition > (width * 2) / 3 && currentImageIndex < images.length - 1) {
+            setCurrentImageIndex(currentImageIndex + 1);
+          }
+        }}
+      >
         <Box 
           component="img"
           src={images[currentImageIndex]}
