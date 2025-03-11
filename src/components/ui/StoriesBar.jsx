@@ -298,7 +298,7 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
       const newStory = {
         id: Date.now(),
         user: {
-          name: userName || 'Пользователь', // Используем 'Пользователь' вместо 'Anonymous'
+          name: userName || 'Нурислам Абдималиков', // Заменяем 'Пользователь' на имя пользователя
           avatar: userAvatar,
         },
         image: compressedImage,
