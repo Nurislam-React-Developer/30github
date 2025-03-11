@@ -976,41 +976,34 @@ const StoriesBar = ({ darkMode }) => {
   const [selectedStory, setSelectedStory] = useState(null);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   
-  // Функция для оценки размера объекта в байтах
-  const estimateSize = (object) => {
-    const jsonString = JSON.stringify(object);
-    return jsonString.length * 2; // Примерная оценка: каждый символ в UTF-16 занимает 2 байта
-  };
-
-  // Загрузка историй и просмотренных историй из localStorage
+  // Загрузка историй и просмотренных историй из localStorage с использованием StoriesManager
   useEffect(() => {
     try {
-      const loadedStories = JSON.parse(localStorage.getItem('stories') || '[]');
-      const loadedViewedStories = JSON.parse(localStorage.getItem('viewedStories') || '[]');
-      
-      // Фильтрация историй, которые не истекли (24 часа)
-      const validStories = loadedStories.filter(story => {
-        const expiryTime = new Date(story.expiresAt).getTime();
-        return expiryTime > Date.now();
-      });
-      
-      // Если есть истории, которые истекли, обновляем localStorage
-      if (validStories.length !== loadedStories.length) {
-        localStorage.setItem('stories', JSON.stringify(validStories));
+      // Удаляем истории с истекшим сроком действия
+      const removedCount = StoriesManager.removeExpiredStories();
+      if (removedCount > 0) {
+        console.log(`Удалено ${removedCount} историй с истекшим сроком действия`);
       }
       
-      // Очистка просмотренных историй - оставляем только ID существующих историй
-      const validStoryIds = validStories.map(story => story.id);
-      const validViewedStories = loadedViewedStories.filter(id => validStoryIds.includes(id));
+      // Очищаем просмотренные истории, которые больше не существуют
+      StoriesManager.cleanupViewedStories();
       
-      // Если список просмотренных историй изменился, обновляем localStorage
-      if (validViewedStories.length !== loadedViewedStories.length) {
-        localStorage.setItem('viewedStories', JSON.stringify(validViewedStories));
+      // Получаем актуальные истории и просмотренные истории
+      const validStories = StoriesManager.getStories();
+      const validViewedStories = StoriesManager.getViewedStories();
+      
+      // Проверяем использование хранилища
+      const usagePercentage = getStorageUsagePercentage();
+      console.log(`Использование localStorage: ${usagePercentage.toFixed(2)}%`);
+      
+      // Если хранилище заполнено более чем на 80%, выполняем очистку
+      if (usagePercentage > 80) {
+        cleanupStorage({
+          keysToPreserve: ['user', 'userSettings', 'profileName', 'profileAvatar'],
+          targetPercentage: 70
+        });
+        console.log('Выполнена очистка localStorage для освобождения места');
       }
-      
-      // Проверяем размер данных в localStorage
-      const storiesSize = estimateSize(validStories);
-      console.log(`Текущий размер историй в localStorage: ~${(storiesSize / (1024 * 1024)).toFixed(2)}MB`);
       
       setStories(validStories);
       setViewedStories(validViewedStories);
