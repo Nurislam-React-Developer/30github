@@ -4,7 +4,6 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import { useTheme } from '../../theme/ThemeContext';
 
 const AccountSettings = ({ isLoading, handleLogout }) => {
-  const { darkMode } = useTheme();
   
   return (
     <Box sx={{ mt: 4 }}>

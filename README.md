@@ -76,7 +76,7 @@ git clone [https://github.com/Nurislam-React-Developer/30github.git]
 yarn install
 
 # Запуск в режиме разработки
-yarn start
+ npx --yes vite
 
 # Сборка для продакшена
 yarn build
