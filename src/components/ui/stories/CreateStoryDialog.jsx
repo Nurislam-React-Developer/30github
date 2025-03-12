@@ -500,3 +500,10 @@ const CreateStoryDialog = ({ open, onClose, onSave, darkMode }) => {
             </Button>
           </Box>
         </Box>
+        
+        </DialogContent>
+        </Dialog>
+  )
+}
+
+export default CreateStoryDialog;
