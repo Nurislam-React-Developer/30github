@@ -1,7 +1,4 @@
-import {
-  Box,
-  Typography,
-} from '@mui/material';
+import { Box, Typography, Button } from '@mui/material';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../theme/ThemeContext';
@@ -16,34 +13,41 @@ import UserSettings from '../components/settings/UserSettings';
 import VisualSettings from '../components/settings/VisualSettings';
 import AccountSettings from '../components/settings/AccountSettings';
 
+// Звуковые файлы (предполагается, что они есть в проекте)
+import SaveSound from '../../public/sounds/SaveSound.mp3'; // Добавь свой звук
+import ResetSound from '../../public/sounds/ResetSound.mp3'; // Добавь свой звук
+
 const Settings = () => {
 	const navigate = useNavigate();
 	const { darkMode } = useTheme();
 	const [isLoading, setIsLoading] = useState(false);
-	// Состояния для полей формы
 	const [name, setName] = useState('');
 	const [email, setEmail] = useState('');
-	const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-	const [privacySetting, setPrivacySetting] = useState('public');
 	const [accentColor, setAccentColor] = useState('#2196f3');
-
-	const [backgroundMedia, setBackgroundMedia] = useState(null);
-	const [backgroundType, setBackgroundType] = useState('none');
+	const [backgroundMedia, setBackgroundMedia] = useState(DefaultBackground);
 	const [backgroundTheme, setBackgroundTheme] = useState('default');
+	const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
-	// Set default background on initial load
+	// Динамическая цветовая палитра
+	const colorPalette = useMemo(
+		() => ['#2196f3', '#ff6f61', '#6b48ff', '#00c4cc', '#ffca28'],
+		[]
+	);
+	const [colorIndex, setColorIndex] = useState(0);
+
 	useEffect(() => {
-		if (!backgroundMedia) {
-			setBackgroundMedia(DefaultBackground);
-			setBackgroundType('image');
-		}
-	}, [backgroundMedia]);
+		const interval = setInterval(() => {
+			setColorIndex((prev) => (prev + 1) % colorPalette.length);
+			setAccentColor(colorPalette[colorIndex]);
+		}, 3000); // Меняем цвет каждые 3 секунды
+		return () => clearInterval(interval);
+	}, [colorPalette, colorIndex]);
 
-	// Предустановленные темы фона с изображениями
+	// Темы фона
 	const backgroundThemes = useMemo(
 		() => [
-			{ value: 'default', name: 'По умолчанию', image: DefaultBackground },
-			{ value: 'forest', name: 'Лесная', image: ForestBackGround },
+			{ value: 'default', name: 'Стандарт', image: DefaultBackground },
+			{ value: 'forest', name: 'Лес', image: ForestBackGround },
 			{ value: 'ocean', name: 'Океан', image: OceanBackground },
 			{ value: 'sunset', name: 'Закат', image: SunsentBackGround },
 			{ value: 'mountain', name: 'Горы', image: MounthainBackground },
@@ -51,230 +55,277 @@ const Settings = () => {
 		[]
 	);
 
-	// Обработчик изменения темы фона
+	// Обработчик изменения фона
 	const handleBackgroundThemeChange = useCallback(
 		(value) => {
 			setBackgroundTheme(value);
 			const selectedTheme = backgroundThemes.find(
 				(theme) => theme.value === value
 			);
-			if (selectedTheme) {
-				setBackgroundMedia(selectedTheme.image);
-				setBackgroundType('image');
-			} else {
-				setBackgroundMedia(null);
-				setBackgroundType('none');
-			}
+			setBackgroundMedia(selectedTheme?.image || DefaultBackground);
 		},
 		[backgroundThemes]
 	);
 
-	// Предустановленные цветовые схемы
-	const colorSchemes = useMemo(
-		() => [
-			{ name: 'Закат', colors: ['#ff9a9e', '#fad0c4'] },
-			{ name: 'Океан', colors: ['#4facfe', '#00f2fe'] },
-			{ name: 'Лес', colors: ['#43e97b', '#38f9d7'] },
-			{ name: 'Лаванда', colors: ['#a18cd1', '#fbc2eb'] },
-		],
-		[]
-	);
-
-	// Загрузка данных из localStorage при монтировании
+	// Загрузка данных
 	useEffect(() => {
-		// Load user settings
-		const savedData = JSON.parse(localStorage.getItem('userSettings'));
-		// Load profile data
-		const profileName = localStorage.getItem('profileName');
-		const profileEmail = localStorage.getItem('profileUsername');
+		const savedData = JSON.parse(localStorage.getItem('userSettings')) || {};
+		setName(savedData.name || '');
+		setEmail(savedData.email || '');
+		setAccentColor(savedData.accentColor || '#2196f3');
+		setBackgroundTheme(savedData.backgroundTheme || 'default');
+		setBackgroundMedia(savedData.backgroundMedia || DefaultBackground);
+	}, []);
 
-		// Set data with priority to profile data
-		setName(profileName || (savedData?.name || ''));
-		setEmail(profileEmail || (savedData?.email || ''));
-		setNotificationsEnabled(savedData?.notificationsEnabled || true);
-		setPrivacySetting(savedData?.privacySetting || 'public');
-		setAccentColor(savedData?.accentColor || '#2196f3');
+	// Звуковые эффекты
+	const playSound = (sound) => {
+		const audio = new Audio(sound);
+		audio.play().catch((err) => console.log('Audio error:', err));
+	};
 
-		setBackgroundMedia(savedData?.backgroundMedia || null);
-		setBackgroundType(savedData?.backgroundType || 'none');
-		setBackgroundTheme(savedData?.backgroundTheme || 'default');
-			
-		// Применяем тему фона при загрузке
-		if (savedData?.backgroundTheme) {
-			const selectedTheme = backgroundThemes.find(
-				(theme) => theme.value === savedData.backgroundTheme
-			);
-			if (selectedTheme && selectedTheme.image) {
-				setBackgroundMedia(selectedTheme.image);
-				setBackgroundType('image');
-			}
-		}
-	}, [backgroundThemes]);
-
-	// Сохранение данных в localStorage
+	// Сохранение настроек
 	const saveSettings = useCallback(() => {
 		const settings = {
 			name,
 			email,
-			notificationsEnabled,
-			privacySetting,
 			accentColor,
 			backgroundMedia,
-			backgroundType,
 			backgroundTheme,
 		};
 		localStorage.setItem('userSettings', JSON.stringify(settings));
-		toast.success('Настройки успешно сохранены!', {
-			position: 'top-right',
-			autoClose: 3000,
-			hideProgressBar: false,
-			closeOnClick: true,
-			pauseOnHover: true,
-			draggable: true,
+		playSound(SaveSound);
+		toast.success('Сохранено!', {
+			position: 'bottom-center',
+			autoClose: 1500,
+			hideProgressBar: true,
+			style: { background: darkMode ? '#444' : '#fff', borderRadius: '12px' },
 		});
-	}, [
-		name,
-		email,
-		notificationsEnabled,
-		privacySetting,
-		accentColor,
-		backgroundMedia,
-		backgroundType,
-		backgroundTheme,
-	]);
+	}, [name, email, accentColor, backgroundMedia, backgroundTheme, darkMode]);
+
+	// Сброс настроек
+	const resetSettings = useCallback(() => {
+		setName('');
+		setEmail('');
+		setAccentColor('#2196f3');
+		setBackgroundTheme('default');
+		setBackgroundMedia(DefaultBackground);
+		localStorage.removeItem('userSettings');
+		playSound(ResetSound);
+		toast.info('Сброшено!', { position: 'bottom-center', autoClose: 1500 });
+	}, []);
+
+	// 3D-эффект фона
+	const handleMouseMove = (e) => {
+		const { clientX, clientY, currentTarget } = e;
+		const { width, height, left, top } = currentTarget.getBoundingClientRect();
+		const x = ((clientX - left) / width - 0.5) * 20;
+		const y = ((clientY - top) / height - 0.5) * -20;
+		setTilt({ x, y });
+	};
+
+	const handleMouseLeave = () => setTilt({ x: 0, y: 0 });
 
 	return (
-		<>
+		<Box
+			sx={{
+				minHeight: '100vh',
+				background: darkMode
+					? 'linear-gradient(135deg, #1a1a1a, #2c3e50)' // Градиент вместо белого
+					: 'linear-gradient(135deg, #f5f7fa, #dfe6e9)',
+				padding: { xs: 2, sm: 4 },
+				position: 'relative',
+				overflow: 'hidden',
+			}}
+		>
+			{/* Фон с 3D-эффектом */}
 			<Box
-				component='main'
+				component='img'
+				src={backgroundMedia}
+				alt='Background'
+				onMouseMove={handleMouseMove}
+				onMouseLeave={handleMouseLeave}
 				sx={{
-					background: '#f5f5f5',
-					minHeight: '100vh',
+					position: 'absolute',
+					top: 0,
+					left: 0,
+					width: '100%',
+					height: '100%',
+					objectFit: 'cover',
+					opacity: darkMode ? 0.15 : 0.25,
+					filter: 'blur(8px) brightness(0.9)',
+					transform: `perspective(1000px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg)`,
+					transition: 'transform 0.3s ease, opacity 0.5s ease',
+					zIndex: 0,
+				}}
+			/>
+
+			{/* Контейнер настроек */}
+			<Box
+				sx={{
 					position: 'relative',
-					overflow: 'hidden',
-					padding: { xs: 2, sm: 4 },
+					zIndex: 1,
+					maxWidth: 800,
+					margin: '0 auto',
+					background: darkMode
+						? 'rgba(40, 40, 40, 0.9)'
+						: 'rgba(255, 255, 255, 0.9)',
+					borderRadius: '20px',
+					padding: { xs: 3, sm: 4 },
+					boxShadow: '0 15px 40px rgba(0, 0, 0, 0.1)',
+					backdropFilter: 'blur(12px)',
 				}}
 			>
-				{backgroundMedia && (
+				<ToastContainer />
+
+				<Typography
+					variant='h5'
+					align='center'
+					sx={{
+						fontWeight: 700,
+						color: darkMode ? '#fff' : '#2c3e50',
+						mb: 3,
+						textTransform: 'uppercase',
+						letterSpacing: '1px',
+					}}
+				>
+					Настройки
+				</Typography>
+
+				<Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+					<UserSettings
+						name={name}
+						setName={setName}
+						email={email}
+						setEmail={setEmail}
+					/>
+					<VisualSettings
+						accentColor={accentColor}
+						setAccentColor={setAccentColor}
+						backgroundTheme={backgroundTheme}
+						handleBackgroundThemeChange={handleBackgroundThemeChange}
+						backgroundThemes={backgroundThemes}
+					/>
+					<AccountSettings
+						isLoading={isLoading}
+						handleLogout={async () => {
+							setIsLoading(true);
+							try {
+								localStorage.clear();
+								toast.success('Выход выполнен!', { position: 'bottom-center' });
+								navigate('/signin');
+							} catch (error) {
+								toast.error('Ошибка выхода', { position: 'bottom-center' });
+							} finally {
+								setIsLoading(false);
+							}
+						}}
+					/>
+				</Box>
+
+				{/* Кнопки с пульсом */}
+				<Box
+					sx={{
+						display: 'flex',
+						gap: 2,
+						mt: 4,
+						justifyContent: 'center',
+						position: 'relative',
+					}}
+				>
 					<Box
-						component={backgroundType === 'video' ? 'video' : 'img'}
-						src={backgroundMedia}
-						autoPlay={backgroundType === 'video'}
-						loop={backgroundType === 'video'}
-						muted={backgroundType === 'video'}
-						playsInline={backgroundType === 'video'}
-						alt='Background'
 						sx={{
 							position: 'absolute',
 							top: '50%',
 							left: '50%',
+							width: '120%',
+							height: '120%',
+							background: `radial-gradient(circle, ${accentColor}20 0%, transparent 70%)`,
 							transform: 'translate(-50%, -50%)',
-							width: '100%',
-							height: '840px',
-							objectFit: 'cover',
-							zIndex: 0,
-							opacity: 1,
-							overflow: 'hidden',
-							boxShadow: '0 0 20px rgba(0, 0, 0, 0.2)'
+							animation: 'pulse 2s infinite',
+							zIndex: -1,
+							borderRadius: '50%',
 						}}
 					/>
-				)}
-
-				<Box
-					component='section'
-					sx={{
-						backgroundColor: 'rgba(255, 255, 255, 0.9)',
-						borderRadius: 4,
-						padding: { xs: 2, sm: 4 },
-						margin: 'auto',
-						maxWidth: 1200,
-						boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-						position: 'relative',
-						zIndex: 1
-					}}
-				>
-					<ToastContainer />
-
-					<Typography variant='h4' gutterBottom align='center' sx={{ mb: 4 }}>
-						Настройки
-					</Typography>
-
-					<Box
-						component='div'
+					<Button
+						onClick={saveSettings}
 						sx={{
-							display: 'grid',
-							gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-							gap: 4,
+							flex: 1,
+							padding: '12px 20px',
+							borderRadius: '12px',
+							background: `linear-gradient(135deg, ${accentColor}, ${accentColor}80)`,
+							color: '#fff',
+							fontWeight: 600,
+							textTransform: 'none',
+							boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+							transition:
+								'transform 0.2s ease, box-shadow 0.2s ease, background 0.5s ease',
+							position: 'relative',
+							zIndex: 1,
+							'&:hover': {
+								transform: 'translateY(-2px)',
+								boxShadow: '0 6px 20px rgba(0, 0, 0, 0.25)',
+								background: `linear-gradient(135deg, ${accentColor}cc, ${accentColor})`,
+							},
 						}}
 					>
-						<UserSettings
-							name={name}
-							setName={setName}
-							email={email}
-							setEmail={setEmail}
-						/>
+						Сохранить
+					</Button>
+					<Button
+						onClick={resetSettings}
+						sx={{
+							flex: 1,
+							padding: '12px 20px',
+							borderRadius: '12px',
+							background: darkMode ? '#555' : '#ecf0f1',
+							color: darkMode ? '#fff' : '#7f8c8d',
+							fontWeight: 600,
+							textTransform: 'none',
+							boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+							transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+							position: 'relative',
+							zIndex: 1,
+							'&:hover': {
+								transform: 'translateY(-2px)',
+								boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15)',
+								background: darkMode ? '#666' : '#dfe6e9',
+							},
+						}}
+					>
+						Сбросить
+					</Button>
+				</Box>
 
-						<Box>
-							<VisualSettings
-								accentColor={accentColor}
-								setAccentColor={setAccentColor}
-								backgroundTheme={backgroundTheme}
-								handleBackgroundThemeChange={handleBackgroundThemeChange}
-								backgroundThemes={backgroundThemes}
-								saveSettings={saveSettings}
-								resetSettings={() => {
-									setName('');
-									setEmail('');
-									setNotificationsEnabled(true);
-									setPrivacySetting('public');
-									setAccentColor('#2196f3');
-
-									localStorage.removeItem('userSettings');
-									toast.info('Настройки сброшены к значениям по умолчанию');
-								}}
-							/>
-
-							<AccountSettings
-								isLoading={isLoading}
-								handleLogout={async () => {
-									setIsLoading(true);
-									try {
-										localStorage.removeItem('token');
-										localStorage.removeItem('user');
-										localStorage.removeItem('userSettings');
-
-										toast.success('Вы успешно вышли из аккаунта!', {
-											position: 'top-right',
-											autoClose: 2000,
-											hideProgressBar: false,
-											closeOnClick: true,
-											pauseOnHover: true,
-											draggable: true,
-											theme: darkMode ? 'dark' : 'light'
-										});
-
-										navigate('/signin');
-									} catch (error) {
-										console.error('Error during logout:', error);
-										toast.error('Произошла ошибка при выходе из аккаунта', {
-											position: 'top-right',
-											autoClose: 3000,
-											hideProgressBar: false,
-											closeOnClick: true,
-											pauseOnHover: true,
-											draggable: true,
-											theme: darkMode ? 'dark' : 'light'
-										});
-									} finally {
-										setIsLoading(false);
-									}
-								}}
-							/>
-						</Box>
-					</Box>
+				{/* Прогресс */}
+				<Box
+					sx={{
+						mt: 2,
+						height: '4px',
+						background: darkMode ? '#444' : '#e0e0e0',
+						borderRadius: '2px',
+						overflow: 'hidden',
+					}}
+				>
+					<Box
+						sx={{
+							width: `${Math.min((name.length + email.length) * 5, 100)}%`,
+							height: '100%',
+							background: accentColor,
+							transition: 'width 0.3s ease, background 0.5s ease',
+						}}
+					/>
 				</Box>
 			</Box>
-		</>
+
+			{/* Анимация пульса */}
+			<style>
+				{`
+          @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
+          }
+        `}
+			</style>
+		</Box>
 	);
 };
 
