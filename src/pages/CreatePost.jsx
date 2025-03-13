@@ -2,6 +2,7 @@ import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import {
 	Box,
 	Button,
+	CircularProgress,
 	IconButton,
 	Paper,
 	styled,
@@ -10,7 +11,8 @@ import {
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useFormStatus } from 'react-dom';
+import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -20,7 +22,6 @@ import { useTheme } from '../theme/ThemeContext';
 const CreatePost = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
-	const dispatch = useDispatch();
 	const { darkMode } = useTheme();
 	const currentUser = useSelector(selectCurrentUser);
 	const editPost = location.state?.editPost;
@@ -96,13 +97,13 @@ const CreatePost = () => {
 				try {
 					const img = new Image();
 					img.src = postData.imagePreview;
-					
+
 					// Wait for image to load before processing
 					await new Promise((resolve, reject) => {
 						img.onload = resolve;
 						img.onerror = reject;
 					});
-					
+
 					const canvas = document.createElement('canvas');
 					const ctx = canvas.getContext('2d');
 
@@ -180,18 +181,18 @@ const CreatePost = () => {
 						const ctx = canvas.getContext('2d');
 						const img = new Image();
 						img.src = compressedImage;
-						
+
 						// Wait for image to load
 						await new Promise((resolve) => {
 							img.onload = resolve;
 						});
-						
+
 						// Reduce dimensions further
 						const maxWidth = 800;
 						const maxHeight = 1200;
 						let width = img.width;
 						let height = img.height;
-						
+
 						if (width > height) {
 							if (width > maxWidth) {
 								height *= maxWidth / width;
@@ -203,20 +204,23 @@ const CreatePost = () => {
 								height = maxHeight;
 							}
 						}
-						
+
 						canvas.width = width;
 						canvas.height = height;
 						ctx.drawImage(img, 0, 0, width, height);
-						
+
 						// Use much lower quality
 						post.image = canvas.toDataURL('image/jpeg', 0.5);
-						
+
 						// Try saving again with more compressed image
 						const updatedPostsWithCompressedImage = editPost
 							? existingPosts.map((p) => (p.id === editPost.id ? post : p))
 							: [post, ...existingPosts.slice(0, 9)]; // Keep fewer posts
-						
-						localStorage.setItem('posts', JSON.stringify(updatedPostsWithCompressedImage));
+
+						localStorage.setItem(
+							'posts',
+							JSON.stringify(updatedPostsWithCompressedImage)
+						);
 					} catch (e) {
 						// If still failing, remove older posts until it fits
 						while (updatedPosts.length > 1) {
@@ -368,18 +372,7 @@ const CreatePost = () => {
 					)}
 
 					<Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-						<Button
-							variant='contained'
-							type='submit'
-							sx={{
-								bgcolor: darkMode ? '#bb86fc' : '#3f51b5',
-								'&:hover': {
-									bgcolor: darkMode ? '#9c27b0' : '#303f9f',
-								},
-							}}
-						>
-							Опубликовать
-						</Button>
+						<SubmitButton darkMode={darkMode} />
 						<Button
 							variant='outlined'
 							onClick={() => navigate('/')}
@@ -397,6 +390,32 @@ const CreatePost = () => {
 				</form>
 			</StyledPaper>
 		</Container>
+	);
+};
+
+// Компонент кнопки отправки с индикатором загрузки
+const SubmitButton = ({ darkMode }) => {
+	const { pending } = useFormStatus();
+
+	return (
+		<Button
+			variant='contained'
+			type='submit'
+			disabled={pending}
+			sx={{
+				bgcolor: darkMode ? '#bb86fc' : '#3f51b5',
+				'&:hover': {
+					bgcolor: darkMode ? '#9c27b0' : '#303f9f',
+				},
+				height: '48px',
+			}}
+		>
+			{pending ? (
+				<CircularProgress size={24} sx={{ color: '#fff' }} />
+			) : (
+				'Опубликовать'
+			)}
+		</Button>
 	);
 };
 
