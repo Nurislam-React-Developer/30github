@@ -1,47 +1,42 @@
-import Brightness4Icon from '@mui/icons-material/Brightness4'; // Иконка для темной темы
-import Brightness7Icon from '@mui/icons-material/Brightness7'; // Иконка для светлой темы
+import AddBoxIcon from '@mui/icons-material/AddBox';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import HomeIcon from '@mui/icons-material/Home';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import PeopleIcon from '@mui/icons-material/People';
-import PersonIcon from '@mui/icons-material/Person'; // Иконка для профиля
-import SettingsIcon from '@mui/icons-material/Settings'; // Иконка для настроек
-import { Switch } from '@mui/material'; // Импортируем Switch
+import PersonIcon from '@mui/icons-material/Person';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { Switch } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Badge from '@mui/material/Badge';
 import { styled } from '@mui/material/styles';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../theme/ThemeContext';
-import AddBoxIcon from '@mui/icons-material/AddBox';
-
-
 
 const Header = () => {
-	const { darkMode, toggleTheme } = useTheme(); // Используем контекст темы
+	const { darkMode, toggleTheme } = useTheme();
 	const [notificationCount, setNotificationCount] = useState(0);
-	
+
 	useEffect(() => {
-		// Function to update notification count from localStorage
 		const updateNotificationCount = () => {
-			const updatedNotifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+			const updatedNotifications = JSON.parse(
+				localStorage.getItem('notifications') || '[]'
+			);
 			setNotificationCount(updatedNotifications.length);
 		};
-		
-		// Initial load
+
 		updateNotificationCount();
-		
-		// Set up event listeners for storage changes and custom events
+
 		window.addEventListener('storage', updateNotificationCount);
-		
-		// Listen for custom event that will be dispatched when notifications change
+
 		const handleCustomEvent = () => {
 			updateNotificationCount();
 		};
 		window.addEventListener('notificationsUpdated', handleCustomEvent);
-		
-		// Clean up event listeners
+
 		return () => {
 			window.removeEventListener('storage', updateNotificationCount);
 			window.removeEventListener('notificationsUpdated', handleCustomEvent);
@@ -97,7 +92,11 @@ const Header = () => {
 								alignItems: 'center',
 							}}
 						>
-							<Badge badgeContent={notificationCount} color='error' invisible={notificationCount === 0}>
+							<Badge
+								badgeContent={notificationCount}
+								color='error'
+								invisible={notificationCount === 0}
+							>
 								<NotificationsIcon sx={{ color: 'white' }} />
 							</Badge>{' '}
 							Уведомления
@@ -148,8 +147,8 @@ const Header = () => {
 							onChange={toggleTheme}
 							color='default'
 							inputProps={{ 'aria-label': 'toggle theme' }}
-							icon={<Brightness7Icon />} // Иконка для светлой темы
-							checkedIcon={<Brightness4Icon />} // Иконка для темной темы
+							icon={<Brightness7Icon />}
+							checkedIcon={<Brightness4Icon />}
 						/>
 					</MenuItem>
 				</MenuList>
@@ -160,27 +159,24 @@ const Header = () => {
 
 export default Header;
 
-// Стиль для контейнера заголовка
 const HeaderContainer = styled(AppBar)(({ theme }) => ({
-	backgroundColor: '#3f51b5', // Цвет фона заголовка
+	backgroundColor: '#3f51b5',
 	boxShadow: '0px 2px 5px rgba(0, 0, 0, 0.3)',
 }));
 
-// Стиль для меню
 const MenuList = styled('ul')(({ theme }) => ({
 	listStyle: 'none',
 	display: 'flex',
 	margin: 0,
 	padding: 0,
-	gap: '20px', // расстояние между элементами меню
-	alignItems: 'center', // Выравнивание по центру
+	gap: '20px',
+	alignItems: 'center',
 }));
 
-// Стиль для элемента меню
 const MenuItem = styled('li')(({ theme }) => ({
 	color: 'white',
 	transition: 'color 0.3s',
 	'&:hover': {
-		color: theme.palette.secondary.main, // цвет при наведении
+		color: theme.palette.secondary.main,
 	},
 }));
