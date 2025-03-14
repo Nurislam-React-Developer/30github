@@ -1,6 +1,7 @@
 import { Box, Card } from '@mui/material';
 import { motion } from 'framer-motion';
 import React from 'react';
+import { PostActions, PostContent, PostHeader } from './post';
 
 const PostCard = ({
 	post,
