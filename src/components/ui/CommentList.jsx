@@ -1,18 +1,6 @@
-import React from 'react';
-import {
-  ListItem,
-  ListItemAvatar,
-  Avatar,
-  ListItemText,
-  IconButton,
-  Typography,
-  Box
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import FavoriteIcon from '@mui/icons-material/Favorite';
-import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import React from 'react';
 import { toast } from 'react-toastify';
 
 const CommentList = ({ comments, darkMode, onDeleteComment, postId }) => {
@@ -101,127 +89,24 @@ const CommentList = ({ comments, darkMode, onDeleteComment, postId }) => {
 
   return (
     <>
-      {comments.map((comment, index) => {
+      {comments.map((comment) => {
         const likes = comment.likes || [];
         const currentUser = JSON.parse(localStorage.getItem('user'));
         const userName = currentUser?.name || localStorage.getItem('profileName');
-        const isLiked = likes.includes(userName);
-
+        
         return (
-          <ListItem 
-            key={comment.id} 
-            alignitems="flex-start"
-            component={motion.div}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            sx={{
-              py: 1.5,
-              display: 'flex',
-              justifyContent: 'space-between',
-              borderBottom: '1px solid',
-              borderColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-              '&:hover': {
-                backgroundColor: darkMode ? 'rgba(187, 134, 252, 0.08)' : 'rgba(63, 81, 181, 0.08)'
-              }
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', flex: 1 }}>
-              <ListItemAvatar>
-                <Avatar 
-                  src={comment.user.avatar}
-                  sx={{ width: 40, height: 40 }}
-                />
-              </ListItemAvatar>
-              <ListItemText
-                primary={
-                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                    <Typography
-                      component="span"
-                      variant="subtitle2"
-                      color={darkMode ? '#ffffff' : 'text.primary'}
-                      sx={{ fontWeight: 600, mb: 0.5 }}
-                    >
-                      {comment.user.name}
-                    </Typography>
-                    <Typography
-                      component="span"
-                      variant="body2"
-                      color={darkMode ? '#ffffff' : 'text.primary'}
-                    >
-                      {comment.text}
-                    </Typography>
-                  </Box>
-                }
-                secondary={
-                  <Box sx={{ mt: 1 }}>
-                    <Typography
-                      component="span"
-                      variant="caption"
-                      color={darkMode ? 'rgba(255, 255, 255, 0.6)' : 'text.secondary'}
-                      sx={{ display: 'block' }}
-                    >
-                      {formatTimestamp(comment.timestamp)}
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Typography
-                        component="span"
-                        variant="caption"
-                        color={darkMode ? 'rgba(255, 255, 255, 0.6)' : 'text.secondary'}
-                      >
-                        {likes.length > 0 && `${likes.length} лайк${likes.length !== 1 ? 'ов' : ''}`}
-                      </Typography>
-                      {likes.length > 0 && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                          {likes.slice(0, 3).map((likedBy, idx) => (
-                            <Avatar
-                              key={idx}
-                              src={posts.find(p => p.author?.name === likedBy)?.author?.avatar}
-                              sx={{ width: 16, height: 16 }}
-                            />
-                          ))}
-                          {likes.length > 3 && (
-                            <Typography
-                              variant="caption"
-                              color={darkMode ? 'rgba(255, 255, 255, 0.6)' : 'text.secondary'}
-                            >
-                              +{likes.length - 3}
-                            </Typography>
-                          )}
-                        </Box>
-                      )}
-                    </Box>
-                  </Box>
-                }
-                sx={{
-                  margin: 0
-                }}
-              />
-            </Box>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <IconButton
-                size="small"
-                onClick={() => handleLikeComment(comment.id)}
-                sx={{
-                  color: isLiked ? '#ff1744' : (darkMode ? '#ffffff' : '#000000')
-                }}
-              >
-                <FavoriteIcon fontSize="small" />
-              </IconButton>
-              {isPostAuthor && (
-                <IconButton
-                  size="small"
-                  onClick={() => onDeleteComment(postId, comment.id)}
-                  color="error"
-                  component={motion.button}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <DeleteIcon fontSize="small" />
-                </IconButton>
-              )}
-            </Box>
-          </ListItem>
+          <CommentItem
+            key={comment.id}
+            comment={comment}
+            darkMode={darkMode}
+            onDeleteComment={onDeleteComment}
+            postId={postId}
+            formatTimestamp={formatTimestamp}
+            userName={userName}
+            handleLikeComment={handleLikeComment}
+            isPostAuthor={isPostAuthor}
+            likes={likes}
+          />
         );
       })}
     </>
