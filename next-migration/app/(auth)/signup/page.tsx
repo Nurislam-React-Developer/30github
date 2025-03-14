@@ -1,6 +1,6 @@
 'use client';
 
-import { login } from '@/app/store/userSlice';
+import { login } from '../../store/userSlice';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
