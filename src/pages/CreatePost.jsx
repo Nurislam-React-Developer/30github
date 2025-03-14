@@ -77,7 +77,7 @@ const CreatePost = () => {
 				senderAvatar:
 					currentUser?.avatar ||
 					localStorage.getItem('profileAvatar') ||
-					'https://via.placeholder.com/150',
+					'/logo.png',
 				postId,
 				comment,
 				timestamp: new Date().toISOString(),
@@ -156,7 +156,7 @@ const CreatePost = () => {
 							avatar:
 								currentUser?.avatar ||
 								localStorage.getItem('profileAvatar') ||
-								'https://via.placeholder.com/150',
+								'/logo.png',
 						},
 						image: compressedImage,
 						description: postData.description,

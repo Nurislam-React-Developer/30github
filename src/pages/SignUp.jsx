@@ -1,6 +1,4 @@
 import styled from '@emotion/styled';
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -18,6 +16,8 @@ import {
 import { motion } from 'framer-motion';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { useLoading } from '../context/LoadingContext';
 import { useTheme } from '../theme/ThemeContext';
 
@@ -86,7 +86,7 @@ const SignUp = () => {
 			localStorage.setItem('profileName', formData.name);
 			localStorage.setItem('profileUsername', formData.email.split('@')[0]);
 			localStorage.setItem('profileBio', 'Расскажите о себе...');
-			localStorage.setItem('profileAvatar', 'https://via.placeholder.com/150');
+			localStorage.setItem('profileAvatar', '/logo.png');
 
 			// Сохраняем настройки пользователя
 			const userSettings = {
@@ -95,7 +95,7 @@ const SignUp = () => {
 				notificationsEnabled: true,
 				privacySetting: 'public',
 				accentColor: '#2196f3',
-				backgroundTheme: 'default'
+				backgroundTheme: 'default',
 			};
 			localStorage.setItem('userSettings', JSON.stringify(userSettings));
 
@@ -107,7 +107,7 @@ const SignUp = () => {
 				closeOnClick: true,
 				pauseOnHover: true,
 				draggable: true,
-				theme: darkMode ? 'dark' : 'light'
+				theme: darkMode ? 'dark' : 'light',
 			});
 
 			showLoader();

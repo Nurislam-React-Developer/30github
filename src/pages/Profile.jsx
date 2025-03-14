@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import EditIcon from '@mui/icons-material/Edit';
+import GridViewIcon from '@mui/icons-material/GridView';
 import {
 	Avatar,
-	Button,
-	Typography,
 	Box,
-	Paper,
+	Button,
 	CircularProgress,
-	Grid,
-	Tabs,
-	Tab,
 	Dialog,
-	DialogTitle,
-	DialogContent,
 	DialogActions,
+	DialogContent,
+	DialogTitle,
+	Grid,
+	Paper,
+	Tab,
+	Tabs,
 	TextField,
+	Typography,
 } from '@mui/material';
-import CommentList from '../components/ui/CommentList';
-import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
-import GridViewIcon from '@mui/icons-material/GridView';
-import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
-import AccountBoxIcon from '@mui/icons-material/AccountBox';
-import EditIcon from '@mui/icons-material/Edit';
 import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import CommentList from '../components/ui/CommentList';
 
 const Profile = () => {
 	const navigate = useNavigate();
@@ -37,7 +37,7 @@ const Profile = () => {
 		localStorage.getItem('profileBio') || 'Напишите что-нибудь о себе...'
 	);
 	const [avatar, setAvatar] = useState(
-		localStorage.getItem('profileAvatar') || 'https://via.placeholder.com/150'
+		localStorage.getItem('profileAvatar') || '/logo.png'
 	);
 
 	const [isAvatarLoading, setIsAvatarLoading] = useState(false);
@@ -65,18 +65,20 @@ const Profile = () => {
 				console.error('Error parsing user data:', parseError);
 				currentUser = null;
 			}
-			
+
 			if (!currentUser) {
 				currentUser = {
 					name: localStorage.getItem('profileName') || 'Default Name',
-					avatar: localStorage.getItem('profileAvatar') || 'https://via.placeholder.com/150'
+					avatar: localStorage.getItem('profileAvatar') || '/logo.png',
 				};
 			}
-			
-			const filteredPosts = allPosts.filter(post => 
-				post?.user?.name === userName || post?.user?.name === currentUser?.name
+
+			const filteredPosts = allPosts.filter(
+				(post) =>
+					post?.user?.name === userName ||
+					post?.user?.name === currentUser?.name
 			);
-			
+
 			setUserPosts(filteredPosts);
 			setPostsCount(filteredPosts.length);
 			setFollowersCount(Math.floor(Math.random() * 500) + 50);
@@ -136,27 +138,34 @@ const Profile = () => {
 						const userSettings = localStorage.getItem('userSettings');
 						let parsedSettings = {};
 						try {
-							parsedSettings = userSettings ? JSON.parse(userSettings) : {
-								name: editName,
-								username: editUsername,
-								avatar: avatar
-							};
+							parsedSettings = userSettings
+								? JSON.parse(userSettings)
+								: {
+										name: editName,
+										username: editUsername,
+										avatar: avatar,
+								  };
 						} catch (error) {
 							console.error('Error parsing user settings:', error);
 							parsedSettings = {
 								name: editName,
 								username: editUsername,
-								avatar: avatar
+								avatar: avatar,
 							};
 						}
 						parsedSettings.avatar = compressedBase64;
-						localStorage.setItem('userSettings', JSON.stringify(parsedSettings));
+						localStorage.setItem(
+							'userSettings',
+							JSON.stringify(parsedSettings)
+						);
 
 						// Show success message
 						toast.success('Профиль успешно обновлен!');
 					} catch (error) {
 						console.error('Error saving avatar:', error);
-						toast.error('Ошибка при сохранении аватара. Попробуйте изображение меньшего размера.');
+						toast.error(
+							'Ошибка при сохранении аватара. Попробуйте изображение меньшего размера.'
+						);
 					}
 
 					setIsAvatarLoading(false);
@@ -184,13 +193,13 @@ const Profile = () => {
 		setName(editName);
 		setUsername(editUsername);
 		setBio(editBio);
-		
+
 		try {
 			// Update localStorage
 			localStorage.setItem('profileName', editName);
 			localStorage.setItem('profileUsername', editUsername);
 			localStorage.setItem('profileBio', editBio);
-			
+
 			// Try to save avatar - this might cause quota issues
 			try {
 				localStorage.setItem('profileAvatar', avatar);
@@ -199,71 +208,77 @@ const Profile = () => {
 				console.error('Error saving avatar to localStorage:', avatarError);
 				// Continue with other operations even if avatar save fails
 			}
-			
+
 			// Update userSettings in localStorage
 			const userSettings = localStorage.getItem('userSettings');
 			let parsedSettings;
 			try {
-				parsedSettings = userSettings ? JSON.parse(userSettings) : {
-					name: editName,
-					username: editUsername,
-					avatar: avatar
-				};
+				parsedSettings = userSettings
+					? JSON.parse(userSettings)
+					: {
+							name: editName,
+							username: editUsername,
+							avatar: avatar,
+					  };
 			} catch (error) {
 				console.error('Error parsing user settings:', error);
 				parsedSettings = {
 					name: editName,
 					username: editUsername,
-					avatar: avatar
+					avatar: avatar,
 				};
 			}
-			
+
 			parsedSettings.name = editName;
 			parsedSettings.username = editUsername;
-			
+
 			// Try to save avatar to settings
 			try {
 				parsedSettings.avatar = avatar;
 			} catch (settingsAvatarError) {
 				console.error('Error saving avatar to settings:', settingsAvatarError);
 			}
-			
+
 			localStorage.setItem('userSettings', JSON.stringify(parsedSettings));
-			
+
 			// Update user data in localStorage
 			const userData = localStorage.getItem('user');
 			let parsedUserData;
 			try {
-				parsedUserData = userData ? JSON.parse(userData) : {
-					name: editName,
-					avatar: avatar
-				};
+				parsedUserData = userData
+					? JSON.parse(userData)
+					: {
+							name: editName,
+							avatar: avatar,
+					  };
 			} catch (error) {
 				console.error('Error parsing user data:', error);
 				parsedUserData = {
 					name: editName,
-					avatar: avatar
+					avatar: avatar,
 				};
 			}
-			
+
 			parsedUserData.name = editName;
-			
+
 			// Try to save avatar to user data
 			try {
 				parsedUserData.avatar = avatar;
 			} catch (userAvatarError) {
 				console.error('Error saving avatar to user data:', userAvatarError);
 			}
-			
+
 			localStorage.setItem('user', JSON.stringify(parsedUserData));
 
 			// Show success message
 			toast.success('Профиль успешно обновлен!');
 		} catch (error) {
 			console.error('Error saving profile data:', error);
-			toast.error('Ошибка при сохранении данных профиля. Возможно, превышен лимит хранилища.');
+			toast.error(
+				'Ошибка при сохранении данных профиля. Возможно, превышен лимит хранилища.'
+			);
 		}
-		
+
 		// Close dialog regardless of success/failure
 		setOpenEditDialog(false);
 	};
@@ -327,7 +342,7 @@ const Profile = () => {
 							/>
 						)}
 					</Box>
-					
+
 					<Box sx={{ flex: 1 }}>
 						<Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
 							<Typography
@@ -341,7 +356,7 @@ const Profile = () => {
 							>
 								{username}
 							</Typography>
-							
+
 							<Button
 								variant='outlined'
 								size='small'
@@ -365,15 +380,21 @@ const Profile = () => {
 
 						<Box sx={{ display: 'flex', gap: 5, mb: 3 }}>
 							<Typography component='span'>
-								<Box component='span' sx={{ fontWeight: 600, mr: 1 }}>{postsCount}</Box>
+								<Box component='span' sx={{ fontWeight: 600, mr: 1 }}>
+									{postsCount}
+								</Box>
 								публикаций
 							</Typography>
 							<Typography component='span'>
-								<Box component='span' sx={{ fontWeight: 600, mr: 1 }}>{followersCount}</Box>
+								<Box component='span' sx={{ fontWeight: 600, mr: 1 }}>
+									{followersCount}
+								</Box>
 								подписчиков
 							</Typography>
 							<Typography component='span'>
-								<Box component='span' sx={{ fontWeight: 600, mr: 1 }}>{followingCount}</Box>
+								<Box component='span' sx={{ fontWeight: 600, mr: 1 }}>
+									{followingCount}
+								</Box>
 								подписок
 							</Typography>
 						</Box>
@@ -396,184 +417,216 @@ const Profile = () => {
 						centered
 						variant='fullWidth'
 						sx={{
-                            borderColor: '#dbdbdb',
-                            '& .MuiTabs-indicator': {
-                                backgroundColor: '#262626',
-                            },
-                            '& .MuiTab-root': {
-                                textTransform: 'none',
-                                fontSize: '12px',
-                                fontWeight: 500,
-                                color: '#8e8e8e',
-                                '&.Mui-selected': {
-                                    color: '#262626',
-                                },
-                            },
-                        }}
-                    >
-                        <Tab
-                            icon={<GridViewIcon />}
-                            label='Публикации'
-                            sx={{ minHeight: 48 }}
-                        />
-                        <Tab
-                            icon={<BookmarkBorderIcon />}
-                            label='Сохраненное'
-                            sx={{ minHeight: 48 }}
-                        />
-                        <Tab
-                            icon={<AccountBoxIcon />}
-                            label='Отметки'
-                            sx={{ minHeight: 48 }}
-                        />
-                    </Tabs>
-                </Box>
+							borderColor: '#dbdbdb',
+							'& .MuiTabs-indicator': {
+								backgroundColor: '#262626',
+							},
+							'& .MuiTab-root': {
+								textTransform: 'none',
+								fontSize: '12px',
+								fontWeight: 500,
+								color: '#8e8e8e',
+								'&.Mui-selected': {
+									color: '#262626',
+								},
+							},
+						}}
+					>
+						<Tab
+							icon={<GridViewIcon />}
+							label='Публикации'
+							sx={{ minHeight: 48 }}
+						/>
+						<Tab
+							icon={<BookmarkBorderIcon />}
+							label='Сохраненное'
+							sx={{ minHeight: 48 }}
+						/>
+						<Tab
+							icon={<AccountBoxIcon />}
+							label='Отметки'
+							sx={{ minHeight: 48 }}
+						/>
+					</Tabs>
+				</Box>
 
-                <Grid container spacing={2} sx={{ mt: 2 }}>
-                    {userPosts.map((post) => (
-                        <Grid item xs={4} key={post.id}>
-                            <Box
-                                component={motion.div}
-                                whileHover={{ opacity: 0.8 }}
-                                sx={{
-                                    position: 'relative',
-                                    paddingTop: '100%',
-                                    cursor: 'pointer',
-                                }}
-                                onClick={() => handlePostClick(post)}
-                            >
-                                <Box
-                                    component='img'
-                                    src={post.image}
-                                    alt='Post'
-                                    sx={{
-                                        position: 'absolute',
-                                        top: 0,
-                                        left: 0,
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'cover',
-                                    }}
-                                />
-                            </Box>
-                        </Grid>
-                    ))}
-                </Grid>
+				<Grid container spacing={2} sx={{ mt: 2 }}>
+					{userPosts.map((post) => (
+						<Grid item xs={4} key={post.id}>
+							<Box
+								component={motion.div}
+								whileHover={{ opacity: 0.8 }}
+								sx={{
+									position: 'relative',
+									paddingTop: '100%',
+									cursor: 'pointer',
+								}}
+								onClick={() => handlePostClick(post)}
+							>
+								<Box
+									component='img'
+									src={post.image}
+									alt='Post'
+									sx={{
+										position: 'absolute',
+										top: 0,
+										left: 0,
+										width: '100%',
+										height: '100%',
+										objectFit: 'cover',
+									}}
+								/>
+							</Box>
+						</Grid>
+					))}
+				</Grid>
 
-                <Dialog open={openEditDialog} onClose={handleCloseEditDialog}>
-                    <DialogTitle>Редактировать профиль</DialogTitle>
-                    <DialogContent>
-                        <TextField
-                            autoFocus
-                            margin='dense'
-                            label='Имя'
-                            type='text'
-                            fullWidth
-                            value={editName}
-                            onChange={(e) => setEditName(e.target.value)}
-                        />
-                        <TextField
-                            margin='dense'
-                            label='Имя пользователя'
-                            type='text'
-                            fullWidth
-                            value={editUsername}
-                            onChange={(e) => setEditUsername(e.target.value)}
-                        />
-                        <TextField
-                            margin='dense'
-                            label='О себе'
-                            type='text'
-                            fullWidth
-                            multiline
-                            rows={4}
-                            value={editBio}
-                            onChange={(e) => setEditBio(e.target.value)}
-                        />
-                        <input
-                            accept='image/*'
-                            type='file'
-                            id='avatar-upload'
-                            style={{ display: 'none' }}
-                            onChange={handleAvatarUpload}
-                        />
-                        <label htmlFor='avatar-upload'>
-                            <Button
-                                component='span'
-                                variant='outlined'
-                                startIcon={<EditIcon />}
-                                sx={{ mt: 2 }}
-                            >
-                                Изменить фото
-                            </Button>
-                        </label>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleCloseEditDialog}>Отмена</Button>
-                        <Button onClick={handleSaveProfile} color='primary'>
-                            Сохранить
-                        </Button>
-                    </DialogActions>
-                </Dialog>
+				<Dialog open={openEditDialog} onClose={handleCloseEditDialog}>
+					<DialogTitle>Редактировать профиль</DialogTitle>
+					<DialogContent>
+						<TextField
+							autoFocus
+							margin='dense'
+							label='Имя'
+							type='text'
+							fullWidth
+							value={editName}
+							onChange={(e) => setEditName(e.target.value)}
+						/>
+						<TextField
+							margin='dense'
+							label='Имя пользователя'
+							type='text'
+							fullWidth
+							value={editUsername}
+							onChange={(e) => setEditUsername(e.target.value)}
+						/>
+						<TextField
+							margin='dense'
+							label='О себе'
+							type='text'
+							fullWidth
+							multiline
+							rows={4}
+							value={editBio}
+							onChange={(e) => setEditBio(e.target.value)}
+						/>
+						<input
+							accept='image/*'
+							type='file'
+							id='avatar-upload'
+							style={{ display: 'none' }}
+							onChange={handleAvatarUpload}
+						/>
+						<label htmlFor='avatar-upload'>
+							<Button
+								component='span'
+								variant='outlined'
+								startIcon={<EditIcon />}
+								sx={{ mt: 2 }}
+							>
+								Изменить фото
+							</Button>
+						</label>
+					</DialogContent>
+					<DialogActions>
+						<Button onClick={handleCloseEditDialog}>Отмена</Button>
+						<Button onClick={handleSaveProfile} color='primary'>
+							Сохранить
+						</Button>
+					</DialogActions>
+				</Dialog>
 
-                <Dialog
-                    open={Boolean(selectedPost)}
-                    onClose={handleClosePost}
-                    maxWidth="md"
-                    fullWidth
-                >
-                    {selectedPost && (
-                        <Box sx={{ display: 'flex', height: '80vh' }}>
-                            <Box sx={{ flex: 1, bgcolor: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <img
-                                    src={selectedPost.image}
-                                    alt="Post"
-                                    style={{
-                                        maxWidth: '100%',
-                                        maxHeight: '100%',
-                                        objectFit: 'contain'
-                                    }}
-                                />
-                            </Box>
-                            <Box sx={{ width: 350, p: 2, borderLeft: 1, borderColor: 'divider', bgcolor: 'background.paper' }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                    <Avatar src={selectedPost.user?.avatar} sx={{ width: 32, height: 32, mr: 1 }} />
-                                    <Typography variant="subtitle2">{selectedPost.user?.name}</Typography>
-                                </Box>
-                                <Typography variant="body2" sx={{ mb: 2 }}>{selectedPost.description}</Typography>
-                                <Box sx={{ flex: 1, overflowY: 'auto', mt: 2 }}>
-                                    <Typography variant="subtitle2" sx={{ mb: 1 }}>Комментарии</Typography>
-                                    <CommentList
-                                        comments={selectedPost.comments || []}
-                                        darkMode={false}
-                                        onDeleteComment={(postId, commentId) => {
-                                            const updatedPosts = userPosts.map(post => {
-                                                if (post.id === postId) {
-                                                    return {
-                                                        ...post,
-                                                        comments: post.comments.filter(c => c.id !== commentId)
-                                                    };
-                                                }
-                                                return post;
-                                            });
-                                            setUserPosts(updatedPosts);
-                                            localStorage.setItem('posts', JSON.stringify(updatedPosts));
-                                        }}
-                                        postId={selectedPost.id}
-                                    />
-                                </Box>
-                                <Box sx={{ mt: 2, borderTop: 1, borderColor: 'divider', pt: 2 }}>
-                                    <Typography variant="caption" color="text.secondary">
-                                        {new Date(selectedPost.timestamp).toLocaleDateString()}
-                                    </Typography>
-                                </Box>
-                            </Box>
-                        </Box>
-                    )}
-                </Dialog>
-            </Paper>
-        </Box>
-    );
+				<Dialog
+					open={Boolean(selectedPost)}
+					onClose={handleClosePost}
+					maxWidth='md'
+					fullWidth
+				>
+					{selectedPost && (
+						<Box sx={{ display: 'flex', height: '80vh' }}>
+							<Box
+								sx={{
+									flex: 1,
+									bgcolor: '#000',
+									display: 'flex',
+									alignItems: 'center',
+									justifyContent: 'center',
+								}}
+							>
+								<img
+									src={selectedPost.image}
+									alt='Post'
+									style={{
+										maxWidth: '100%',
+										maxHeight: '100%',
+										objectFit: 'contain',
+									}}
+								/>
+							</Box>
+							<Box
+								sx={{
+									width: 350,
+									p: 2,
+									borderLeft: 1,
+									borderColor: 'divider',
+									bgcolor: 'background.paper',
+								}}
+							>
+								<Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+									<Avatar
+										src={selectedPost.user?.avatar}
+										sx={{ width: 32, height: 32, mr: 1 }}
+									/>
+									<Typography variant='subtitle2'>
+										{selectedPost.user?.name}
+									</Typography>
+								</Box>
+								<Typography variant='body2' sx={{ mb: 2 }}>
+									{selectedPost.description}
+								</Typography>
+								<Box sx={{ flex: 1, overflowY: 'auto', mt: 2 }}>
+									<Typography variant='subtitle2' sx={{ mb: 1 }}>
+										Комментарии
+									</Typography>
+									<CommentList
+										comments={selectedPost.comments || []}
+										darkMode={false}
+										onDeleteComment={(postId, commentId) => {
+											const updatedPosts = userPosts.map((post) => {
+												if (post.id === postId) {
+													return {
+														...post,
+														comments: post.comments.filter(
+															(c) => c.id !== commentId
+														),
+													};
+												}
+												return post;
+											});
+											setUserPosts(updatedPosts);
+											localStorage.setItem(
+												'posts',
+												JSON.stringify(updatedPosts)
+											);
+										}}
+										postId={selectedPost.id}
+									/>
+								</Box>
+								<Box
+									sx={{ mt: 2, borderTop: 1, borderColor: 'divider', pt: 2 }}
+								>
+									<Typography variant='caption' color='text.secondary'>
+										{new Date(selectedPost.timestamp).toLocaleDateString()}
+									</Typography>
+								</Box>
+							</Box>
+						</Box>
+					)}
+				</Dialog>
+			</Paper>
+		</Box>
+	);
 };
 
 export default Profile;

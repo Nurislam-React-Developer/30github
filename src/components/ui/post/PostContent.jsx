@@ -1,16 +1,16 @@
 import { CardContent, CardMedia, Divider, Typography } from '@mui/material';
 import React from 'react';
+import { getFallbackImage, handleImageError } from '../../../utils/imageUtils';
 
 const PostContent = ({ post, darkMode }) => {
 	return (
 		<>
 			<CardMedia
 				component='img'
-				image={
-					post?.image || 'https://via.placeholder.com/400x400?text=No+Image'
-				}
+				image={post?.image || getFallbackImage('400x400', 'No+Image')}
 				alt='Post image'
 				height='400'
+				onError={handleImageError}
 				sx={{ objectFit: 'cover' }}
 			/>
 			<CardContent>
